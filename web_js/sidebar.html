@@ -1,0 +1,124 @@
+<!-- Sidebar Component -->
+<style>
+    .sidebar-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #2d3548;
+    }
+
+    .sidebar-logo {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.025em;
+    }
+
+    .sidebar-subtitle {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    .sidebar-nav {
+        padding: 1rem 0;
+    }
+
+    .nav-section {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-section-title {
+        padding: 0.5rem 1.5rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .nav-link:hover {
+        background: #2d3548;
+        color: white;
+    }
+
+    .nav-link.active {
+        background: linear-gradient(90deg, #3b82f6 0%, transparent 100%);
+        color: white;
+        border-left: 3px solid #3b82f6;
+    }
+
+    .nav-link i {
+        width: 20px;
+        margin-right: 12px;
+        text-align: center;
+    }
+</style>
+
+<div class="sidebar-header">
+    <div class="sidebar-logo">RID SIMULATOR</div>
+    <div class="sidebar-subtitle">Comuna: Santiago</div>
+</div>
+
+<nav class="sidebar-nav">
+    <div class="nav-section">
+        <div class="nav-section-title">1. Resumen Ejecutivo</div>
+        <a class="nav-link active" data-view="vista1">
+            <i class="fa-solid fa-file-lines"></i> Ficha Comunal
+        </a>
+        <a class="nav-link" data-view="vista2">
+            <i class="fa-solid fa-chart-area"></i> Visualización Gráfica
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">2. Análisis Táctico</div>
+        <a class="nav-link" data-view="vista3">
+            <i class="fa-solid fa-traffic-light"></i> Semáforo y Alertas
+        </a>
+        <a class="nav-link" data-view="vista4">
+            <i class="fa-solid fa-calendar-week"></i> Evolución Multisemanal
+        </a>
+        <a class="nav-link" data-view="vista5">
+            <i class="fa-solid fa-crosshairs"></i> Matriz de Focos
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">3. Análisis Estratégico</div>
+        <a class="nav-link" data-view="vista6">
+            <i class="fa-solid fa-gauge-high"></i> Perfil de Gravedad
+        </a>
+        <a class="nav-link" data-view="vista7">
+            <i class="fa-solid fa-ranking-star"></i> Benchmark Regional
+        </a>
+        <a class="nav-link" data-view="vista8">
+            <i class="fa-solid fa-chart-line"></i> Tendencias 2005-2025
+        </a>
+        <a class="nav-link" data-view="vista9">
+            <i class="fa-solid fa-wave-square"></i> Patrones Estacionales
+        </a>
+        <a class="nav-link" data-view="vista10">
+            <i class="fa-solid fa-diagram-project"></i> Correlaciones
+        </a>
+        <a class="nav-link" data-view="vista11">
+            <i class="fa-solid fa-arrows-to-dot"></i> Proyección Anual
+        </a>
+    </div>
+
+    <div class="nav-section">
+        <div class="nav-section-title">4. Laboratorio</div>
+        <a class="nav-link" data-view="laboratorio">
+            <i class="fa-solid fa-flask"></i> Experimentación IA
+        </a>
+    </div>
+</nav>

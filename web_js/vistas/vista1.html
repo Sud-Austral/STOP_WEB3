@@ -1,0 +1,276 @@
+<!-- Vista 1: Ficha Comunal - Dashboard Principal -->
+<style>
+    .alert-box {
+        background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+        border-left: 4px solid #f59e0b;
+        padding: 1.25rem 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .alert-box strong {
+        color: #b45309;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .section-subtitle {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .btn-save {
+        background: #10b981;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+        text-align: center;
+        padding: 1.25rem;
+        border-right: 1px solid #e2e8f0;
+    }
+
+    .kpi-card:last-child {
+        border-right: none;
+    }
+
+    .kpi-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .kpi-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1e293b;
+    }
+
+    .kpi-change {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .kpi-change.positive {
+        color: #10b981;
+    }
+
+    .kpi-change.negative {
+        color: #ef4444;
+    }
+
+    .kpi-change.warning {
+        color: #f59e0b;
+    }
+
+    .kpi-change.neutral {
+        color: #64748b;
+    }
+
+    .chart-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .chart-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .chart-wrapper {
+        height: 300px;
+        position: relative;
+    }
+</style>
+
+<!-- Alert Box -->
+<div class="alert-box">
+    <strong>Interpretación de IA:</strong> "El análisis de la semana muestra un nivel de riesgo <strong
+        style="color: #f59e0b;">AMARILLO (Precaución)</strong>. Aunque el hurto ha bajado un 5%, los robos con violencia
+    han aumentado un 15% situándose sobre el promedio histórico."
+</div>
+
+<!-- Section 1: Situación General -->
+<div class="section-card">
+    <div class="section-header">
+        <div>
+            <h2 class="section-title">1. ¿Cuál es la situación general?</h2>
+            <p class="section-subtitle">Estado actual de la seguridad y distribución de los delitos principales</p>
+        </div>
+        <button class="btn-save">Guardar Vista</button>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-label">Casos Semanales</div>
+            <div class="kpi-value">870</div>
+            <div class="kpi-change positive">8.1% vs Sem. Ant.</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Variación Anual</div>
+            <div class="kpi-value" style="color: #10b981;">-9.8%</div>
+            <div class="kpi-change positive">vs Año Ant.</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Índice Violencia</div>
+            <div class="kpi-value">--</div>
+            <div class="kpi-change neutral">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Nivel de Riesgo</div>
+            <div class="kpi-value" style="color: #f59e0b;">ALTO</div>
+            <div class="kpi-change neutral">--</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="chart-grid">
+    <div class="chart-container">
+        <div class="chart-title">Distribución de Casos Semanales</div>
+        <div class="chart-wrapper">
+            <canvas id="chartDistribucion"></canvas>
+        </div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-title">Evolución Semanal de Delitos</div>
+        <div class="chart-wrapper">
+            <canvas id="chartEvolucion"></canvas>
+        </div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-title">Comparativa por Tipo de Delito</div>
+        <div class="chart-wrapper">
+            <canvas id="chartComparativa"></canvas>
+        </div>
+    </div>
+    <div class="chart-container">
+        <div class="chart-title">Efectividad Operativa</div>
+        <div class="chart-wrapper">
+            <canvas id="chartEfectividad"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chart 1: Doughnut - Distribución
+    new Chart(document.getElementById('chartDistribucion'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Robos por sorpresa', 'Hurtos', 'Robos con violencia', 'Consumo alcohol/drogas', 'Robos de vehículos', 'Otros'],
+            datasets: [{
+                data: [25, 20, 18, 15, 12, 10],
+                backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#64748b']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { size: 10 } } }
+            }
+        }
+    });
+
+    // Chart 2: Line - Evolución
+    new Chart(document.getElementById('chartEvolucion'), {
+        type: 'line',
+        data: {
+            labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+            datasets: [{
+                label: 'Delitos',
+                data: [120, 135, 110, 145, 130, 155, 140, 128],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Chart 3: Bar - Comparativa
+    new Chart(document.getElementById('chartComparativa'), {
+        type: 'bar',
+        data: {
+            labels: ['Robos', 'Hurtos', 'Violencia', 'Drogas', 'Vehículos'],
+            datasets: [{
+                label: 'Casos',
+                data: [85, 65, 45, 35, 25],
+                backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Chart 4: Radar - Efectividad
+    new Chart(document.getElementById('chartEfectividad'), {
+        type: 'radar',
+        data: {
+            labels: ['Detenciones', 'Patrullajes', 'Respuesta', 'Cobertura', 'Tecnología'],
+            datasets: [{
+                label: 'Actual',
+                data: [75, 85, 60, 80, 70],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
