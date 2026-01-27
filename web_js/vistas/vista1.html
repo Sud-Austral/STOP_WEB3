@@ -1,16 +1,23 @@
 <!-- Vista 1: Ficha Comunal - Dashboard Principal (Datos Dinámicos) -->
 
-<!-- Alert Box (Interpretación IA) -->
-<div class="alert alert--warning" id="alertIA">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText">Cargando análisis...</span>
-</div>
-
 <!-- Section: ¿Cuál es la situación general? -->
 <div class="card mb-lg">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Cuál es la situación general?</h2>
     </div>
-    <p class="text-muted mb-lg">Estado actual de la seguridad y distribución de los delitos principales</p>
+    <p class="text-muted mb-md">Estado actual de la seguridad y distribución de los delitos principales</p>
+
+    <!-- Alert Box (Interpretación IA) -->
+    <div class="alert alert--warning mb-lg" id="alertIA">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText">Cargando análisis...</span>
+    </div>
 
     <div class="kpi-grid" id="kpiGrid">
         <div class="kpi-card">
@@ -67,6 +74,10 @@
         };
 
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
 
         // Wait for Chart.js
         const waitForChart = () => {

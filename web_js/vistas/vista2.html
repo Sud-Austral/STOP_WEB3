@@ -1,16 +1,23 @@
 <!-- Vista 2: ¿Hay alertas activas o anomalías? -->
 
-<!-- Alert Box (Interpretación IA) -->
-<div class="alert alert--warning" id="alertIA2">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText2">Cargando análisis de alertas...</span>
-</div>
-
 <!-- Section Header -->
 <div class="card mb-lg">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Hay alertas activas o anomalías?</h2>
     </div>
-    <p class="text-muted mb-lg">Análisis de alertas por semáforo de indicadores en la base de datos del CEAD</p>
+    <p class="text-muted mb-md">Análisis de alertas por semáforo de indicadores en la base de datos del CEAD</p>
+
+    <!-- Alert Box (Interpretación IA) -->
+    <div class="alert alert--warning mb-lg" id="alertIA2">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText2">Cargando análisis de alertas...</span>
+    </div>
 
     <!-- Status Indicators -->
     <div class="status-indicators mb-lg">
@@ -58,37 +65,39 @@
         align-items: center;
         justify-content: center;
         font-size: 2rem;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .status-circle:hover {
-        transform: scale(1.1);
-    }
-
-    .status-circle--success {
-        background: linear-gradient(135deg, #10b981, #34d399);
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-    }
-
-    .status-circle--warning {
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
-    }
-
-    .status-circle--danger {
-        background: linear-gradient(135deg, #ef4444, #f87171);
-        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    }
-
-    .status-circle--inactive {
+        background: var(--color-bg);
+        color: var(--color-text-light);
+        transition: all 0.3s ease;
         opacity: 0.3;
-        filter: grayscale(1);
+    }
+
+    .status-circle--warning.active {
+        background: #fef3c7;
+        color: #d97706;
+        opacity: 1;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(217, 119, 6, 0.3);
+    }
+
+    .status-circle--danger.active {
+        background: #fee2e2;
+        color: #dc2626;
+        opacity: 1;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+    }
+
+    .status-circle--success.active {
+        background: #d1fae5;
+        color: #059669;
+        opacity: 1;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(5, 150, 105, 0.3);
     }
 
     .status-label {
         text-align: center;
-        font-size: 1.25rem;
-        color: var(--color-text);
+        font-size: 1.2rem;
         margin-bottom: 1rem;
     }
 
@@ -100,9 +109,6 @@
     .trend-text {
         text-align: center;
         color: var(--color-text-muted);
-        font-size: 0.95rem;
-        max-width: 500px;
-        margin: 0 auto;
     }
 </style>
 
@@ -123,6 +129,10 @@
         };
 
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
 
         // Wait for Chart.js
         const waitForChart = () => {

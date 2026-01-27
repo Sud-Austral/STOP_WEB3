@@ -1,13 +1,15 @@
 <!-- Vista 14: Proyección y Evolución Delictual -->
 
-<!-- Alert Box -->
-<div class="alert alert--info" id="alertIA14">
-    <strong>📊 Proyección IA:</strong> <span id="alertText14">Calculando tendencias futuras...</span>
-</div>
-
 <!-- Section Header with Filter -->
 <div class="card mb-lg">
-    <div class="row" style="align-items: center; justify-content: space-between;">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="row mb-md" style="align-items: center; justify-content: space-between;">
         <div class="col-8">
             <div class="section-header">
                 <h2 class="section-title">¿Cuál es la Situación Delictual?</h2>
@@ -20,6 +22,11 @@
                 <option value="TODOS">Todos los Delitos</option>
             </select>
         </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info" id="alertIA14">
+        <strong>📊 Proyección IA:</strong> <span id="alertText14">Calculando tendencias futuras...</span>
     </div>
 </div>
 
@@ -67,6 +74,10 @@
         });
         await waitForData();
         await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
 
         // --- 2. Setup Selector ---
         const selector = document.getElementById('delitoSelector14');

@@ -1,16 +1,23 @@
 <!-- Vista 3: ¿Es un hecho delictivo o una tendencia sostenida? -->
 
-<!-- Alert Box -->
-<div class="alert alert--info" id="alertIA3">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText3">Analizando tendencias históricas...</span>
-</div>
-
 <!-- Section -->
 <div class="card mb-lg">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Es un hecho delictivo o una tendencia sostenida?</h2>
     </div>
-    <p class="text-muted mb-lg">Muestra el histórico de delitos para detectar patrones de actividad</p>
+    <p class="text-muted mb-md">Muestra el histórico de delitos para detectar patrones de actividad</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA3">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText3">Analizando tendencias históricas...</span>
+    </div>
 
     <!-- Legend -->
     <div class="chart-legend mb-md">
@@ -63,8 +70,9 @@
 
     .chart-footnote {
         font-size: 0.75rem;
-        margin-top: 1rem;
         font-style: italic;
+        margin-top: 1rem;
+        text-align: center;
     }
 </style>
 
@@ -85,6 +93,10 @@
         };
 
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
 
         // Wait for Chart.js
         const waitForChart = () => {

@@ -1,16 +1,23 @@
 <!-- Vista 9: ¿Hay relación entre el consumo de drogas y otros delitos? -->
 
-<!-- Alert Box -->
-<div class="alert alert--warning" id="alertIA9">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText9">Analizando correlaciones...</span>
-</div>
-
 <!-- Section -->
 <div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Hay relación entre el consumo de Alcohol y el resto de delitos?</h2>
     </div>
-    <p class="text-muted mb-lg">Análisis de correlaciones entre tipos de delitos</p>
+    <p class="text-muted mb-md">Análisis de correlaciones entre tipos de delitos</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--warning mb-lg" id="alertIA9">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText9">Analizando correlaciones...</span>
+    </div>
 
     <div class="correlation-layout">
         <!-- Correlation Matrix -->
@@ -147,6 +154,10 @@
             check();
         });
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
 
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
         const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);

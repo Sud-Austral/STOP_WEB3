@@ -1,17 +1,24 @@
 <!-- Vista 4: ¿El número es grave o moderado? -->
 
-<!-- Alert Box -->
-<div class="alert alert--warning" id="alertIA4">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText4">Analizando perfil de gravedad...</span>
-</div>
-
 <!-- Section -->
 <div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿El número es grave o moderado?</h2>
     </div>
-    <p class="text-muted mb-lg">Muestra el perfil de la comuna y la concentración de datos según su nivel de gravedad
+    <p class="text-muted mb-md">Muestra el perfil de la comuna y la concentración de datos según su nivel de gravedad
     </p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--warning mb-lg" id="alertIA4">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText4">Analizando perfil de gravedad...</span>
+    </div>
 
     <!-- Legend -->
     <div class="matrix-legend mb-md">
@@ -102,6 +109,12 @@
         };
 
         await waitForChart();
+
+        await waitForChart();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
 
         // Get max ID_SEMANA
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));

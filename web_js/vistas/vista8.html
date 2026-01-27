@@ -1,16 +1,23 @@
 <!-- Vista 8: ¿Existe estacionalidad? -->
 
-<!-- Alert Box -->
-<div class="alert alert--info" id="alertIA8">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText8">Analizando patrones estacionales...</span>
-</div>
-
 <!-- Section -->
 <div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Existe estacionalidad?</h2>
     </div>
-    <p class="text-muted mb-lg">Análisis de patrones mensuales y estacionales en los delitos</p>
+    <p class="text-muted mb-md">Análisis de patrones mensuales y estacionales en los delitos</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA8">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText8">Analizando patrones estacionales...</span>
+    </div>
 
     <!-- Legend -->
     <div class="chart-legend mb-md">
@@ -76,6 +83,12 @@
             check();
         });
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Calculate seasonal data
         await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
 
         const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];

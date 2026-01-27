@@ -1,16 +1,23 @@
 <!-- Vista 6: ¿Cómo nos comparamos regionalmente? -->
 
-<!-- Alert Box -->
-<div class="alert alert--info" id="alertIA6">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText6">Comparando con otras comunas...</span>
-</div>
-
 <!-- Section -->
 <div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Cómo nos comparamos regionalmente?</h2>
     </div>
-    <p class="text-muted mb-lg">Benchmark con otras comunas de la Región Metropolitana</p>
+    <p class="text-muted mb-md">Benchmark con otras comunas de la Región Metropolitana</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA6">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText6">Comparando con otras comunas...</span>
+    </div>
 
     <!-- Legend -->
     <div class="chart-legend mb-md">
@@ -51,9 +58,9 @@
     }
 
     .legend-color {
-        width: 24px;
+        width: 12px;
         height: 12px;
-        border-radius: 3px;
+        border-radius: 2px;
     }
 
     .chart-footnote {
@@ -66,11 +73,25 @@
 
 <script>
     (async function initVista6() {
-        const waitForData = () => new Promise(resolve => {
-            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
-            check();
-        });
+        // Wait for data
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
         await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
 
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));

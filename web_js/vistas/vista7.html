@@ -1,16 +1,23 @@
 <!-- Vista 7: ¿Cuáles tendencias a largo plazo (últimos 20 años)? -->
 
-<!-- Alert Box -->
-<div class="alert alert--info" id="alertIA7">
-    <strong>🤖 Interpretación de IA:</strong> <span id="alertText7">Analizando tendencias históricas...</span>
-</div>
-
 <!-- Section -->
 <div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿Cuáles son las tendencias a largo plazo?</h2>
     </div>
-    <p class="text-muted mb-lg">Evolución de delitos con mira a la tendencia histórica general</p>
+    <p class="text-muted mb-md">Evolución de delitos con mira a la tendencia histórica general</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA7">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText7">Analizando tendencias históricas...</span>
+    </div>
 
     <!-- Legend -->
     <div class="chart-legend mb-md">
@@ -73,11 +80,25 @@
 
 <script>
     (async function initVista7() {
-        const waitForData = () => new Promise(resolve => {
-            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
-            check();
-        });
+        // Wait for data
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
         await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
 
         // Get unique years from data

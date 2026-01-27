@@ -1,16 +1,23 @@
 <!-- Vista 5: ¿La violencia está aumentando o son solo delitos menores? -->
 
-<!-- Alert Box -->
-<div class="alert alert--info" id="alertIA5">
-    <strong>📊 Análisis de Perfil:</strong> <span id="alertText5">Analizando perfil delictual...</span>
-</div>
-
 <!-- Section -->
 <div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
     <div class="section-header">
         <h2 class="section-title">¿La violencia está aumentando o son solo delitos menores?</h2>
     </div>
-    <p class="text-muted mb-lg">Perspectiva de la distribución de los delitos según su naturaleza</p>
+    <p class="text-muted mb-md">Perspectiva de la distribución de los delitos según su naturaleza</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA5">
+        <strong>📊 Análisis de Perfil:</strong> <span id="alertText5">Analizando perfil delictual...</span>
+    </div>
 
     <!-- Legend -->
     <div class="chart-legend mb-md">
@@ -64,6 +71,12 @@
             check();
         });
         await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Process data
         await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
 
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
