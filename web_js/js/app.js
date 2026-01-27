@@ -1,105 +1,238 @@
+/**
+ * RID SIMULATOR - Main Application Module
+ * Handles view loading, navigation, and PDF export
+ */
 
-import { PrintWizard } from './utils/PrintWizard.js';
-import { renderPortada } from './pages/Portada.js';
-import { renderExecutiveSummary } from './pages/ExecutiveSummary.js';
+const App = {
+    // Configuration
+    config: {
+        defaultView: 'vista1',
+        chartRenderDelay: 1500,
+        pdfScale: 2,
+        views: [
+            'vista1', 'vista2', 'vista3', 'vista4', 'vista5',
+            'vista6', 'vista7', 'vista8', 'vista9', 'vista10', 'vista11'
+        ]
+    },
 
-// Mock Pages for testing the wizard migration
-const MOCK_PAGES = [
-    { id: 'portada', title: 'Portada', render: renderPortada },
-    { id: 'executive-summary', title: 'Resumen Ejecutivo', render: renderExecutiveSummary }
-];
+    // State
+    state: {
+        currentView: null,
+        isExporting: false
+    },
 
-const initCharts = () => {
-    // Initialize Charts for Portal View
-    const chartConfigs = [
-        { id: 'chart1_portal', type: 'line', label: 'Delitos por Día', data: [12, 19, 3, 5, 2, 3, 7], color: '#1e3a8a' },
-        { id: 'chart2_portal', type: 'bar', label: 'Tipos de Delito', data: [45, 25, 15, 30, 10], colors: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#6366f1'] },
-        { id: 'chart3_portal', type: 'doughnut', label: 'Recursos', data: [40, 30, 20, 10], colors: ['#1e3a8a', '#3b82f6', '#60a5fa', '#93c5fd'] },
-        { id: 'chart4_portal', type: 'radar', label: 'Performance', data: [85, 70, 90, 65, 80], color: '#f59e0b' }
-    ];
+    // DOM Elements
+    elements: {
+        sidebar: null,
+        viewContainer: null,
+        exportBtn: null
+    },
 
-    chartConfigs.forEach(conf => {
-        const el = document.getElementById(conf.id);
-        if (!el) return;
-        const ctx = el.getContext('2d');
+    /**
+     * Initialize the application
+     */
+    async init() {
+        this.cacheElements();
+        await this.loadSidebar();
+        this.bindEvents();
+        this.loadView(this.config.defaultView);
+    },
 
-        const data = {
-            labels: conf.type === 'line' ? ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'] :
-                conf.type === 'bar' ? ['Robo', 'Hurto', 'Asalto', 'Vandalismo', 'Otros'] :
-                    conf.type === 'doughnut' ? ['Patrullaje', 'Cámaras', 'Denuncias', 'IA Assist'] :
-                        ['Velocidad', 'Eficacia', 'Recursos', 'Cobertura', 'Tecnología'],
-            datasets: [{
-                label: conf.label,
-                data: conf.data,
-                backgroundColor: conf.colors || (conf.type === 'radar' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(30, 58, 138, 0.1)'),
-                borderColor: conf.color || '#1e3a8a',
-                borderWidth: 2,
-                tension: 0.3,
-                fill: conf.type === 'line' || conf.type === 'radar'
-            }]
+    /**
+     * Cache DOM elements for performance
+     */
+    cacheElements() {
+        this.elements = {
+            sidebar: document.getElementById('sidebarContainer'),
+            viewContainer: document.getElementById('viewContainer'),
+            exportBtn: document.getElementById('btnExportPdf')
         };
+    },
 
-        new Chart(ctx, {
-            type: conf.type,
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { font: { family: 'Outfit', size: 12 } }
-                    }
+    /**
+     * Load sidebar component
+     */
+    async loadSidebar() {
+        try {
+            const response = await fetch('sidebar.html');
+            const html = await response.text();
+            this.elements.sidebar.innerHTML = html;
+            this.initNavigation();
+        } catch (error) {
+            console.error('Error loading sidebar:', error);
+        }
+    },
+
+    /**
+     * Initialize sidebar navigation
+     */
+    initNavigation() {
+        const navLinks = document.querySelectorAll('[data-view]');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const viewName = link.dataset.view;
+
+                // Update active state
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Load view
+                this.loadView(viewName);
+            });
+        });
+    },
+
+    /**
+     * Bind global events
+     */
+    bindEvents() {
+        this.elements.exportBtn?.addEventListener('click', () => this.exportPdf());
+    },
+
+    /**
+     * Load a view into the container
+     * @param {string} viewName - Name of the view to load
+     */
+    async loadView(viewName) {
+        const container = this.elements.viewContainer;
+
+        // Show loading state
+        container.innerHTML = '<div class="loading"></div>';
+        this.state.currentView = viewName;
+
+        try {
+            const response = await fetch(`vistas/${viewName}.html`);
+
+            if (!response.ok) {
+                throw new Error(`View not found: ${viewName}`);
+            }
+
+            const html = await response.text();
+            container.innerHTML = html;
+
+            // Execute embedded scripts
+            this.executeScripts(container);
+
+        } catch (error) {
+            console.error('Error loading view:', error);
+            container.innerHTML = `
+                <div class="card" style="text-align: center; padding: 3rem;">
+                    <i class="fa-solid fa-exclamation-triangle" style="font-size: 3rem; color: var(--color-danger); margin-bottom: 1rem;"></i>
+                    <h3 style="margin-bottom: 0.5rem;">Error al cargar vista</h3>
+                    <p class="text-muted">${viewName}</p>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * Execute scripts in loaded view
+     * @param {HTMLElement} container - Container element
+     */
+    executeScripts(container) {
+        const scripts = container.querySelectorAll('script');
+
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            newScript.textContent = script.textContent;
+            document.body.appendChild(newScript);
+            // Clean up after execution
+            setTimeout(() => newScript.remove(), 100);
+        });
+    },
+
+    /**
+     * Export all views to PDF
+     */
+    async exportPdf() {
+        if (this.state.isExporting) return;
+
+        this.state.isExporting = true;
+        const originalView = this.state.currentView;
+        const container = this.elements.viewContainer;
+        const btn = this.elements.exportBtn;
+
+        // Update button state
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exportando...';
+        btn.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+            const pageWidth = 210;
+            const pageHeight = 297;
+
+            for (let i = 0; i < this.config.views.length; i++) {
+                const viewName = this.config.views[i];
+
+                // Update progress
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${this.config.views.length}`;
+
+                // Load view
+                await this.loadView(viewName);
+
+                // Wait for charts to render
+                await this.delay(this.config.chartRenderDelay);
+
+                // Capture
+                const canvas = await html2canvas(container, {
+                    scale: this.config.pdfScale,
+                    useCORS: true,
+                    backgroundColor: '#f1f5f9',
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+                // Add page if not first
+                if (i > 0) pdf.addPage();
+
+                // Handle multi-page content
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
+                    heightLeft -= pageHeight;
                 }
             }
-        });
-    });
+
+            // Save PDF
+            const date = new Date().toISOString().split('T')[0];
+            pdf.save(`Reporte_RID_${date}.pdf`);
+
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            alert('Error al exportar PDF. Por favor intente nuevamente.');
+        } finally {
+            // Restore state
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            this.state.isExporting = false;
+            this.loadView(originalView);
+        }
+    },
+
+    /**
+     * Utility: Delay promise
+     * @param {number} ms - Milliseconds to wait
+     */
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Portal Initialized");
+// Initialize app when DOM is ready
+document.addEventListener('DOMContentLoaded', () => App.init());
 
-    const portalView = document.getElementById('portalView');
-    const dynamicView = document.getElementById('dynamicView');
-    const btnBack = document.getElementById('btnBackToPortal');
-    const quickExportBtn = document.getElementById('quickExportPdf');
-
-    // Initialize the charts on the main view
-    initCharts();
-
-    // Function to switch to portal
-    const showPortal = () => {
-        portalView.style.display = 'block';
-        dynamicView.style.display = 'none';
-        btnBack.style.display = 'none';
-        quickExportBtn.style.display = 'inline-flex';
-        history.pushState("", document.title, window.location.pathname + window.location.search);
-    };
-
-    // Function to switch to dynamic view
-    const showView = async (renderer) => {
-        portalView.style.display = 'none';
-        dynamicView.style.display = 'block';
-        btnBack.style.display = 'inline-flex';
-        quickExportBtn.style.display = 'none';
-        dynamicView.innerHTML = '<div class="p-10 text-center">Cargando...</div>';
-        await renderer(dynamicView);
-    };
-
-    // Setup Wizard Link (Export button in top bars and custom links)
-    if (quickExportBtn) {
-        quickExportBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const wizard = new PrintWizard(MOCK_PAGES);
-            wizard.start();
-        });
-    }
-
-    // Back button logic
-    if (btnBack) {
-        btnBack.addEventListener('click', (e) => {
-            e.preventDefault();
-            showPortal();
-        });
-    }
-});
+// Expose for global access if needed
+window.App = App;

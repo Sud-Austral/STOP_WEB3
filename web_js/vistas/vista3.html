@@ -1,0 +1,74 @@
+<!-- Vista 3: Semáforo y Alertas -->
+
+<!-- Alert Cards -->
+<div class="kpi-grid mb-xl" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="kpi-card" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #ef4444;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔴</div>
+        <div class="kpi-label">Robos con Violencia</div>
+        <div class="kpi-value text-danger">+23%</div>
+        <div class="kpi-change kpi-change--neutral">Sobre umbral crítico</div>
+    </div>
+    <div class="kpi-card" style="background: linear-gradient(135deg, #fefce8, #fef9c3); border: 2px solid #f59e0b;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🟡</div>
+        <div class="kpi-label">Hurtos</div>
+        <div class="kpi-value text-warning">+8%</div>
+        <div class="kpi-change kpi-change--neutral">Zona de precaución</div>
+    </div>
+    <div class="kpi-card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #10b981;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🟢</div>
+        <div class="kpi-label">Robos de Vehículos</div>
+        <div class="kpi-value text-success">-12%</div>
+        <div class="kpi-change kpi-change--neutral">Bajo control</div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="card">
+    <h2 class="section-title mb-lg">Historial de Alertas</h2>
+    <div class="chart-grid chart-grid--2">
+        <div class="chart-card">
+            <div class="chart-card-title">Distribución de Alertas por Semana</div>
+            <div class="chart-wrapper">
+                <canvas id="chartAlertas"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-card-title">Casos vs Umbral Crítico</div>
+            <div class="chart-wrapper">
+                <canvas id="chartUmbral"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartAlertas'), {
+            type: 'bar',
+            data: {
+                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'],
+                datasets: [
+                    { label: 'Críticas', data: [3, 5, 2, 4, 6, 3], backgroundColor: '#ef4444', borderRadius: 4 },
+                    { label: 'Precaución', data: [5, 3, 6, 4, 2, 5], backgroundColor: '#f59e0b', borderRadius: 4 },
+                    { label: 'Normal', data: [12, 10, 14, 11, 9, 13], backgroundColor: '#10b981', borderRadius: 4 }
+                ]
+            },
+            options: {
+                ...ChartHelper.defaultOptions,
+                scales: { x: { stacked: true }, y: { stacked: true } }
+            }
+        });
+
+        new Chart(document.getElementById('chartUmbral'), {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [
+                    { label: 'Casos Reales', data: [45, 52, 48, 55, 62, 58], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 },
+                    { label: 'Umbral Crítico', data: [50, 50, 50, 50, 50, 50], borderColor: '#ef4444', borderDash: [8, 4], fill: false }
+                ]
+            },
+            options: ChartHelper.defaultOptions
+        });
+    });
+</script>

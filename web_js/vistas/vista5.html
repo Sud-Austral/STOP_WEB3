@@ -1,0 +1,90 @@
+<!-- Vista 5: Matriz de Focos -->
+
+<!-- Concentration Matrix -->
+<div class="card mb-lg">
+    <h2 class="section-title mb-lg">Matriz de Concentración Delictual</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem;">
+        <div class="kpi-card" style="background: #fecaca; border-color: #ef4444;">
+            <div class="kpi-label">Centro</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">85</div>
+        </div>
+        <div class="kpi-card" style="background: #fecaca; border-color: #ef4444;">
+            <div class="kpi-label">Norte</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">72</div>
+        </div>
+        <div class="kpi-card" style="background: #fef3c7; border-color: #f59e0b;">
+            <div class="kpi-label">Sur</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">45</div>
+        </div>
+        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
+            <div class="kpi-label">Oriente</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">28</div>
+        </div>
+        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
+            <div class="kpi-label">Poniente</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">22</div>
+        </div>
+        <div class="kpi-card" style="background: #fef3c7; border-color: #f59e0b;">
+            <div class="kpi-label">Alameda</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">55</div>
+        </div>
+        <div class="kpi-card" style="background: #fecaca; border-color: #ef4444;">
+            <div class="kpi-label">Estación</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">68</div>
+        </div>
+        <div class="kpi-card" style="background: #fef3c7; border-color: #f59e0b;">
+            <div class="kpi-label">Comercial</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">42</div>
+        </div>
+        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
+            <div class="kpi-label">Residencial</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">18</div>
+        </div>
+        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
+            <div class="kpi-label">Parques</div>
+            <div class="kpi-value" style="font-size: 1.5rem;">12</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="chart-grid chart-grid--2">
+    <div class="chart-card">
+        <div class="chart-card-title">Concentración por Zona</div>
+        <div class="chart-wrapper">
+            <canvas id="chartZona"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <div class="chart-card-title">Evolución Focos Críticos</div>
+        <div class="chart-wrapper">
+            <canvas id="chartFocos"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartZona'), {
+            type: 'polarArea',
+            data: {
+                labels: ['Centro', 'Norte', 'Sur', 'Oriente', 'Poniente'],
+                datasets: [{ data: [85, 72, 45, 28, 22], backgroundColor: ['#ef4444', '#f97316', '#fbbf24', '#10b981', '#34d399'] }]
+            },
+            options: ChartHelper.defaultOptions
+        });
+
+        new Chart(document.getElementById('chartFocos'), {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [
+                    { label: 'Centro', data: [80, 85, 78, 82, 88, 85], borderColor: '#ef4444', tension: 0.3, fill: false },
+                    { label: 'Estación', data: [60, 65, 68, 70, 72, 68], borderColor: '#f59e0b', tension: 0.3, fill: false }
+                ]
+            },
+            options: ChartHelper.defaultOptions
+        });
+    });
+</script>

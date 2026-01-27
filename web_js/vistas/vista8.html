@@ -1,0 +1,78 @@
+<!-- Vista 8: Tendencias 2005-2025 -->
+
+<!-- Insight -->
+<div class="alert alert--info mb-lg">
+    <strong>📈 Análisis de 20 años:</strong> Se observa una tendencia general a la baja desde 2015,
+    con un repunte en 2020 asociado a factores externos. La proyección para 2026 es favorable.
+</div>
+
+<!-- Main Chart -->
+<div class="card mb-lg">
+    <h2 class="section-title mb-lg">Evolución Histórica 2005-2025</h2>
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartHistorico"></canvas>
+    </div>
+</div>
+
+<!-- Secondary Charts -->
+<div class="chart-grid chart-grid--2">
+    <div class="chart-card">
+        <div class="chart-card-title">Promedio por Década</div>
+        <div class="chart-wrapper">
+            <canvas id="chartDecada"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <div class="chart-card-title">Proyección 2026-2030</div>
+        <div class="chart-wrapper">
+            <canvas id="chartProyeccion"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartHistorico'), {
+            type: 'line',
+            data: {
+                labels: ['2005', '2007', '2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023', '2025'],
+                datasets: [{
+                    label: 'Tasa por 100k hab',
+                    data: [1200, 1350, 1400, 1250, 1180, 1050, 980, 920, 1100, 950, 870],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5
+                }]
+            },
+            options: { ...ChartHelper.defaultOptions, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('chartDecada'), {
+            type: 'bar',
+            data: {
+                labels: ['2005-2010', '2011-2015', '2016-2020', '2021-2025'],
+                datasets: [{
+                    label: 'Promedio Anual',
+                    data: [1320, 1160, 1000, 940],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6'],
+                    borderRadius: 8
+                }]
+            },
+            options: { ...ChartHelper.defaultOptions, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('chartProyeccion'), {
+            type: 'line',
+            data: {
+                labels: ['2025', '2026', '2027', '2028', '2029', '2030'],
+                datasets: [
+                    { label: 'Proyección', data: [870, 820, 780, 750, 720, 700], borderColor: '#10b981', borderDash: [5, 5], tension: 0.3 },
+                    { label: 'Histórico', data: [870, null, null, null, null, null], borderColor: '#3b82f6', pointRadius: 8 }
+                ]
+            },
+            options: ChartHelper.defaultOptions
+        });
+    });
+</script>

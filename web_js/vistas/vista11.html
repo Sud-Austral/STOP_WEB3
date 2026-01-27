@@ -1,0 +1,78 @@
+<!-- Vista 11: Proyección Anual -->
+
+<!-- Forecast KPIs -->
+<div class="kpi-grid mb-xl" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="kpi-card">
+        <div class="kpi-label">Proyección 2026</div>
+        <div class="kpi-value text-success">-8.5%</div>
+        <div class="kpi-change kpi-change--neutral">vs 2025</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Casos Estimados</div>
+        <div class="kpi-value">7,850</div>
+        <div class="kpi-change kpi-change--neutral">Total anual</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Confianza del Modelo</div>
+        <div class="kpi-value" style="color: #3b82f6;">92%</div>
+        <div class="kpi-change kpi-change--neutral">R² ajustado</div>
+    </div>
+</div>
+
+<!-- Main Chart -->
+<div class="card">
+    <h2 class="section-title mb-lg">Proyección con Intervalos de Confianza</h2>
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartProyeccion"></canvas>
+    </div>
+
+    <div class="alert alert--success" style="margin-top: 1.5rem;">
+        <strong>✅ Interpretación:</strong> El modelo ARIMA predice una reducción sostenida de casos
+        para los próximos años, con un intervalo de confianza del 95%. La tendencia es favorable.
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartProyeccion'), {
+            type: 'line',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027'],
+                datasets: [
+                    {
+                        label: 'Histórico',
+                        data: [9500, 10200, 9800, 9200, 8800, 8500, null, null],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'Proyección',
+                        data: [null, null, null, null, null, 8500, 7850, 7400],
+                        borderColor: '#10b981',
+                        borderDash: [8, 4],
+                        tension: 0.3,
+                        pointRadius: 5
+                    },
+                    {
+                        label: 'IC Superior (95%)',
+                        data: [null, null, null, null, null, 8500, 8200, 7800],
+                        borderColor: '#94a3b8',
+                        borderDash: [2, 2],
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'IC Inferior (95%)',
+                        data: [null, null, null, null, null, 8500, 7500, 7000],
+                        borderColor: '#94a3b8',
+                        borderDash: [2, 2],
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: ChartHelper.defaultOptions
+        });
+    });
+</script>

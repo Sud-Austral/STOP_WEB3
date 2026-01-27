@@ -1,0 +1,98 @@
+<!-- Vista 9: Patrones Estacionales -->
+
+<!-- Season Cards -->
+<div class="kpi-grid mb-xl" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="kpi-card">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌸</div>
+        <div class="kpi-label">Primavera</div>
+        <div class="kpi-value text-warning" style="font-size: 1.5rem;">+12%</div>
+    </div>
+    <div class="kpi-card">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">☀️</div>
+        <div class="kpi-label">Verano</div>
+        <div class="kpi-value text-danger" style="font-size: 1.5rem;">+25%</div>
+    </div>
+    <div class="kpi-card">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🍂</div>
+        <div class="kpi-label">Otoño</div>
+        <div class="kpi-value text-success" style="font-size: 1.5rem;">-5%</div>
+    </div>
+    <div class="kpi-card">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">❄️</div>
+        <div class="kpi-label">Invierno</div>
+        <div class="kpi-value text-success" style="font-size: 1.5rem;">-15%</div>
+    </div>
+</div>
+
+<!-- Main Chart -->
+<div class="card mb-lg">
+    <h2 class="section-title mb-lg">Patrón Mensual Histórico</h2>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartMensual"></canvas>
+    </div>
+</div>
+
+<!-- Secondary Charts -->
+<div class="chart-grid chart-grid--2">
+    <div class="chart-card">
+        <div class="chart-card-title">Distribución por Día de Semana</div>
+        <div class="chart-wrapper">
+            <canvas id="chartDia"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <div class="chart-card-title">Distribución por Hora del Día</div>
+        <div class="chart-wrapper">
+            <canvas id="chartHora"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartMensual'), {
+            type: 'bar',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+                datasets: [{
+                    label: 'Promedio Histórico',
+                    data: [145, 152, 135, 118, 105, 95, 88, 92, 108, 125, 138, 155],
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6
+                }]
+            },
+            options: { ...ChartHelper.defaultOptions, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('chartDia'), {
+            type: 'radar',
+            data: {
+                labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+                datasets: [{
+                    label: 'Casos',
+                    data: [85, 78, 82, 90, 125, 145, 110],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.2)',
+                    pointBackgroundColor: '#3b82f6'
+                }]
+            },
+            options: ChartHelper.defaultOptions
+        });
+
+        new Chart(document.getElementById('chartHora'), {
+            type: 'line',
+            data: {
+                labels: ['00h', '02h', '04h', '06h', '08h', '10h', '12h', '14h', '16h', '18h', '20h', '22h'],
+                datasets: [{
+                    label: 'Casos',
+                    data: [45, 25, 15, 20, 35, 55, 65, 60, 70, 85, 95, 75],
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { ...ChartHelper.defaultOptions, plugins: { legend: { display: false } } }
+        });
+    });
+</script>

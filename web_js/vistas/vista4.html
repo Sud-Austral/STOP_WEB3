@@ -1,0 +1,100 @@
+<!-- Vista 4: Evolución Multisemanal -->
+
+<!-- KPI Stats -->
+<div class="kpi-grid mb-lg">
+    <div class="kpi-card">
+        <div class="kpi-label">Promedio 4 Semanas</div>
+        <div class="kpi-value">142</div>
+        <div class="kpi-change kpi-change--neutral">casos/semana</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Tendencia</div>
+        <div class="kpi-value text-danger">↑ 5.2%</div>
+        <div class="kpi-change kpi-change--negative">En aumento</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Máximo Registrado</div>
+        <div class="kpi-value">168</div>
+        <div class="kpi-change kpi-change--neutral">Semana 12</div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-label">Mínimo Registrado</div>
+        <div class="kpi-value">118</div>
+        <div class="kpi-change kpi-change--neutral">Semana 3</div>
+    </div>
+</div>
+
+<!-- Main Chart -->
+<div class="card mb-lg">
+    <h2 class="section-title mb-lg">Evolución de las últimas 12 semanas</h2>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartEvolucion"></canvas>
+    </div>
+</div>
+
+<!-- Secondary Charts -->
+<div class="chart-grid chart-grid--2">
+    <div class="chart-card">
+        <div class="chart-card-title">Tendencia por Tipo de Delito</div>
+        <div class="chart-wrapper">
+            <canvas id="chartTipo"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <div class="chart-card-title">Variación Semanal (%)</div>
+        <div class="chart-wrapper">
+            <canvas id="chartVariacion"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        const opts = ChartHelper.defaultOptions;
+
+        new Chart(document.getElementById('chartEvolucion'), {
+            type: 'line',
+            data: {
+                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12'],
+                datasets: [{
+                    label: 'Total Casos',
+                    data: [120, 135, 118, 142, 138, 155, 148, 162, 158, 145, 152, 168],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#3b82f6'
+                }]
+            },
+            options: { ...opts, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('chartTipo'), {
+            type: 'line',
+            data: {
+                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+                datasets: [
+                    { label: 'Robos', data: [35, 42, 38, 45, 40, 48], borderColor: '#ef4444', tension: 0.3 },
+                    { label: 'Hurtos', data: [45, 40, 48, 42, 50, 45], borderColor: '#f59e0b', tension: 0.3 },
+                    { label: 'Otros', data: [40, 35, 42, 38, 45, 40], borderColor: '#10b981', tension: 0.3 }
+                ]
+            },
+            options: opts
+        });
+
+        new Chart(document.getElementById('chartVariacion'), {
+            type: 'bar',
+            data: {
+                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+                datasets: [{
+                    label: 'Variación %',
+                    data: [5, -3, 8, -2, 12, -5],
+                    backgroundColor: [5, -3, 8, -2, 12, -5].map(v => v >= 0 ? '#ef4444' : '#10b981'),
+                    borderRadius: 6
+                }]
+            },
+            options: { ...opts, plugins: { legend: { display: false } } }
+        });
+    });
+</script>

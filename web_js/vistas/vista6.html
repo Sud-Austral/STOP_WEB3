@@ -1,0 +1,73 @@
+<!-- Vista 6: Perfil de Gravedad -->
+
+<!-- Gravity Scale -->
+<div class="card mb-lg">
+    <h2 class="section-title mb-lg">Escala de Gravedad Delictual</h2>
+
+    <div style="display: flex; gap: 0.75rem;">
+        <div class="kpi-card" style="flex: 1; background: #dcfce7;">
+            <div class="kpi-label">Nivel 1 - Leve</div>
+            <div class="kpi-value" style="font-size: 1.75rem;">245</div>
+        </div>
+        <div class="kpi-card" style="flex: 1; background: #fef9c3;">
+            <div class="kpi-label">Nivel 2 - Menor</div>
+            <div class="kpi-value" style="font-size: 1.75rem;">180</div>
+        </div>
+        <div class="kpi-card" style="flex: 1; background: #fed7aa;">
+            <div class="kpi-label">Nivel 3 - Moderado</div>
+            <div class="kpi-value" style="font-size: 1.75rem;">95</div>
+        </div>
+        <div class="kpi-card" style="flex: 1; background: #fecaca;">
+            <div class="kpi-label">Nivel 4 - Grave</div>
+            <div class="kpi-value" style="font-size: 1.75rem;">42</div>
+        </div>
+        <div class="kpi-card" style="flex: 1; background: #fca5a5;">
+            <div class="kpi-label">Nivel 5 - Crítico</div>
+            <div class="kpi-value" style="font-size: 1.75rem;">18</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="chart-grid chart-grid--2">
+    <div class="chart-card">
+        <div class="chart-card-title">Distribución por Gravedad</div>
+        <div class="chart-wrapper chart-wrapper--lg">
+            <canvas id="chartGravedad"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <div class="chart-card-title">Evolución Casos Graves y Críticos</div>
+        <div class="chart-wrapper chart-wrapper--lg">
+            <canvas id="chartGraves"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartGravedad'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Leve', 'Menor', 'Moderado', 'Grave', 'Crítico'],
+                datasets: [{
+                    data: [245, 180, 95, 42, 18],
+                    backgroundColor: ['#10b981', '#fbbf24', '#f97316', '#ef4444', '#dc2626']
+                }]
+            },
+            options: { ...ChartHelper.defaultOptions, cutout: '55%' }
+        });
+
+        new Chart(document.getElementById('chartGraves'), {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [
+                    { label: 'Graves (N4)', data: [38, 42, 35, 45, 40, 42], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 },
+                    { label: 'Críticos (N5)', data: [15, 18, 12, 20, 16, 18], borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,0.1)', fill: true, tension: 0.3 }
+                ]
+            },
+            options: ChartHelper.defaultOptions
+        });
+    });
+</script>

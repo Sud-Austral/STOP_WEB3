@@ -1,0 +1,85 @@
+<!-- Vista 7: Benchmark Regional -->
+
+<!-- Ranking Table -->
+<div class="card mb-lg">
+    <h2 class="section-title mb-lg">Ranking Comunal - Región Metropolitana</h2>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 60px;">#</th>
+                <th>Comuna</th>
+                <th>Casos / 10k hab</th>
+                <th>Variación</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1</strong></td>
+                <td>Vitacura</td>
+                <td>12.5</td>
+                <td class="text-success">-8%</td>
+                <td><span class="badge badge--success">Mejor</span></td>
+            </tr>
+            <tr>
+                <td><strong>2</strong></td>
+                <td>Las Condes</td>
+                <td>18.2</td>
+                <td class="text-success">-5%</td>
+                <td><span class="badge badge--success">Mejor</span></td>
+            </tr>
+            <tr>
+                <td><strong>3</strong></td>
+                <td>Providencia</td>
+                <td>22.4</td>
+                <td class="text-danger">+2%</td>
+                <td><span class="badge badge--warning">Estable</span></td>
+            </tr>
+            <tr style="background: #eff6ff;">
+                <td><strong>4</strong></td>
+                <td><strong>Santiago</strong></td>
+                <td><strong>45.8</strong></td>
+                <td class="text-danger"><strong>+8%</strong></td>
+                <td><span class="badge badge--danger">Peor</span></td>
+            </tr>
+            <tr>
+                <td><strong>5</strong></td>
+                <td>La Florida</td>
+                <td>52.3</td>
+                <td class="text-danger">+12%</td>
+                <td><span class="badge badge--danger">Peor</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Chart -->
+<div class="chart-card">
+    <div class="chart-card-title">Comparativa Regional - Casos por 10.000 habitantes</div>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartBenchmark"></canvas>
+    </div>
+</div>
+
+<script>
+    ChartHelper.init(() => {
+        new Chart(document.getElementById('chartBenchmark'), {
+            type: 'bar',
+            data: {
+                labels: ['Vitacura', 'Las Condes', 'Providencia', 'Ñuñoa', 'Santiago', 'La Florida', 'Maipú', 'Puente Alto'],
+                datasets: [{
+                    label: 'Casos por 10k habitantes',
+                    data: [12.5, 18.2, 22.4, 28.5, 45.8, 52.3, 48.6, 55.2],
+                    backgroundColor: ['#10b981', '#10b981', '#fbbf24', '#fbbf24', '#ef4444', '#ef4444', '#ef4444', '#ef4444'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                ...ChartHelper.defaultOptions,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } }
+            }
+        });
+    });
+</script>
