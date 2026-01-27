@@ -11,7 +11,7 @@ const App = {
         pdfScale: 2,
         views: [
             'vista1', 'vista2', 'vista3', 'vista4', 'vista5',
-            'vista6', 'vista7', 'vista8', 'vista9'
+            'vista6', 'vista7', 'vista8', 'vista9', 'vista14'
         ]
     },
 
@@ -194,6 +194,9 @@ const App = {
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Exportando...';
         btn.disabled = true;
 
+        // Show professional overlay
+        this.showExportOverlay();
+
         try {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
@@ -202,9 +205,11 @@ const App = {
 
             for (let i = 0; i < this.config.views.length; i++) {
                 const viewName = this.config.views[i];
+                const progressText = `Procesando vista ${i + 1} de ${this.config.views.length}...`;
 
-                // Update progress
+                // Update button and overlay
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${this.config.views.length}`;
+                this.updateExportOverlay(progressText);
 
                 // Destroy previous charts to prevent conflicts
                 this.destroyAllCharts();
@@ -212,8 +217,8 @@ const App = {
                 // Load view
                 await this.loadView(viewName);
 
-                // Wait for charts to render (6 seconds)
-                await this.delay(6000);
+                // Wait for charts to render (8 seconds)
+                await this.delay(8000);
 
                 // Capture
                 const canvas = await html2canvas(container, {
@@ -253,10 +258,77 @@ const App = {
             alert('Error al exportar PDF. Por favor intente nuevamente.');
         } finally {
             // Restore state
+            this.hideExportOverlay();
             btn.innerHTML = originalBtnText;
             btn.disabled = false;
             this.state.isExporting = false;
             this.loadView(originalView);
+        }
+    },
+
+    /**
+     * Show Export Overlay
+     */
+    showExportOverlay() {
+        const overlay = document.createElement('div');
+        overlay.id = 'exportOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+
+        overlay.innerHTML = `
+            <div style="background: white; padding: 2.5rem; border-radius: 16px; max-width: 500px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+                <div style="width: 64px; height: 64px; background: #e0e7ff; color: #4f46e5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 24px;">
+                    <i class="fa-solid fa-file-pdf fa-beat-fade"></i>
+                </div>
+                <h3 style="margin: 0 0 0.5rem; color: #1e293b; font-size: 1.25rem; font-weight: 700;">Generando Reporte Oficial</h3>
+                <p id="exportStatus" style="margin: 0 0 1.5rem; color: #64748b; font-size: 0.95rem;">Preparando documentos...</p>
+                
+                <div style="padding: 1rem; background: #fff7ed; border: 1px solid #ffedd5; border-radius: 8px; text-align: left; display: flex; gap: 0.75rem;">
+                    <i class="fa-solid fa-lightbulb" style="color: #f59e0b; margin-top: 3px;"></i>
+                    <div>
+                        <strong style="display: block; color: #9a3412; font-size: 0.9rem; margin-bottom: 2px;">Importante</strong>
+                        <span style="color: #c2410c; font-size: 0.85rem; line-height: 1.4;">Por favor, mantenga esta pestaña activa y <strong>no cambie de ventana</strong>. Esto asegura que los gráficos se capturen con la máxima calidad.</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        // Trigger reflow for transition
+        overlay.offsetHeight;
+        overlay.style.opacity = '1';
+    },
+
+    /**
+     * Update Export Status
+     * @param {string} text 
+     */
+    updateExportOverlay(text) {
+        const el = document.getElementById('exportStatus');
+        if (el) el.textContent = text;
+    },
+
+    /**
+     * Hide Export Overlay
+     */
+    hideExportOverlay() {
+        const overlay = document.getElementById('exportOverlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 300);
         }
     },
 

@@ -208,7 +208,8 @@ Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser
   "vista10": "Interpretación sobre pronóstico hacia fin de año",
   "vista11": "Interpretación sobre simulador de impacto",
   "vista12": "Interpretación sobre predicción del próximo peak delictual",
-  "vista13": "Notas metodológicas y fuentes de datos"
+  "vista13": "Notas metodológicas y fuentes de datos",
+  "vista14": "Interpretación sobre la proyección futura (regresión lineal) y tendencia"
 }
 
 Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
@@ -293,8 +294,9 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
             vista9: "Analizando correlaciones entre tipos de delitos...",
             vista10: "Generando pronóstico hacia fin de año...",
             vista11: "Simulador de impacto disponible...",
-            vista12: "Prediciendo próximo peak delictual...",
-            vista13: "Metodología basada en datos del CEAD, Fiscalía y Carabineros."
+            vista12: "Prediciendo el próximo peak delictual...",
+            vista13: "Revisando fuentes y notas metodológicas...",
+            vista14: "Calculando proyección y regresión lineal delictual..."
         };
     },
 
