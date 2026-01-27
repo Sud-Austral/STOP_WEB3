@@ -149,19 +149,25 @@
         const alertEl = document.getElementById('alertIA4');
         if (altos > moderados) {
             alertEl.className = 'alert alert--danger';
-            document.getElementById('alertText4').innerHTML =
-                `Se detectan <strong>${altos} delitos de alto impacto</strong>. El más peligroso es "<strong>${topRisk[COLS.DELITO]}</strong>" ` +
-                `con ${topRisk[COLS.CASOS_ACTUAL]} casos y una frecuencia anormal. Representa un riesgo reputacional alto para la comuna y debe ser foco prioritario de la semana.`;
         } else if (altos > 0) {
             alertEl.className = 'alert alert--warning';
-            document.getElementById('alertText4').innerHTML =
-                `Hay <strong>${altos} delitos en zona de alerta</strong> y ${moderados} en zona moderada. ` +
-                `El delito "${topRisk[COLS.DELITO]}" requiere atención prioritaria con Z-Score de ${(topRisk[COLS.Z_SCORE] || 0).toFixed(2)}.`;
         } else {
             alertEl.className = 'alert alert--success';
-            document.getElementById('alertText4').innerHTML =
-                `La comuna presenta un perfil de <strong>bajo riesgo</strong> esta semana. ` +
-                `${bajos} delitos están bajo control y ${moderados} en zona moderada. Mantener vigilancia preventiva.`;
+        }
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista4').then(interpretation => {
+                document.getElementById('alertText4').innerHTML = interpretation;
+            });
+        } else {
+            if (altos > moderados) {
+                document.getElementById('alertText4').innerHTML =
+                    `Se detectan <strong>${altos} delitos de alto impacto</strong>. El más peligroso es "${topRisk[COLS.DELITO]}".`;
+            } else {
+                document.getElementById('alertText4').innerHTML =
+                    `La comuna presenta un perfil de <strong>riesgo moderado</strong> esta semana.`;
+            }
         }
 
         // Create bubble chart

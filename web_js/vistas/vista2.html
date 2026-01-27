@@ -195,9 +195,17 @@
         // Update alert
         const alertEl = document.getElementById('alertIA2');
         alertEl.className = `alert ${alertClass}`;
-        document.getElementById('alertText2').innerHTML =
-            `Nos encontramos a nivel de <strong>${status}</strong> debido a que la semana actual aparece a límite de 1.5 desviaciones estándar en delitos en cifras. ` +
-            `Toma una o dos acciones, pero requiere atención inmediata en patrullaje, operativos y vigilancia.`;
+
+        // Try AI interpretation, fallback to calculated text
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista2').then(interpretation => {
+                document.getElementById('alertText2').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText2').innerHTML =
+                `Nos encontramos a nivel de <strong>${status}</strong> debido a que la semana actual aparece a límite de 1.5 desviaciones estándar en delitos en cifras. ` +
+                `Toma una o dos acciones, pero requiere atención inmediata en patrullaje, operativos y vigilancia.`;
+        }
 
         // Create comparison chart
         new Chart(document.getElementById('chartComparativa'), {

@@ -202,8 +202,15 @@
         const list = document.getElementById('interpretationList');
         list.innerHTML = interpretations.map(t => `<li>${t}</li>`).join('');
 
-        document.getElementById('alertText9').innerHTML =
-            `Según la correlación histórica, el alto consumo de alcohol en vía publica tiene un efecto colateral directo en la ocurrencia de violencia intrafamiliar (Correlación 0.8). ` +
-            `Esto implica que controlar eventos y reuniones nocturnas impacta directamente en seguridad doméstica.`;
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista9').then(interpretation => {
+                document.getElementById('alertText9').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText9').innerHTML =
+                `Según la correlación histórica, existen relaciones significativas entre tipos de delitos. ` +
+                `Controlar ciertos factores puede impactar directamente en seguridad general.`;
+        }
     })();
 </script>

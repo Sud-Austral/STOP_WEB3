@@ -86,9 +86,16 @@
         const totalAnterior = anterior.reduce((a, b) => a + b, 0);
         const change = ((totalActual - totalAnterior) / totalAnterior * 100).toFixed(1);
 
-        document.getElementById('alertText5').innerHTML =
-            `Aunque los delitos de propiedad disminuyeron, han aumentado los delitos asociados a <strong>VIOLENCIA</strong> han aumentado un <strong>${Math.abs(change)}%</strong>. ` +
-            `Esto podría indicar percepción de inseguridad para la comunidad más alta en el sector.`;
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista5').then(interpretation => {
+                document.getElementById('alertText5').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText5').innerHTML =
+                `Los delitos asociados a <strong>VIOLENCIA</strong> han variado un <strong>${Math.abs(change)}%</strong>. ` +
+                `Esto podría indicar percepción de inseguridad para la comunidad.`;
+        }
 
         new Chart(document.getElementById('chartPerfil'), {
             type: 'bar',

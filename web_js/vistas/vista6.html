@@ -91,9 +91,17 @@
         const tasas = rankingData.map(r => (r[COLS.CASOS_ACTUAL] || 0) * 2.5); // Simulated rate
 
         const comunaName = STATE_DATA.comunaName || 'La comuna';
-        document.getElementById('alertText6').innerHTML =
-            `<strong>${comunaName}</strong> se mantiene por debajo del promedio regional (positivo), pero la brecha se ha acortado en un 10% reciente. ` +
-            `Estamos con tendencia hacia la media regional negativa; lo que implica perder ventaja comparativa en seguridad.`;
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista6').then(interpretation => {
+                document.getElementById('alertText6').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText6').innerHTML =
+                `<strong>${comunaName}</strong> se mantiene en línea con el promedio regional. ` +
+                `Monitorear evolución comparativa para detectar cambios en posición relativa.`;
+        }
 
         new Chart(document.getElementById('chartRegional'), {
             type: 'bar',

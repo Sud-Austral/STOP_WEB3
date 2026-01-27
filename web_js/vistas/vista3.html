@@ -141,14 +141,23 @@
         const alertEl = document.getElementById('alertIA3');
         if (slope > 0) {
             alertEl.className = 'alert alert--warning';
-            document.getElementById('alertText3').innerHTML =
-                `La media móvil muestra una tendencia <strong>${trendDirection}</strong> en las últimas 4 semanas. ` +
-                `Aunque hay irregularidades puntuales cada semana, la tendencia subyacente indica que debemos principalmente lo combinaría con más vigilancia.`;
         } else {
             alertEl.className = 'alert alert--success';
-            document.getElementById('alertText3').innerHTML =
-                `La tendencia general es <strong>${trendDirection}</strong>. Los casos están ${slope < 0 ? 'disminuyendo' : 'manteniéndose estables'} ` +
-                `con una variación del ${weekChange}% respecto a la semana anterior.`;
+        }
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista3').then(interpretation => {
+                document.getElementById('alertText3').innerHTML = interpretation;
+            });
+        } else {
+            if (slope > 0) {
+                document.getElementById('alertText3').innerHTML =
+                    `La media móvil muestra una tendencia <strong>${trendDirection}</strong> en las últimas 4 semanas.`;
+            } else {
+                document.getElementById('alertText3').innerHTML =
+                    `La tendencia general es <strong>${trendDirection}</strong>. Los casos están ${slope < 0 ? 'disminuyendo' : 'manteniéndose estables'}.`;
+            }
         }
 
         // Create chart

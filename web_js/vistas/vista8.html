@@ -110,9 +110,16 @@
             return data.length ? data.reduce((a, b) => a + b, 0) / data.length : 0;
         });
 
-        document.getElementById('alertText8').innerHTML =
-            `Estamos entrando en la zona de mayor concentración. Históricamente, desde septiembre a diciembre la zona sube un 22% sobre el acumulado anual. ` +
-            `Se sugiere preparar recursos para la preocupación.`;
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista8').then(interpretation => {
+                document.getElementById('alertText8').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText8').innerHTML =
+                `Estamos entrando en la zona de mayor concentración estacional. ` +
+                `Se sugiere preparar recursos adicionales para este período.`;
+        }
 
         new Chart(document.getElementById('chartEstacional'), {
             type: 'line',

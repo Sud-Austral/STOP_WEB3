@@ -101,9 +101,17 @@
         const trendLine = yearlyTotals.map((_, i) => slope * i + intercept);
 
         const trend = slope > 0 ? 'creciente' : 'decreciente';
-        document.getElementById('alertText7').innerHTML =
-            `Históricamente, la comuna se mantiene en una media estable del año 2017. Los picos de 2019-2022 fue un evento atípico (Estallido Social/Pandemia). ` +
-            `Se espera que finalmente a fines de década se estabilice cerca de las medias históricas.`;
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista7').then(interpretation => {
+                document.getElementById('alertText7').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText7').innerHTML =
+                `Históricamente, la comuna muestra una tendencia <strong>${trend}</strong> a largo plazo. ` +
+                `Se espera estabilización cerca de las medias históricas.`;
+        }
 
         new Chart(document.getElementById('chartHistorico'), {
             type: 'line',
