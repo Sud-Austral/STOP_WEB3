@@ -123,11 +123,11 @@ const PDFModule = {
         pdf.setFontSize(8);
         pdf.setTextColor(100, 116, 139);
         pdf.text('Documento generado automáticamente por STOP WEB', centerX, 260, { align: 'center' });
-        pdf.text('Centro de Análisis del Delito • Inteligencia Policial', centerX, 268, { align: 'center' });
+        pdf.text('Centro de Análisis del Delito • Inteligencia', centerX, 268, { align: 'center' });
 
         // Version
         pdf.setFontSize(7);
-        pdf.text('v1.0.0 | Powered by AI', centerX, 285, { align: 'center' });
+        pdf.text('v1.0.0 | Powered', centerX, 285, { align: 'center' });
     },
 
     /**
