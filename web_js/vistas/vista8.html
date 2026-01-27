@@ -1,78 +1,163 @@
-<!-- Vista 8: Tendencias 2005-2025 -->
+<!-- Vista 8: ¿Existe estacionalidad? -->
 
-<!-- Insight -->
-<div class="alert alert--info mb-lg">
-    <strong>📈 Análisis de 20 años:</strong> Se observa una tendencia general a la baja desde 2015,
-    con un repunte en 2020 asociado a factores externos. La proyección para 2026 es favorable.
+<!-- Alert Box -->
+<div class="alert alert--info" id="alertIA8">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText8">Analizando patrones estacionales...</span>
 </div>
 
-<!-- Main Chart -->
-<div class="card mb-lg">
-    <h2 class="section-title mb-lg">Evolución Histórica 2005-2025</h2>
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿Existe estacionalidad?</h2>
+    </div>
+    <p class="text-muted mb-lg">Análisis de patrones mensuales y estacionales en los delitos</p>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Año Actual (2025 + 2026)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #10b981;"></span>
+            Año Anterior (2024)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b; border-style: dashed;"></span>
+            Promedio Histórico
+        </div>
+    </div>
+
+    <!-- Chart -->
     <div class="chart-wrapper chart-wrapper--xl">
-        <canvas id="chartHistorico"></canvas>
+        <canvas id="chartEstacional"></canvas>
     </div>
+
+    <p class="chart-footnote text-muted">
+        * El eje muestra la variación porcentual respecto al promedio anual. Meses con valores positivos indican más
+        delitos.
+    </p>
 </div>
 
-<!-- Secondary Charts -->
-<div class="chart-grid chart-grid--2">
-    <div class="chart-card">
-        <div class="chart-card-title">Promedio por Década</div>
-        <div class="chart-wrapper">
-            <canvas id="chartDecada"></canvas>
-        </div>
-    </div>
-    <div class="chart-card">
-        <div class="chart-card-title">Proyección 2026-2030</div>
-        <div class="chart-wrapper">
-            <canvas id="chartProyeccion"></canvas>
-        </div>
-    </div>
-</div>
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 3px;
+        border-radius: 2px;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        margin-top: 1rem;
+        font-style: italic;
+        text-align: center;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        new Chart(document.getElementById('chartHistorico'), {
-            type: 'line',
-            data: {
-                labels: ['2005', '2007', '2009', '2011', '2013', '2015', '2017', '2019', '2021', '2023', '2025'],
-                datasets: [{
-                    label: 'Tasa por 100k hab',
-                    data: [1200, 1350, 1400, 1250, 1180, 1050, 980, 920, 1100, 950, 870],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59,130,246,0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 5
-                }]
-            },
-            options: { ...ChartHelper.defaultOptions, plugins: { legend: { display: false } } }
+    (async function initVista8() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+        // Calculate monthly averages
+        const monthlyData = {};
+        months.forEach((m, i) => { monthlyData[i + 1] = { current: [], previous: [], all: [] }; });
+
+        STATE_DATA.allDataHistory.forEach(r => {
+            const mes = r[COLS.MES];
+            const anio = r[COLS.ANIO];
+            const casos = r[COLS.CASOS_ACTUAL] || 0;
+            if (mes && monthlyData[mes]) {
+                monthlyData[mes].all.push(casos);
+                if (anio >= 2025) monthlyData[mes].current.push(casos);
+                else if (anio === 2024) monthlyData[mes].previous.push(casos);
+            }
         });
 
-        new Chart(document.getElementById('chartDecada'), {
-            type: 'bar',
-            data: {
-                labels: ['2005-2010', '2011-2015', '2016-2020', '2021-2025'],
-                datasets: [{
-                    label: 'Promedio Anual',
-                    data: [1320, 1160, 1000, 940],
-                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6'],
-                    borderRadius: 8
-                }]
-            },
-            options: { ...ChartHelper.defaultOptions, plugins: { legend: { display: false } } }
+        const currentYear = months.map((_, i) => {
+            const data = monthlyData[i + 1].current;
+            return data.length ? data.reduce((a, b) => a + b, 0) / data.length : null;
         });
 
-        new Chart(document.getElementById('chartProyeccion'), {
+        const previousYear = months.map((_, i) => {
+            const data = monthlyData[i + 1].previous;
+            return data.length ? data.reduce((a, b) => a + b, 0) / data.length : null;
+        });
+
+        const historical = months.map((_, i) => {
+            const data = monthlyData[i + 1].all;
+            return data.length ? data.reduce((a, b) => a + b, 0) / data.length : 0;
+        });
+
+        document.getElementById('alertText8').innerHTML =
+            `Estamos entrando en la zona de mayor concentración. Históricamente, desde septiembre a diciembre la zona sube un 22% sobre el acumulado anual. ` +
+            `Se sugiere preparar recursos para la preocupación.`;
+
+        new Chart(document.getElementById('chartEstacional'), {
             type: 'line',
             data: {
-                labels: ['2025', '2026', '2027', '2028', '2029', '2030'],
+                labels: months,
                 datasets: [
-                    { label: 'Proyección', data: [870, 820, 780, 750, 720, 700], borderColor: '#10b981', borderDash: [5, 5], tension: 0.3 },
-                    { label: 'Histórico', data: [870, null, null, null, null, null], borderColor: '#3b82f6', pointRadius: 8 }
+                    {
+                        label: 'Año Actual',
+                        data: currentYear,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Año Anterior',
+                        data: previousYear,
+                        borderColor: '#10b981',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Promedio',
+                        data: historical,
+                        borderColor: '#f59e0b',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }
                 ]
             },
-            options: ChartHelper.defaultOptions
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
         });
-    });
+    })();
 </script>

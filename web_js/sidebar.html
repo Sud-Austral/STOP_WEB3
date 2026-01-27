@@ -2,10 +2,10 @@
 
 <div class="sidebar-header">
     <div class="sidebar-logo">
-        <i class="fa-solid fa-shield-halved" style="margin-right: 8px;"></i>
-        RID SIMULATOR
+        <i class="fa-solid fa-microchip"></i>
+        STOP WEB
     </div>
-    <div class="sidebar-subtitle">Comuna: Santiago Centro</div>
+    <div class="sidebar-subtitle" id="sidebarComuna">Cargando comuna...</div>
 </div>
 
 <nav class="sidebar-nav">
@@ -16,62 +16,79 @@
             <i class="fa-solid fa-file-lines"></i>
             Ficha Comunal
         </a>
-        <a class="nav-link" data-view="vista2">
-            <i class="fa-solid fa-chart-area"></i>
-            Visualización Gráfica
-        </a>
     </div>
 
     <!-- Análisis Táctico -->
     <div class="nav-section">
         <div class="nav-section-title">2. Análisis Táctico</div>
+        <a class="nav-link" data-view="vista2">
+            <i class="fa-solid fa-chart-pie"></i>
+            Gráficos y Vistas
+        </a>
         <a class="nav-link" data-view="vista3">
-            <i class="fa-solid fa-traffic-light"></i>
-            Semáforo y Alertas
-        </a>
-        <a class="nav-link" data-view="vista4">
-            <i class="fa-solid fa-calendar-week"></i>
-            Evolución Multisemanal
-        </a>
-        <a class="nav-link" data-view="vista5">
-            <i class="fa-solid fa-crosshairs"></i>
-            Matriz de Focos
+            <i class="fa-solid fa-bullseye"></i>
+            Metas de Focos
         </a>
     </div>
 
     <!-- Análisis Estratégico -->
     <div class="nav-section">
         <div class="nav-section-title">3. Análisis Estratégico</div>
-        <a class="nav-link" data-view="vista6">
-            <i class="fa-solid fa-gauge-high"></i>
-            Perfil de Gravedad
+        <a class="nav-link" data-view="vista4">
+            <i class="fa-solid fa-calendar-week"></i>
+            Evolución Multisemanal
         </a>
-        <a class="nav-link" data-view="vista7">
+        <a class="nav-link" data-view="vista5">
+            <i class="fa-solid fa-chart-column"></i>
+            Perfil Delictual
+        </a>
+        <a class="nav-link" data-view="vista6">
             <i class="fa-solid fa-ranking-star"></i>
             Benchmark Regional
         </a>
+        <a class="nav-link" data-view="vista7">
+            <i class="fa-solid fa-building"></i>
+            Vista Detalles Sección
+        </a>
+    </div>
+
+    <!-- Proyecciones -->
+    <div class="nav-section">
+        <div class="nav-section-title">4. Proyecciones</div>
         <a class="nav-link" data-view="vista8">
             <i class="fa-solid fa-chart-line"></i>
-            Tendencias 2005-2025
+            Tendencias Plurianuales
         </a>
         <a class="nav-link" data-view="vista9">
-            <i class="fa-solid fa-wave-square"></i>
-            Patrones Estacionales
+            <i class="fa-solid fa-bolt"></i>
+            Pronósticos (Corto Plazo)
         </a>
         <a class="nav-link" data-view="vista10">
-            <i class="fa-solid fa-diagram-project"></i>
-            Correlaciones
-        </a>
-        <a class="nav-link" data-view="vista11">
             <i class="fa-solid fa-arrows-to-dot"></i>
-            Proyección Anual
+            Estacionalidad Esperada
+        </a>
+    </div>
+
+    <!-- Análisis Avanzado -->
+    <div class="nav-section">
+        <div class="nav-section-title">5. Análisis Avanzado</div>
+        <a class="nav-link" data-view="vista11">
+            <i class="fa-solid fa-diagram-project"></i>
+            Correlación de Riesgos
+        </a>
+    </div>
+
+    <!-- Utilidades -->
+    <div class="nav-section">
+        <div class="nav-section-title">Utilidades</div>
+        <a class="nav-link" data-view="printer">
+            <i class="fa-solid fa-print"></i>
+            Región Prpt
         </a>
     </div>
 </nav>
 
 <!-- Footer -->
-<div style="padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
-    <p style="font-size: 0.7rem; color: #64748b; text-align: center;">
-        v2.0 · Powered by AI
-    </p>
+<div class="sidebar-footer">
+    <p>v2.0 · <span id="sidebarVersion">11 vistas disponibles</span></p>
 </div>

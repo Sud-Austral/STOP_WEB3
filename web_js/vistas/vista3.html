@@ -1,74 +1,223 @@
-<!-- Vista 3: Semáforo y Alertas -->
+<!-- Vista 3: ¿Es un hecho delictivo o una tendencia sostenida? -->
 
-<!-- Alert Cards -->
-<div class="kpi-grid mb-xl" style="grid-template-columns: repeat(3, 1fr);">
-    <div class="kpi-card" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #ef4444;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔴</div>
-        <div class="kpi-label">Robos con Violencia</div>
-        <div class="kpi-value text-danger">+23%</div>
-        <div class="kpi-change kpi-change--neutral">Sobre umbral crítico</div>
-    </div>
-    <div class="kpi-card" style="background: linear-gradient(135deg, #fefce8, #fef9c3); border: 2px solid #f59e0b;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🟡</div>
-        <div class="kpi-label">Hurtos</div>
-        <div class="kpi-value text-warning">+8%</div>
-        <div class="kpi-change kpi-change--neutral">Zona de precaución</div>
-    </div>
-    <div class="kpi-card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #10b981;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🟢</div>
-        <div class="kpi-label">Robos de Vehículos</div>
-        <div class="kpi-value text-success">-12%</div>
-        <div class="kpi-change kpi-change--neutral">Bajo control</div>
-    </div>
+<!-- Alert Box -->
+<div class="alert alert--info" id="alertIA3">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText3">Analizando tendencias históricas...</span>
 </div>
 
-<!-- Charts -->
-<div class="card">
-    <h2 class="section-title mb-lg">Historial de Alertas</h2>
-    <div class="chart-grid chart-grid--2">
-        <div class="chart-card">
-            <div class="chart-card-title">Distribución de Alertas por Semana</div>
-            <div class="chart-wrapper">
-                <canvas id="chartAlertas"></canvas>
-            </div>
+<!-- Section -->
+<div class="card mb-lg">
+    <div class="section-header">
+        <h2 class="section-title">¿Es un hecho delictivo o una tendencia sostenida?</h2>
+    </div>
+    <p class="text-muted mb-lg">Muestra el histórico de delitos para detectar patrones de actividad</p>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Frecuencia Real
         </div>
-        <div class="chart-card">
-            <div class="chart-card-title">Casos vs Umbral Crítico</div>
-            <div class="chart-wrapper">
-                <canvas id="chartUmbral"></canvas>
-            </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b;"></span>
+            Promedio Móvil 4S
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #10b981; border-style: dashed;"></span>
+            Tendencia Lineal
         </div>
     </div>
+
+    <!-- Main Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartTendencia"></canvas>
+    </div>
+
+    <p class="chart-footnote text-muted">
+        * Cada punto representa el total de delitos de una semana. La tendencia se calcula con regresión lineal de las
+        últimas 12 semanas.
+    </p>
 </div>
+
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 3px;
+        border-radius: 2px;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        margin-top: 1rem;
+        font-style: italic;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        new Chart(document.getElementById('chartAlertas'), {
-            type: 'bar',
+    (async function initVista3() {
+        // Wait for data
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+
+        // Wait for Chart.js
+        const waitForChart = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof Chart !== 'undefined') resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForChart();
+
+        // Get unique weeks and sort
+        const uniqueSemanas = [...new Set(STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]))]
+            .sort((a, b) => a - b)
+            .slice(-12); // Last 12 weeks
+
+        // Calculate totals per week
+        const weeklyData = uniqueSemanas.map(semana => {
+            const weekRows = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === semana);
+            const total = weekRows.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+            const promedioMovil = weekRows.reduce((sum, row) => sum + (row[COLS.MEDIA_MOVIL_4S] || 0), 0);
+            return { semana, total, promedioMovil };
+        });
+
+        const labels = weeklyData.map(d => `Sem ${d.semana % 100}`);
+        const frecuenciaReal = weeklyData.map(d => d.total);
+        const promedioMovil = weeklyData.map(d => Math.round(d.promedioMovil));
+
+        // Calculate linear trend line
+        const n = frecuenciaReal.length;
+        const xMean = (n - 1) / 2;
+        const yMean = frecuenciaReal.reduce((a, b) => a + b, 0) / n;
+
+        let numerator = 0;
+        let denominator = 0;
+        for (let i = 0; i < n; i++) {
+            numerator += (i - xMean) * (frecuenciaReal[i] - yMean);
+            denominator += (i - xMean) ** 2;
+        }
+        const slope = numerator / denominator;
+        const intercept = yMean - slope * xMean;
+        const tendenciaLineal = frecuenciaReal.map((_, i) => Math.round(slope * i + intercept));
+
+        // Determine trend direction
+        const trendDirection = slope > 0 ? 'creciente' : slope < 0 ? 'decreciente' : 'estable';
+        const lastWeekValue = frecuenciaReal[frecuenciaReal.length - 1];
+        const prevWeekValue = frecuenciaReal[frecuenciaReal.length - 2] || lastWeekValue;
+        const weekChange = ((lastWeekValue - prevWeekValue) / prevWeekValue * 100).toFixed(1);
+
+        // Update alert
+        const alertEl = document.getElementById('alertIA3');
+        if (slope > 0) {
+            alertEl.className = 'alert alert--warning';
+            document.getElementById('alertText3').innerHTML =
+                `La media móvil muestra una tendencia <strong>${trendDirection}</strong> en las últimas 4 semanas. ` +
+                `Aunque hay irregularidades puntuales cada semana, la tendencia subyacente indica que debemos principalmente lo combinaría con más vigilancia.`;
+        } else {
+            alertEl.className = 'alert alert--success';
+            document.getElementById('alertText3').innerHTML =
+                `La tendencia general es <strong>${trendDirection}</strong>. Los casos están ${slope < 0 ? 'disminuyendo' : 'manteniéndose estables'} ` +
+                `con una variación del ${weekChange}% respecto a la semana anterior.`;
+        }
+
+        // Create chart
+        new Chart(document.getElementById('chartTendencia'), {
+            type: 'line',
             data: {
-                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'],
+                labels: labels,
                 datasets: [
-                    { label: 'Críticas', data: [3, 5, 2, 4, 6, 3], backgroundColor: '#ef4444', borderRadius: 4 },
-                    { label: 'Precaución', data: [5, 3, 6, 4, 2, 5], backgroundColor: '#f59e0b', borderRadius: 4 },
-                    { label: 'Normal', data: [12, 10, 14, 11, 9, 13], backgroundColor: '#10b981', borderRadius: 4 }
+                    {
+                        label: 'Frecuencia Real',
+                        data: frecuenciaReal,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Promedio Móvil 4S',
+                        data: promedioMovil,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Tendencia Lineal',
+                        data: tendenciaLineal,
+                        borderColor: '#10b981',
+                        borderDash: [8, 4],
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }
                 ]
             },
             options: {
-                ...ChartHelper.defaultOptions,
-                scales: { x: { stacked: true }, y: { stacked: true } }
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: '#e2e8f0' },
+                        ticks: { font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
             }
         });
 
-        new Chart(document.getElementById('chartUmbral'), {
-            type: 'line',
-            data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [
-                    { label: 'Casos Reales', data: [45, 52, 48, 55, 62, 58], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3 },
-                    { label: 'Umbral Crítico', data: [50, 50, 50, 50, 50, 50], borderColor: '#ef4444', borderDash: [8, 4], fill: false }
-                ]
-            },
-            options: ChartHelper.defaultOptions
-        });
-    });
+    })();
 </script>

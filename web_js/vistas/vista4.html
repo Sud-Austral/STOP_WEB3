@@ -1,100 +1,229 @@
-<!-- Vista 4: Evolución Multisemanal -->
+<!-- Vista 4: ¿El número es grave o moderado? -->
 
-<!-- KPI Stats -->
-<div class="kpi-grid mb-lg">
-    <div class="kpi-card">
-        <div class="kpi-label">Promedio 4 Semanas</div>
-        <div class="kpi-value">142</div>
-        <div class="kpi-change kpi-change--neutral">casos/semana</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Tendencia</div>
-        <div class="kpi-value text-danger">↑ 5.2%</div>
-        <div class="kpi-change kpi-change--negative">En aumento</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Máximo Registrado</div>
-        <div class="kpi-value">168</div>
-        <div class="kpi-change kpi-change--neutral">Semana 12</div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Mínimo Registrado</div>
-        <div class="kpi-value">118</div>
-        <div class="kpi-change kpi-change--neutral">Semana 3</div>
-    </div>
+<!-- Alert Box -->
+<div class="alert alert--warning" id="alertIA4">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText4">Analizando perfil de gravedad...</span>
 </div>
 
-<!-- Main Chart -->
-<div class="card mb-lg">
-    <h2 class="section-title mb-lg">Evolución de las últimas 12 semanas</h2>
-    <div class="chart-wrapper chart-wrapper--lg">
-        <canvas id="chartEvolucion"></canvas>
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿El número es grave o moderado?</h2>
     </div>
-</div>
+    <p class="text-muted mb-lg">Muestra el perfil de la comuna y la concentración de datos según su nivel de gravedad
+    </p>
 
-<!-- Secondary Charts -->
-<div class="chart-grid chart-grid--2">
-    <div class="chart-card">
-        <div class="chart-card-title">Tendencia por Tipo de Delito</div>
-        <div class="chart-wrapper">
-            <canvas id="chartTipo"></canvas>
+    <!-- Legend -->
+    <div class="matrix-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #10b981;"></span>
+            Bajo Impacto (Z &lt; -0.5)
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #f59e0b;"></span>
+            Moderado (-0.5 ≤ Z ≤ 0.5)
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #ef4444;"></span>
+            Alto Impacto (Z &gt; 0.5)
         </div>
     </div>
-    <div class="chart-card">
-        <div class="chart-card-title">Variación Semanal (%)</div>
-        <div class="chart-wrapper">
-            <canvas id="chartVariacion"></canvas>
-        </div>
+
+    <!-- Scatter Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartMatriz"></canvas>
     </div>
+
+    <p class="chart-footnote text-muted">
+        * Eje X: Variación % vs año anterior | Eje Y: Casos actuales | Tamaño: Proporción del total | Color: Nivel según
+        Z-Score
+    </p>
 </div>
+
+<style>
+    .matrix-legend {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        padding: 0.75rem;
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        margin-top: 1rem;
+        font-style: italic;
+        text-align: center;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        const opts = ChartHelper.defaultOptions;
+    (async function initVista4() {
+        // Wait for data
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
 
-        new Chart(document.getElementById('chartEvolucion'), {
-            type: 'line',
+        await waitForData();
+
+        // Wait for Chart.js
+        const waitForChart = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof Chart !== 'undefined') resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForChart();
+
+        // Get max ID_SEMANA
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
+        const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
+
+        // Calculate total for bubble size
+        const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+
+        // Prepare scatter data
+        const scatterData = currentWeekData.map(row => {
+            const casos = row[COLS.CASOS_ACTUAL] || 0;
+            const varAnual = row[COLS.VAR_PCT_ANUAL] || 0;
+            const zScore = row[COLS.Z_SCORE] || 0;
+            const delito = row[COLS.DELITO] || 'Sin nombre';
+
+            // Color based on Z-Score
+            let color = '#f59e0b'; // Moderate (yellow)
+            if (zScore > 0.5) color = '#ef4444'; // High (red)
+            else if (zScore < -0.5) color = '#10b981'; // Low (green)
+
+            // Bubble size based on proportion
+            const radius = Math.max(5, Math.min(25, (casos / totalCasos) * 200));
+
+            return {
+                x: varAnual,
+                y: casos,
+                r: radius,
+                backgroundColor: color,
+                delito: delito,
+                zScore: zScore
+            };
+        });
+
+        // Count by category
+        const altos = scatterData.filter(d => d.backgroundColor === '#ef4444').length;
+        const moderados = scatterData.filter(d => d.backgroundColor === '#f59e0b').length;
+        const bajos = scatterData.filter(d => d.backgroundColor === '#10b981').length;
+
+        // Find top risk item
+        const topRisk = currentWeekData.reduce((max, row) =>
+            (row[COLS.Z_SCORE] || 0) > (max[COLS.Z_SCORE] || 0) ? row : max
+            , currentWeekData[0]);
+
+        // Update alert
+        const alertEl = document.getElementById('alertIA4');
+        if (altos > moderados) {
+            alertEl.className = 'alert alert--danger';
+            document.getElementById('alertText4').innerHTML =
+                `Se detectan <strong>${altos} delitos de alto impacto</strong>. El más peligroso es "<strong>${topRisk[COLS.DELITO]}</strong>" ` +
+                `con ${topRisk[COLS.CASOS_ACTUAL]} casos y una frecuencia anormal. Representa un riesgo reputacional alto para la comuna y debe ser foco prioritario de la semana.`;
+        } else if (altos > 0) {
+            alertEl.className = 'alert alert--warning';
+            document.getElementById('alertText4').innerHTML =
+                `Hay <strong>${altos} delitos en zona de alerta</strong> y ${moderados} en zona moderada. ` +
+                `El delito "${topRisk[COLS.DELITO]}" requiere atención prioritaria con Z-Score de ${(topRisk[COLS.Z_SCORE] || 0).toFixed(2)}.`;
+        } else {
+            alertEl.className = 'alert alert--success';
+            document.getElementById('alertText4').innerHTML =
+                `La comuna presenta un perfil de <strong>bajo riesgo</strong> esta semana. ` +
+                `${bajos} delitos están bajo control y ${moderados} en zona moderada. Mantener vigilancia preventiva.`;
+        }
+
+        // Create bubble chart
+        new Chart(document.getElementById('chartMatriz'), {
+            type: 'bubble',
             data: {
-                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12'],
                 datasets: [{
-                    label: 'Total Casos',
-                    data: [120, 135, 118, 142, 138, 155, 148, 162, 158, 145, 152, 168],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59,130,246,0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#3b82f6'
+                    label: 'Delitos',
+                    data: scatterData,
+                    backgroundColor: scatterData.map(d => d.backgroundColor + 'cc'),
+                    borderColor: scatterData.map(d => d.backgroundColor),
+                    borderWidth: 2
                 }]
             },
-            options: { ...opts, plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                const item = scatterData[context.dataIndex];
+                                return [
+                                    `Delito: ${item.delito}`,
+                                    `Casos: ${item.y}`,
+                                    `Var. Anual: ${item.x.toFixed(1)}%`,
+                                    `Z-Score: ${item.zScore.toFixed(2)}`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Variación % vs Año Anterior',
+                            font: { size: 12, weight: 600 }
+                        },
+                        grid: { color: '#e2e8f0' },
+                        ticks: {
+                            callback: v => v + '%',
+                            font: { size: 11 }
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Casos Actuales',
+                            font: { size: 12, weight: 600 }
+                        },
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
         });
 
-        new Chart(document.getElementById('chartTipo'), {
-            type: 'line',
-            data: {
-                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
-                datasets: [
-                    { label: 'Robos', data: [35, 42, 38, 45, 40, 48], borderColor: '#ef4444', tension: 0.3 },
-                    { label: 'Hurtos', data: [45, 40, 48, 42, 50, 45], borderColor: '#f59e0b', tension: 0.3 },
-                    { label: 'Otros', data: [40, 35, 42, 38, 45, 40], borderColor: '#10b981', tension: 0.3 }
-                ]
-            },
-            options: opts
-        });
-
-        new Chart(document.getElementById('chartVariacion'), {
-            type: 'bar',
-            data: {
-                labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
-                datasets: [{
-                    label: 'Variación %',
-                    data: [5, -3, 8, -2, 12, -5],
-                    backgroundColor: [5, -3, 8, -2, 12, -5].map(v => v >= 0 ? '#ef4444' : '#10b981'),
-                    borderRadius: 6
-                }]
-            },
-            options: { ...opts, plugins: { legend: { display: false } } }
-        });
-    });
+    })();
 </script>

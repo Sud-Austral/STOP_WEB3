@@ -35,8 +35,11 @@
     <main id="mainContent" class="main-content">
         <header class="header">
             <div>
-                <h1 class="header-title">Reporte de Inteligencia Delictual</h1>
-                <p class="header-subtitle">SEMANA 03/2026 (del 12/01/2026 al 18/01/2026) | Estado: NORMAL</p>
+                <h1 class="header-title">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--color-primary); margin-right: 8px;"></i>
+                    Reporte de Inteligencia Delictual
+                </h1>
+                <p class="header-subtitle" id="headerSubtitle">Cargando datos...</p>
             </div>
             <div class="header-actions">
                 <button class="btn btn--accent" id="btnExportPdf">
@@ -45,11 +48,11 @@
                 </button>
                 <button class="btn" id="btnFilters">
                     <i class="fa-solid fa-filter"></i>
-                    <span>Filtros</span>
+                    <span>Filtros Activos</span>
                 </button>
                 <button class="btn btn--primary" id="btnComuna">
                     <i class="fa-solid fa-location-dot"></i>
-                    <span>Santiago</span>
+                    <span id="btnComunaText">Cargando...</span>
                 </button>
             </div>
         </header>
@@ -59,10 +62,13 @@
         </section>
     </main>
 
-    <!-- Scripts -->
+    <!-- Data Layer (Must load first) -->
+    <script src="js/data.js" type="module"></script>
+
+    <!-- App Scripts -->
     <script src="js/utils/chart-helper.js"></script>
+    <script src="js/ia.js"></script>
     <script src="js/app.js"></script>
-    <script src="js/data.js"></script>
 </body>
 
 </html>

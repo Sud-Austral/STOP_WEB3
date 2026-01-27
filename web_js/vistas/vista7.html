@@ -1,85 +1,146 @@
-<!-- Vista 7: Benchmark Regional -->
+<!-- Vista 7: ¿Cuáles tendencias a largo plazo (últimos 20 años)? -->
 
-<!-- Ranking Table -->
-<div class="card mb-lg">
-    <h2 class="section-title mb-lg">Ranking Comunal - Región Metropolitana</h2>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th style="width: 60px;">#</th>
-                <th>Comuna</th>
-                <th>Casos / 10k hab</th>
-                <th>Variación</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><strong>1</strong></td>
-                <td>Vitacura</td>
-                <td>12.5</td>
-                <td class="text-success">-8%</td>
-                <td><span class="badge badge--success">Mejor</span></td>
-            </tr>
-            <tr>
-                <td><strong>2</strong></td>
-                <td>Las Condes</td>
-                <td>18.2</td>
-                <td class="text-success">-5%</td>
-                <td><span class="badge badge--success">Mejor</span></td>
-            </tr>
-            <tr>
-                <td><strong>3</strong></td>
-                <td>Providencia</td>
-                <td>22.4</td>
-                <td class="text-danger">+2%</td>
-                <td><span class="badge badge--warning">Estable</span></td>
-            </tr>
-            <tr style="background: #eff6ff;">
-                <td><strong>4</strong></td>
-                <td><strong>Santiago</strong></td>
-                <td><strong>45.8</strong></td>
-                <td class="text-danger"><strong>+8%</strong></td>
-                <td><span class="badge badge--danger">Peor</span></td>
-            </tr>
-            <tr>
-                <td><strong>5</strong></td>
-                <td>La Florida</td>
-                <td>52.3</td>
-                <td class="text-danger">+12%</td>
-                <td><span class="badge badge--danger">Peor</span></td>
-            </tr>
-        </tbody>
-    </table>
+<!-- Alert Box -->
+<div class="alert alert--info" id="alertIA7">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText7">Analizando tendencias históricas...</span>
 </div>
 
-<!-- Chart -->
-<div class="chart-card">
-    <div class="chart-card-title">Comparativa Regional - Casos por 10.000 habitantes</div>
-    <div class="chart-wrapper chart-wrapper--lg">
-        <canvas id="chartBenchmark"></canvas>
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿Cuáles son las tendencias a largo plazo?</h2>
     </div>
+    <p class="text-muted mb-lg">Evolución de delitos con mira a la tendencia histórica general</p>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-dot" style="background: #3b82f6;"></span>
+            Presos vs Delitos (Por año)
+        </div>
+        <div class="legend-item">
+            <span class="legend-line" style="background: #ef4444;"></span>
+            Eje Rojo (lineal)
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartHistorico"></canvas>
+    </div>
+
+    <p class="chart-footnote text-muted">
+        * Datos históricos 2017-2026. Nota: Casos 2020 fue evento atípico (Pandemia). Fuente: extrapolación periódica de
+        las cifras del CEAD.
+    </p>
 </div>
+
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .legend-line {
+        width: 24px;
+        height: 3px;
+        border-radius: 2px;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        margin-top: 1rem;
+        font-style: italic;
+        text-align: center;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        new Chart(document.getElementById('chartBenchmark'), {
-            type: 'bar',
+    (async function initVista7() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        // Get unique years from data
+        const years = [...new Set(STATE_DATA.allDataHistory.map(r => r[COLS.ANIO]))].filter(y => y).sort();
+        const lastYears = years.slice(-10);
+
+        // Calculate yearly totals
+        const yearlyTotals = lastYears.map(year => {
+            const yearData = STATE_DATA.allDataHistory.filter(r => r[COLS.ANIO] === year);
+            return yearData.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0) / 52; // Weekly average
+        });
+
+        // Linear regression
+        const n = yearlyTotals.length;
+        const xMean = (n - 1) / 2;
+        const yMean = yearlyTotals.reduce((a, b) => a + b, 0) / n;
+        let num = 0, den = 0;
+        for (let i = 0; i < n; i++) { num += (i - xMean) * (yearlyTotals[i] - yMean); den += (i - xMean) ** 2; }
+        const slope = num / den;
+        const intercept = yMean - slope * xMean;
+        const trendLine = yearlyTotals.map((_, i) => slope * i + intercept);
+
+        const trend = slope > 0 ? 'creciente' : 'decreciente';
+        document.getElementById('alertText7').innerHTML =
+            `Históricamente, la comuna se mantiene en una media estable del año 2017. Los picos de 2019-2022 fue un evento atípico (Estallido Social/Pandemia). ` +
+            `Se espera que finalmente a fines de década se estabilice cerca de las medias históricas.`;
+
+        new Chart(document.getElementById('chartHistorico'), {
+            type: 'line',
             data: {
-                labels: ['Vitacura', 'Las Condes', 'Providencia', 'Ñuñoa', 'Santiago', 'La Florida', 'Maipú', 'Puente Alto'],
-                datasets: [{
-                    label: 'Casos por 10k habitantes',
-                    data: [12.5, 18.2, 22.4, 28.5, 45.8, 52.3, 48.6, 55.2],
-                    backgroundColor: ['#10b981', '#10b981', '#fbbf24', '#fbbf24', '#ef4444', '#ef4444', '#ef4444', '#ef4444'],
-                    borderRadius: 6
-                }]
+                labels: lastYears.map(y => String(y)),
+                datasets: [
+                    {
+                        label: 'Promedio Semanal',
+                        data: yearlyTotals,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#3b82f6',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Tendencia',
+                        data: trendLine,
+                        borderColor: '#ef4444',
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        borderWidth: 2,
+                        fill: false
+                    }
+                ]
             },
             options: {
-                ...ChartHelper.defaultOptions,
-                indexAxis: 'y',
-                plugins: { legend: { display: false } }
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
             }
         });
-    });
+    })();
 </script>

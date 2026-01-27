@@ -11,7 +11,7 @@ const App = {
         pdfScale: 2,
         views: [
             'vista1', 'vista2', 'vista3', 'vista4', 'vista5',
-            'vista6', 'vista7', 'vista8', 'vista9', 'vista10', 'vista11'
+            'vista6', 'vista7', 'vista8', 'vista9'
         ]
     },
 
@@ -36,6 +36,13 @@ const App = {
         await this.loadSidebar();
         this.bindEvents();
         this.loadView(this.config.defaultView);
+
+        // Pre-load AI interpretations in background (after data loads)
+        setTimeout(() => {
+            if (typeof IAModule !== 'undefined' && window.STATE_DATA?.isLoaded) {
+                IAModule.generateAllInterpretations();
+            }
+        }, 3000);
     },
 
     /**
@@ -144,6 +151,24 @@ const App = {
     },
 
     /**
+     * Destroy all existing Chart.js instances
+     * Prevents memory leaks and conflicts between views
+     */
+    destroyAllCharts() {
+        // Get all Chart.js instances and destroy them
+        if (typeof Chart !== 'undefined') {
+            const charts = Object.values(Chart.instances || {});
+            charts.forEach(chart => {
+                try {
+                    chart.destroy();
+                } catch (e) {
+                    console.warn('Error destroying chart:', e);
+                }
+            });
+        }
+    },
+
+    /**
      * Export all views to PDF
      */
     async exportPdf() {
@@ -171,11 +196,14 @@ const App = {
                 // Update progress
                 btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${this.config.views.length}`;
 
+                // Destroy previous charts to prevent conflicts
+                this.destroyAllCharts();
+
                 // Load view
                 await this.loadView(viewName);
 
-                // Wait for charts to render
-                await this.delay(this.config.chartRenderDelay);
+                // Wait for charts to render (2 seconds)
+                await this.delay(2000);
 
                 // Capture
                 const canvas = await html2canvas(container, {

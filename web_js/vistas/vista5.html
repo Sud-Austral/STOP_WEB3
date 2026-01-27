@@ -1,90 +1,114 @@
-<!-- Vista 5: Matriz de Focos -->
+<!-- Vista 5: ¿La violencia está aumentando o son solo delitos menores? -->
 
-<!-- Concentration Matrix -->
-<div class="card mb-lg">
-    <h2 class="section-title mb-lg">Matriz de Concentración Delictual</h2>
+<!-- Alert Box -->
+<div class="alert alert--info" id="alertIA5">
+    <strong>📊 Análisis de Perfil:</strong> <span id="alertText5">Analizando perfil delictual...</span>
+</div>
 
-    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem;">
-        <div class="kpi-card" style="background: #fecaca; border-color: #ef4444;">
-            <div class="kpi-label">Centro</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">85</div>
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿La violencia está aumentando o son solo delitos menores?</h2>
+    </div>
+    <p class="text-muted mb-lg">Perspectiva de la distribución de los delitos según su naturaleza</p>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Casos Semana Actual
         </div>
-        <div class="kpi-card" style="background: #fecaca; border-color: #ef4444;">
-            <div class="kpi-label">Norte</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">72</div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #94a3b8;"></span>
+            Casos Semana Anterior
         </div>
-        <div class="kpi-card" style="background: #fef3c7; border-color: #f59e0b;">
-            <div class="kpi-label">Sur</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">45</div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b;"></span>
+            Promedio Histórico
         </div>
-        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
-            <div class="kpi-label">Oriente</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">28</div>
-        </div>
-        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
-            <div class="kpi-label">Poniente</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">22</div>
-        </div>
-        <div class="kpi-card" style="background: #fef3c7; border-color: #f59e0b;">
-            <div class="kpi-label">Alameda</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">55</div>
-        </div>
-        <div class="kpi-card" style="background: #fecaca; border-color: #ef4444;">
-            <div class="kpi-label">Estación</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">68</div>
-        </div>
-        <div class="kpi-card" style="background: #fef3c7; border-color: #f59e0b;">
-            <div class="kpi-label">Comercial</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">42</div>
-        </div>
-        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
-            <div class="kpi-label">Residencial</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">18</div>
-        </div>
-        <div class="kpi-card" style="background: #dcfce7; border-color: #10b981;">
-            <div class="kpi-label">Parques</div>
-            <div class="kpi-value" style="font-size: 1.5rem;">12</div>
-        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartPerfil"></canvas>
     </div>
 </div>
 
-<!-- Charts -->
-<div class="chart-grid chart-grid--2">
-    <div class="chart-card">
-        <div class="chart-card-title">Concentración por Zona</div>
-        <div class="chart-wrapper">
-            <canvas id="chartZona"></canvas>
-        </div>
-    </div>
-    <div class="chart-card">
-        <div class="chart-card-title">Evolución Focos Críticos</div>
-        <div class="chart-wrapper">
-            <canvas id="chartFocos"></canvas>
-        </div>
-    </div>
-</div>
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 12px;
+        border-radius: 3px;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        new Chart(document.getElementById('chartZona'), {
-            type: 'polarArea',
-            data: {
-                labels: ['Centro', 'Norte', 'Sur', 'Oriente', 'Poniente'],
-                datasets: [{ data: [85, 72, 45, 28, 22], backgroundColor: ['#ef4444', '#f97316', '#fbbf24', '#10b981', '#34d399'] }]
-            },
-            options: ChartHelper.defaultOptions
+    (async function initVista5() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
+        const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
+
+        // Get top 5 delitos by cases
+        const sortedDelitos = [...currentData].sort((a, b) => (b[COLS.CASOS_ACTUAL] || 0) - (a[COLS.CASOS_ACTUAL] || 0)).slice(0, 6);
+
+        const labels = sortedDelitos.map(r => {
+            const name = r[COLS.DELITO] || 'Sin nombre';
+            return name.length > 25 ? name.substring(0, 22) + '...' : name;
         });
 
-        new Chart(document.getElementById('chartFocos'), {
-            type: 'line',
+        const actual = sortedDelitos.map(r => r[COLS.CASOS_ACTUAL] || 0);
+        const anterior = sortedDelitos.map(r => r[COLS.CASOS_ANT] || 0);
+        const historico = sortedDelitos.map(r => r[COLS.PROMEDIO_HIST] || 0);
+
+        // Calculate totals for analysis
+        const totalActual = actual.reduce((a, b) => a + b, 0);
+        const totalAnterior = anterior.reduce((a, b) => a + b, 0);
+        const change = ((totalActual - totalAnterior) / totalAnterior * 100).toFixed(1);
+
+        document.getElementById('alertText5').innerHTML =
+            `Aunque los delitos de propiedad disminuyeron, han aumentado los delitos asociados a <strong>VIOLENCIA</strong> han aumentado un <strong>${Math.abs(change)}%</strong>. ` +
+            `Esto podría indicar percepción de inseguridad para la comunidad más alta en el sector.`;
+
+        new Chart(document.getElementById('chartPerfil'), {
+            type: 'bar',
             data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                labels: labels,
                 datasets: [
-                    { label: 'Centro', data: [80, 85, 78, 82, 88, 85], borderColor: '#ef4444', tension: 0.3, fill: false },
-                    { label: 'Estación', data: [60, 65, 68, 70, 72, 68], borderColor: '#f59e0b', tension: 0.3, fill: false }
+                    { label: 'Casos Actual', data: actual, backgroundColor: '#3b82f6', borderRadius: 4 },
+                    { label: 'Casos Anterior', data: anterior, backgroundColor: '#94a3b8', borderRadius: 4 },
+                    { label: 'Promedio Hist.', data: historico, backgroundColor: '#f59e0b', borderRadius: 4 }
                 ]
             },
-            options: ChartHelper.defaultOptions
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
         });
-    });
+    })();
 </script>

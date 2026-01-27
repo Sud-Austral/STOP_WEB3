@@ -1,15 +1,24 @@
-const STATE_DATA = {
-    codcom: 13130, // Default San Miguel
+/**
+ * RID SIMULATOR - Data Layer
+ * Handles data loading and state management
+ */
+
+// Global State
+window.STATE_DATA = {
+    codcom: 13130,
     allData: [],
     allDataHistory: [],
-    stats: {}, // Processed data
+    stats: {},
     currentSection: 'seccion1',
     comunaName: 'Sin Comuna',
     semanaId: "Sin Semana",
-    warning: ""
+    semanaDetalle: "",
+    warning: "",
+    isLoaded: false
 };
 
-const COLS = {
+// Column Indices
+window.COLS = {
     DELITO: 0,
     FRECUENCIA: 1,
     CODCOM: 2,
@@ -44,13 +53,19 @@ const COLS = {
     COMUNA: 31
 };
 
+// Parse URL parameters
 const params = new URLSearchParams(window.location.search);
 const codcom_url = params.get('codcom');
 const semana_id_url = params.get('semana_id');
 
+/**
+ * Data Loader
+ */
 const dataLoader = {
-    load: async () => {
+    async load() {
         try {
+            console.log('📊 Loading data...');
+
             const response = await fetch('data/data2.json.gz');
             if (!response.ok) throw new Error('Error IO Datos');
 
@@ -58,42 +73,64 @@ const dataLoader = {
             const decompressed = new Response(response.body.pipeThrough(ds));
             const rawData = await decompressed.json();
 
-            // 1. Determine Target CODCOM & SEMANA
-            let targetCod = codcom_url ? parseInt(codcom_url) : 13101;
-            let targetSemana = semana_id_url ? parseInt(semana_id_url) : 162;
-
-            // Update STATE
+            // Determine target CODCOM
+            const targetCod = codcom_url ? parseInt(codcom_url) : 13101;
             STATE_DATA.codcom = targetCod;
 
-            console.log(`Loading Data for CODCOM: ${targetCod}, SEMANA: ${targetSemana}`);
-
-            // Filter by Comuna (Keep History for Charts)
-            STATE_DATA.allData = rawData.filter(row => row[COLS.CODCOM] == targetCod); // Use loose eq for string/int safety
+            // Filter by Comuna
+            STATE_DATA.allData = rawData.filter(row => row[COLS.CODCOM] == targetCod);
             STATE_DATA.allDataHistory = rawData.filter(row => row[COLS.CODCOM] == targetCod);
-            // Extract Metadata for Header from the specific target week
-            const targetWeekRow = STATE.allData.find(row => row[COLS.ID_SEMANA] == targetSemana);
+
+            // Get max ID_SEMANA
+            const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
+            const targetSemana = semana_id_url ? parseInt(semana_id_url) : maxSemana;
+
+            // Find target week row for metadata
+            const targetWeekRow = STATE_DATA.allData.find(row => row[COLS.ID_SEMANA] == targetSemana);
 
             if (targetWeekRow) {
                 STATE_DATA.comunaName = targetWeekRow[COLS.COMUNA];
-                STATE_DATA.semanaId = targetWeekRow[COLS.SEMANA_DETALLE];
+                STATE_DATA.semanaId = targetWeekRow[COLS.ID_SEMANA];
+                STATE_DATA.semanaDetalle = targetWeekRow[COLS.SEMANA_DETALLE];
                 STATE_DATA.warning = targetWeekRow[COLS.ALERTA];
-                console.log("Header Metadata Found:", STATE.comunaName, STATE.semanaId, STATE.warning);
-            } else {
-                console.warn("Target week not found for header metadata, using defaults or latest.");
-                if (STATE_DATA.allData.length > 0) {
-                    // Fallback to latest
-                    const latest = STATE.allData[0]; // Assuming originally sorted or we sort next
-                    STATE_DATA.comunaName = latest[COLS.COMUNA];
-                }
+            } else if (STATE_DATA.allData.length > 0) {
+                // Fallback to first row
+                STATE_DATA.comunaName = STATE_DATA.allData[0][COLS.COMUNA];
             }
-            console.log(`Loaded ${STATE.allData.length} total records for ${STATE.comunaName}`);
+
+            STATE_DATA.isLoaded = true;
+
+            console.log(`✅ Loaded ${STATE_DATA.allData.length} records for ${STATE_DATA.comunaName}`);
+            console.log(`📅 Max Semana: ${maxSemana}, Target: ${targetSemana}`);
+
+            // Update header
+            this.updateHeader();
+
+            // Dispatch event for components waiting on data
+            window.dispatchEvent(new CustomEvent('dataLoaded', { detail: STATE_DATA }));
 
         } catch (error) {
-            console.error("Critical Error loading data:", error);
-            alert("Error cargando los datos del sistema. Asegúrate de ejecutar esto en un servidor local.");
+            console.error("❌ Critical Error loading data:", error);
+            STATE_DATA.isLoaded = false;
+        }
+    },
+
+    updateHeader() {
+        // Update header subtitle
+        const subtitle = document.getElementById('headerSubtitle');
+        if (subtitle) {
+            const alertClass = STATE_DATA.warning === 'ALTO' ? 'PRECAUCIÓN' :
+                STATE_DATA.warning === 'BAJO' ? 'NORMAL' : 'NORMAL';
+            subtitle.innerHTML = `${STATE_DATA.semanaDetalle || 'Semana Actual'} | Estado: <span class="${STATE_DATA.warning === 'ALTO' ? 'text-warning' : 'text-success'}">${alertClass}</span>`;
+        }
+
+        // Update comuna button
+        const comunaBtn = document.getElementById('btnComunaText');
+        if (comunaBtn) {
+            comunaBtn.textContent = STATE_DATA.comunaName || 'Santiago';
         }
     }
 };
 
-
+// Load data on module init
 await dataLoader.load();

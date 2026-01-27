@@ -1,171 +1,234 @@
-<!-- Vista 2: Análisis Gráfico Extendido -->
+<!-- Vista 2: ¿Hay alertas activas o anomalías? -->
 
-<!-- Info Box -->
-<div class="alert alert--info">
-    <strong>📊 Análisis Extendido:</strong> Esta vista presenta métricas complementarias que permiten
-    identificar patrones geográficos, demográficos y temporales en la actividad delictual.
+<!-- Alert Box (Interpretación IA) -->
+<div class="alert alert--warning" id="alertIA2">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText2">Cargando análisis de alertas...</span>
 </div>
 
-<!-- Section: Distribución Geográfica -->
+<!-- Section Header -->
 <div class="card mb-lg">
-    <h2 class="section-title mb-lg">Distribución Geográfica y Demográfica</h2>
+    <div class="section-header">
+        <h2 class="section-title">¿Hay alertas activas o anomalías?</h2>
+    </div>
+    <p class="text-muted mb-lg">Análisis de alertas por semáforo de indicadores en la base de datos del CEAD</p>
 
-    <div class="chart-grid chart-grid--4">
-        <div class="chart-card">
-            <div class="chart-card-title">Por Sector</div>
-            <div class="chart-wrapper chart-wrapper--sm">
-                <canvas id="chartSector"></canvas>
-            </div>
+    <!-- Status Indicators -->
+    <div class="status-indicators mb-lg">
+        <div class="status-circle status-circle--warning" id="statusCircle1">
+            <span>⚠️</span>
         </div>
-        <div class="chart-card">
-            <div class="chart-card-title">Por Horario</div>
-            <div class="chart-wrapper chart-wrapper--sm">
-                <canvas id="chartHorario"></canvas>
-            </div>
+        <div class="status-circle status-circle--danger" id="statusCircle2">
+            <span>🔴</span>
         </div>
-        <div class="chart-card">
-            <div class="chart-card-title">Por Edad Víctima</div>
-            <div class="chart-wrapper chart-wrapper--sm">
-                <canvas id="chartEdad"></canvas>
-            </div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-card-title">Por Género</div>
-            <div class="chart-wrapper chart-wrapper--sm">
-                <canvas id="chartGenero"></canvas>
-            </div>
+        <div class="status-circle status-circle--success" id="statusCircle3">
+            <span>✅</span>
         </div>
     </div>
+
+    <div class="status-label">
+        Estado Actual: <strong id="estadoActual">PRECAUCIÓN</strong>
+    </div>
+
+    <p class="trend-text" id="trendText">
+        Se detectó una tendencia creciente de aumento en <strong>Robos con Violencia</strong>.
+    </p>
 </div>
 
-<!-- Section: Tendencias -->
+<!-- Comparison Chart -->
 <div class="card">
-    <h2 class="section-title mb-lg">Tendencias Históricas y Proyecciones</h2>
-
-    <div class="chart-grid chart-grid--2 mb-lg">
-        <div class="chart-card">
-            <div class="chart-card-title">Evolución Mensual 2024-2026</div>
-            <div class="chart-wrapper">
-                <canvas id="chartMensual"></canvas>
-            </div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-card-title">Comparativa Regional</div>
-            <div class="chart-wrapper">
-                <canvas id="chartRegional"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="chart-grid chart-grid--2">
-        <div class="chart-card">
-            <div class="chart-card-title">Efectividad por Cuadrante</div>
-            <div class="chart-wrapper">
-                <canvas id="chartCuadrante"></canvas>
-            </div>
-        </div>
-        <div class="chart-card">
-            <div class="chart-card-title">Índice de Recuperación</div>
-            <div class="chart-wrapper">
-                <canvas id="chartRecuperacion"></canvas>
-            </div>
-        </div>
+    <h3 class="section-title mb-lg">Comparativa de Indicadores Clave</h3>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartComparativa"></canvas>
     </div>
 </div>
+
+<style>
+    .status-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        padding: 1.5rem 0;
+    }
+
+    .status-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .status-circle:hover {
+        transform: scale(1.1);
+    }
+
+    .status-circle--success {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .status-circle--warning {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .status-circle--danger {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    }
+
+    .status-circle--inactive {
+        opacity: 0.3;
+        filter: grayscale(1);
+    }
+
+    .status-label {
+        text-align: center;
+        font-size: 1.25rem;
+        color: var(--color-text);
+        margin-bottom: 1rem;
+    }
+
+    .status-label strong {
+        color: var(--color-warning);
+        font-size: 1.5rem;
+    }
+
+    .trend-text {
+        text-align: center;
+        color: var(--color-text-muted);
+        font-size: 0.95rem;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        const opts = ChartHelper.defaultOptions;
-        const colors = ChartHelper.colors;
+    (async function initVista2() {
+        // Wait for data
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
 
-        // Chart 1: Polar - Sector
-        new Chart(document.getElementById('chartSector'), {
-            type: 'polarArea',
-            data: {
-                labels: ['Centro', 'Norte', 'Sur', 'Oriente', 'Poniente'],
-                datasets: [{ data: [35, 25, 20, 12, 8], backgroundColor: colors.categorical }]
-            },
-            options: { ...opts, plugins: { legend: { display: false } } }
+        await waitForData();
+
+        // Wait for Chart.js
+        const waitForChart = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof Chart !== 'undefined') resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForChart();
+
+        // Get max ID_SEMANA
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
+        const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
+
+        // Calculate totals
+        const totalActual = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+        const totalAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
+        const totalYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
+        const promedioMovil = currentWeekData.reduce((sum, row) => sum + (row[COLS.MEDIA_MOVIL_4S] || 0), 0);
+
+        // Calculate average Z-Score and determine status
+        const avgZScore = currentWeekData.reduce((sum, row) => sum + (row[COLS.Z_SCORE] || 0), 0) / currentWeekData.length;
+
+        // Find the delito with highest Z-Score (most anomalous)
+        let maxZDelito = currentWeekData[0];
+        currentWeekData.forEach(row => {
+            if ((row[COLS.Z_SCORE] || 0) > (maxZDelito[COLS.Z_SCORE] || 0)) {
+                maxZDelito = row;
+            }
         });
 
-        // Chart 2: Bar Horizontal - Horario
-        new Chart(document.getElementById('chartHorario'), {
+        // Determine status
+        let status = 'NORMAL';
+        let statusColor = 'text-success';
+        let alertClass = 'alert--success';
+
+        if (avgZScore > 1.5) {
+            status = 'ALERTA';
+            statusColor = 'text-danger';
+            alertClass = 'alert--danger';
+        } else if (avgZScore > 0.5) {
+            status = 'PRECAUCIÓN';
+            statusColor = 'text-warning';
+            alertClass = 'alert--warning';
+        }
+
+        // Update DOM
+        const estadoEl = document.getElementById('estadoActual');
+        estadoEl.textContent = status;
+        estadoEl.style.color = status === 'ALERTA' ? '#ef4444' : status === 'PRECAUCIÓN' ? '#f59e0b' : '#10b981';
+
+        // Update circles
+        const circle1 = document.getElementById('statusCircle1');
+        const circle2 = document.getElementById('statusCircle2');
+        const circle3 = document.getElementById('statusCircle3');
+
+        circle1.classList.toggle('status-circle--inactive', status !== 'PRECAUCIÓN');
+        circle2.classList.toggle('status-circle--inactive', status !== 'ALERTA');
+        circle3.classList.toggle('status-circle--inactive', status !== 'NORMAL');
+
+        // Update trend text
+        const trendDirection = avgZScore > 0 ? 'creciente de aumento' : 'decreciente de disminución';
+        document.getElementById('trendText').innerHTML =
+            `Se detectó una tendencia ${trendDirection} en <strong>${maxZDelito[COLS.DELITO]}</strong> (Z-Score: ${(maxZDelito[COLS.Z_SCORE] || 0).toFixed(2)}).`;
+
+        // Update alert
+        const alertEl = document.getElementById('alertIA2');
+        alertEl.className = `alert ${alertClass}`;
+        document.getElementById('alertText2').innerHTML =
+            `Nos encontramos a nivel de <strong>${status}</strong> debido a que la semana actual aparece a límite de 1.5 desviaciones estándar en delitos en cifras. ` +
+            `Toma una o dos acciones, pero requiere atención inmediata en patrullaje, operativos y vigilancia.`;
+
+        // Create comparison chart
+        new Chart(document.getElementById('chartComparativa'), {
             type: 'bar',
             data: {
-                labels: ['00-06h', '06-12h', '12-18h', '18-24h'],
-                datasets: [{ data: [45, 20, 35, 60], backgroundColor: colors.sequential }]
+                labels: ['Casos Actuales', 'Promedio Móvil 4S', 'Sem. Anterior', 'vs 2024/2025'],
+                datasets: [{
+                    label: 'Casos',
+                    data: [totalActual, Math.round(promedioMovil), totalAnt, totalYearAnt],
+                    backgroundColor: ['#3b82f6', '#f59e0b', '#94a3b8', '#10b981'],
+                    borderRadius: 8,
+                    barThickness: 60
+                }]
             },
-            options: { ...opts, indexAxis: 'y', plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#e2e8f0' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
         });
 
-        // Chart 3: Doughnut - Edad
-        new Chart(document.getElementById('chartEdad'), {
-            type: 'doughnut',
-            data: {
-                labels: ['18-30', '31-45', '46-60', '60+'],
-                datasets: [{ data: [40, 30, 20, 10], backgroundColor: colors.categorical }]
-            },
-            options: { ...opts, plugins: { legend: { display: false } } }
-        });
-
-        // Chart 4: Pie - Género
-        new Chart(document.getElementById('chartGenero'), {
-            type: 'pie',
-            data: {
-                labels: ['Masculino', 'Femenino', 'No informado'],
-                datasets: [{ data: [55, 40, 5], backgroundColor: ['#3b82f6', '#ec4899', '#94a3b8'] }]
-            },
-            options: { ...opts, plugins: { legend: { display: false } } }
-        });
-
-        // Chart 5: Line - Mensual
-        new Chart(document.getElementById('chartMensual'), {
-            type: 'line',
-            data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-                datasets: [
-                    { label: '2024', data: [120, 135, 125, 140, 150, 145, 130, 125, 140, 155, 165, 170], borderColor: '#94a3b8', tension: 0.3 },
-                    { label: '2025', data: [110, 120, 115, 125, 135, 140, 125, 118, 130, 145, 155, 160], borderColor: '#3b82f6', tension: 0.3 },
-                    { label: '2026', data: [100, 108, 102, null, null, null, null, null, null, null, null, null], borderColor: '#10b981', tension: 0.3 }
-                ]
-            },
-            options: opts
-        });
-
-        // Chart 6: Bar - Regional
-        new Chart(document.getElementById('chartRegional'), {
-            type: 'bar',
-            data: {
-                labels: ['Santiago', 'Providencia', 'Las Condes', 'Ñuñoa', 'La Florida', 'Maipú'],
-                datasets: [{ label: 'Casos/10k hab', data: [45, 32, 28, 35, 52, 48], backgroundColor: '#3b82f6', borderRadius: 6 }]
-            },
-            options: opts
-        });
-
-        // Chart 7: Radar - Cuadrante
-        new Chart(document.getElementById('chartCuadrante'), {
-            type: 'radar',
-            data: {
-                labels: ['Cuad. 1', 'Cuad. 2', 'Cuad. 3', 'Cuad. 4', 'Cuad. 5', 'Cuad. 6'],
-                datasets: [
-                    { label: 'Patrullaje', data: [80, 70, 90, 65, 85, 75], borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.2)' },
-                    { label: 'Detenciones', data: [60, 80, 70, 75, 65, 85], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.2)' }
-                ]
-            },
-            options: opts
-        });
-
-        // Chart 8: Stacked Bar - Recuperación
-        new Chart(document.getElementById('chartRecuperacion'), {
-            type: 'bar',
-            data: {
-                labels: ['Vehículos', 'Celulares', 'Especies', 'Documentos', 'Otros'],
-                datasets: [
-                    { label: 'Recuperado', data: [35, 15, 25, 40, 20], backgroundColor: '#10b981', borderRadius: 4 },
-                    { label: 'No Recuperado', data: [65, 85, 75, 60, 80], backgroundColor: '#ef4444', borderRadius: 4 }
-                ]
-            },
-            options: { ...opts, scales: { x: { stacked: true }, y: { stacked: true } } }
-        });
-    });
+    })();
 </script>

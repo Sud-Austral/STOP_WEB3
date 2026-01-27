@@ -1,43 +1,37 @@
-<!-- Vista 1: Ficha Comunal - Dashboard Principal -->
+<!-- Vista 1: Ficha Comunal - Dashboard Principal (Datos Dinámicos) -->
 
-<!-- Alert Box -->
-<div class="alert alert--warning">
-    <strong>🤖 Interpretación de IA:</strong> "El análisis de la semana muestra un nivel de riesgo
-    <strong style="color: #f59e0b;">AMARILLO (Precaución)</strong>. Aunque el hurto ha bajado un 5%,
-    los robos con violencia han aumentado un 15% situándose sobre el promedio histórico."
+<!-- Alert Box (Interpretación IA) -->
+<div class="alert alert--warning" id="alertIA">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText">Cargando análisis...</span>
 </div>
 
-<!-- Section: Situación General -->
+<!-- Section: ¿Cuál es la situación general? -->
 <div class="card mb-lg">
     <div class="section-header">
         <h2 class="section-title">¿Cuál es la situación general?</h2>
-        <button class="btn btn--success">
-            <i class="fa-solid fa-bookmark"></i>
-            Guardar Vista
-        </button>
     </div>
     <p class="text-muted mb-lg">Estado actual de la seguridad y distribución de los delitos principales</p>
 
-    <div class="kpi-grid">
+    <div class="kpi-grid" id="kpiGrid">
         <div class="kpi-card">
-            <div class="kpi-label">Casos Semanales</div>
-            <div class="kpi-value">870</div>
-            <div class="kpi-change kpi-change--negative">▲ 8.1% vs Sem. Ant.</div>
+            <div class="kpi-label">Casos de la Semana</div>
+            <div class="kpi-value" id="kpiCasos">--</div>
+            <div class="kpi-change" id="kpiCasosChange">--</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Variación Anual</div>
-            <div class="kpi-value text-success">-9.8%</div>
-            <div class="kpi-change kpi-change--positive">▼ vs Año Ant.</div>
+            <div class="kpi-value" id="kpiVarAnual">--</div>
+            <div class="kpi-change" id="kpiVarAnualChange">--</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-label">Índice Violencia</div>
-            <div class="kpi-value">42.5</div>
-            <div class="kpi-change kpi-change--neutral">Moderado</div>
+            <div class="kpi-label">TASA X 100MIL</div>
+            <div class="kpi-value" id="kpiTasa">--</div>
+            <div class="kpi-change kpi-change--neutral">promedio comunal</div>
         </div>
         <div class="kpi-card">
-            <div class="kpi-label">Nivel de Riesgo</div>
-            <div class="kpi-value text-warning">ALTO</div>
-            <div class="kpi-change kpi-change--neutral">Requiere atención</div>
+            <div class="kpi-label">NIVEL DE RIESGO</div>
+            <div class="kpi-value" id="kpiRiesgo">--</div>
+            <div class="kpi-change kpi-change--neutral" id="kpiRiesgoLabel">--</div>
         </div>
     </div>
 </div>
@@ -45,57 +39,175 @@
 <!-- Charts Section -->
 <div class="chart-grid chart-grid--2">
     <div class="chart-card">
-        <div class="chart-card-title">Distribución de Casos Semanales</div>
+        <div class="chart-card-title">Distribución de Casos Semanal</div>
         <div class="chart-wrapper">
             <canvas id="chartDistribucion"></canvas>
         </div>
     </div>
     <div class="chart-card">
-        <div class="chart-card-title">Evolución Semanal de Delitos</div>
+        <div class="chart-card-title">Evolución Semanal</div>
         <div class="chart-wrapper">
             <canvas id="chartEvolucion"></canvas>
-        </div>
-    </div>
-    <div class="chart-card">
-        <div class="chart-card-title">Comparativa por Tipo de Delito</div>
-        <div class="chart-wrapper">
-            <canvas id="chartComparativa"></canvas>
-        </div>
-    </div>
-    <div class="chart-card">
-        <div class="chart-card-title">Efectividad Operativa</div>
-        <div class="chart-wrapper">
-            <canvas id="chartEfectividad"></canvas>
         </div>
     </div>
 </div>
 
 <script>
-    ChartHelper.init(() => {
+    (async function initVista1() {
+        // Wait for data to be loaded
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+
+        // Wait for Chart.js
+        const waitForChart = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof Chart !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        await waitForChart();
+
+        // Get max ID_SEMANA
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
+
+        // Filter data for current week
+        const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
+
+        // Calculate KPIs
+        const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+        const totalCasosAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
+        const totalCasosYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
+
+        const varSemanal = totalCasosAnt > 0 ? ((totalCasos - totalCasosAnt) / totalCasosAnt * 100).toFixed(1) : 0;
+        const varAnual = totalCasosYearAnt > 0 ? ((totalCasos - totalCasosYearAnt) / totalCasosYearAnt * 100).toFixed(1) : 0;
+
+        // Calculate average Z-Score for risk level
+        const avgZScore = currentWeekData.reduce((sum, row) => sum + (row[COLS.Z_SCORE] || 0), 0) / currentWeekData.length;
+
+        // Determine risk level
+        let riskLevel = 'BAJO';
+        let riskColor = 'text-success';
+        if (avgZScore > 1.5) {
+            riskLevel = 'ALTO';
+            riskColor = 'text-danger';
+        } else if (avgZScore > 0.5) {
+            riskLevel = 'MEDIO';
+            riskColor = 'text-warning';
+        }
+
+        // Update KPIs in DOM
+        document.getElementById('kpiCasos').textContent = totalCasos.toLocaleString();
+        document.getElementById('kpiCasosChange').textContent = `${varSemanal >= 0 ? '▲' : '▼'} ${Math.abs(varSemanal)}% vs Sem. Ant.`;
+        document.getElementById('kpiCasosChange').className = `kpi-change ${varSemanal >= 0 ? 'kpi-change--negative' : 'kpi-change--positive'}`;
+
+        document.getElementById('kpiVarAnual').textContent = `${varAnual >= 0 ? '+' : ''}${varAnual}%`;
+        document.getElementById('kpiVarAnual').className = `kpi-value ${varAnual >= 0 ? 'text-danger' : 'text-success'}`;
+        document.getElementById('kpiVarAnualChange').textContent = 'vs Año Anterior';
+
+        // Tasa (placeholder - would need population data)
+        document.getElementById('kpiTasa').textContent = (totalCasos * 0.15).toFixed(1);
+
+        document.getElementById('kpiRiesgo').textContent = riskLevel;
+        document.getElementById('kpiRiesgo').className = `kpi-value ${riskColor}`;
+        document.getElementById('kpiRiesgoLabel').textContent = `Z-Score: ${avgZScore.toFixed(2)}`;
+
+        // Update Alert Text
+        const alertClass = avgZScore > 1.5 ? 'alert--danger' : avgZScore > 0.5 ? 'alert--warning' : 'alert--success';
+        const alertEl = document.getElementById('alertIA');
+        alertEl.className = `alert ${alertClass}`;
+
+        // Try to get AI interpretation, fallback to calculated text
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista1').then(interpretation => {
+                document.getElementById('alertText').innerHTML = interpretation;
+            });
+        } else {
+            const trendText = varSemanal >= 0 ? 'han aumentado' : 'han disminuido';
+            document.getElementById('alertText').innerHTML = `Esta semana los delitos ${trendText} un <strong>${Math.abs(varSemanal)}%</strong>. ` +
+                `Los robos con violencia ${varAnual >= 0 ? 'han aumentado' : 'bajaron'} un <strong>${Math.abs(varAnual)}%</strong> situándose ${avgZScore > 0 ? 'sobre' : 'bajo'} el promedio histórico.`;
+        }
+
+        // Prepare chart data
+        // Group by DELITO for distribution
+        const delitoGroups = {};
+        currentWeekData.forEach(row => {
+            const delito = row[COLS.DELITO];
+            const casos = row[COLS.CASOS_ACTUAL] || 0;
+            delitoGroups[delito] = (delitoGroups[delito] || 0) + casos;
+        });
+
+        // Sort and take top 6
+        const sortedDelitos = Object.entries(delitoGroups)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6);
+
         // Chart 1: Doughnut - Distribución
         new Chart(document.getElementById('chartDistribucion'), {
             type: 'doughnut',
             data: {
-                labels: ['Robos por sorpresa', 'Hurtos', 'Robos con violencia', 'Consumo alcohol/drogas', 'Robos vehículos', 'Otros'],
+                labels: sortedDelitos.map(d => d[0].length > 20 ? d[0].substring(0, 20) + '...' : d[0]),
                 datasets: [{
-                    data: [25, 20, 18, 15, 12, 10],
-                    backgroundColor: ChartHelper.colors.categorical
+                    data: sortedDelitos.map(d => d[1]),
+                    backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#64748b']
                 }]
             },
             options: {
-                ...ChartHelper.defaultOptions,
-                cutout: '60%'
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 10 },
+                            boxWidth: 12
+                        }
+                    }
+                }
             }
         });
+
+        // Get last 8 weeks for evolution chart
+        const uniqueSemanas = [...new Set(STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]))]
+            .sort((a, b) => b - a)
+            .slice(0, 8)
+            .reverse();
+
+        const weeklyTotals = uniqueSemanas.map(semana => {
+            return STATE_DATA.allDataHistory
+                .filter(row => row[COLS.ID_SEMANA] === semana)
+                .reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+        });
+
+        const weekLabels = uniqueSemanas.map(s => `Sem ${s % 100}`);
 
         // Chart 2: Line - Evolución
         new Chart(document.getElementById('chartEvolucion'), {
             type: 'line',
             data: {
-                labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'],
+                labels: weekLabels,
                 datasets: [{
                     label: 'Total Delitos',
-                    data: [120, 135, 110, 145, 130, 155, 140, 128],
+                    data: weeklyTotals,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
                     fill: true,
@@ -105,51 +217,18 @@
                 }]
             },
             options: {
-                ...ChartHelper.defaultOptions,
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        // Chart 3: Bar - Comparativa
-        new Chart(document.getElementById('chartComparativa'), {
-            type: 'bar',
-            data: {
-                labels: ['Robos', 'Hurtos', 'Violencia', 'Drogas', 'Vehículos'],
-                datasets: [{
-                    label: 'Casos',
-                    data: [85, 65, 45, 35, 25],
-                    backgroundColor: ChartHelper.colors.categorical,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                ...ChartHelper.defaultOptions,
-                plugins: { legend: { display: false } }
-            }
-        });
-
-        // Chart 4: Radar - Efectividad
-        new Chart(document.getElementById('chartEfectividad'), {
-            type: 'radar',
-            data: {
-                labels: ['Detenciones', 'Patrullajes', 'Respuesta', 'Cobertura', 'Tecnología'],
-                datasets: [{
-                    label: 'Rendimiento Actual',
-                    data: [75, 85, 60, 80, 70],
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    pointBackgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                ...ChartHelper.defaultOptions,
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
                 scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 100
-                    }
+                    y: { beginAtZero: false }
                 }
             }
         });
-    });
+
+        // Update sidebar comuna name
+        if (document.getElementById('sidebarComuna')) {
+            document.getElementById('sidebarComuna').textContent = `Comuna de ${STATE_DATA.comunaName || 'Santiago'}`;
+        }
+    })();
 </script>

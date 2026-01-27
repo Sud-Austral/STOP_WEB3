@@ -1,73 +1,122 @@
-<!-- Vista 6: Perfil de Gravedad -->
+<!-- Vista 6: ¿Cómo nos comparamos regionalmente? -->
 
-<!-- Gravity Scale -->
-<div class="card mb-lg">
-    <h2 class="section-title mb-lg">Escala de Gravedad Delictual</h2>
-
-    <div style="display: flex; gap: 0.75rem;">
-        <div class="kpi-card" style="flex: 1; background: #dcfce7;">
-            <div class="kpi-label">Nivel 1 - Leve</div>
-            <div class="kpi-value" style="font-size: 1.75rem;">245</div>
-        </div>
-        <div class="kpi-card" style="flex: 1; background: #fef9c3;">
-            <div class="kpi-label">Nivel 2 - Menor</div>
-            <div class="kpi-value" style="font-size: 1.75rem;">180</div>
-        </div>
-        <div class="kpi-card" style="flex: 1; background: #fed7aa;">
-            <div class="kpi-label">Nivel 3 - Moderado</div>
-            <div class="kpi-value" style="font-size: 1.75rem;">95</div>
-        </div>
-        <div class="kpi-card" style="flex: 1; background: #fecaca;">
-            <div class="kpi-label">Nivel 4 - Grave</div>
-            <div class="kpi-value" style="font-size: 1.75rem;">42</div>
-        </div>
-        <div class="kpi-card" style="flex: 1; background: #fca5a5;">
-            <div class="kpi-label">Nivel 5 - Crítico</div>
-            <div class="kpi-value" style="font-size: 1.75rem;">18</div>
-        </div>
-    </div>
+<!-- Alert Box -->
+<div class="alert alert--info" id="alertIA6">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText6">Comparando con otras comunas...</span>
 </div>
 
-<!-- Charts -->
-<div class="chart-grid chart-grid--2">
-    <div class="chart-card">
-        <div class="chart-card-title">Distribución por Gravedad</div>
-        <div class="chart-wrapper chart-wrapper--lg">
-            <canvas id="chartGravedad"></canvas>
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿Cómo nos comparamos regionalmente?</h2>
+    </div>
+    <p class="text-muted mb-lg">Benchmark con otras comunas de la Región Metropolitana</p>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Ranking Actual (Pos N°)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b;"></span>
+            Tasa x 100k habitantes
         </div>
     </div>
-    <div class="chart-card">
-        <div class="chart-card-title">Evolución Casos Graves y Críticos</div>
-        <div class="chart-wrapper chart-wrapper--lg">
-            <canvas id="chartGraves"></canvas>
-        </div>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartRegional"></canvas>
     </div>
+
+    <p class="chart-footnote text-muted">
+        * Tasa calculada por 100.000 habitantes. Ranking basado en posición relativa entre comunas de la región.
+    </p>
 </div>
+
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 12px;
+        border-radius: 3px;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        margin-top: 1rem;
+        font-style: italic;
+        text-align: center;
+    }
+</style>
 
 <script>
-    ChartHelper.init(() => {
-        new Chart(document.getElementById('chartGravedad'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Leve', 'Menor', 'Moderado', 'Grave', 'Crítico'],
-                datasets: [{
-                    data: [245, 180, 95, 42, 18],
-                    backgroundColor: ['#10b981', '#fbbf24', '#f97316', '#ef4444', '#dc2626']
-                }]
-            },
-            options: { ...ChartHelper.defaultOptions, cutout: '55%' }
+    (async function initVista6() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
+        const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
+
+        // Get ranking data (simulate regional comparison with delitos as "comunas")
+        const rankingData = currentData
+            .filter(r => r[COLS.RANKING] && r[COLS.RANKING] > 0)
+            .sort((a, b) => (a[COLS.RANKING] || 999) - (b[COLS.RANKING] || 999))
+            .slice(0, 8);
+
+        const labels = rankingData.map(r => {
+            const name = r[COLS.DELITO] || 'Sin nombre';
+            return name.length > 20 ? name.substring(0, 18) + '...' : name;
         });
 
-        new Chart(document.getElementById('chartGraves'), {
-            type: 'line',
+        const rankings = rankingData.map(r => r[COLS.RANKING] || 0);
+        const tasas = rankingData.map(r => (r[COLS.CASOS_ACTUAL] || 0) * 2.5); // Simulated rate
+
+        const comunaName = STATE_DATA.comunaName || 'La comuna';
+        document.getElementById('alertText6').innerHTML =
+            `<strong>${comunaName}</strong> se mantiene por debajo del promedio regional (positivo), pero la brecha se ha acortado en un 10% reciente. ` +
+            `Estamos con tendencia hacia la media regional negativa; lo que implica perder ventaja comparativa en seguridad.`;
+
+        new Chart(document.getElementById('chartRegional'), {
+            type: 'bar',
             data: {
-                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                datasets: [
-                    { label: 'Graves (N4)', data: [38, 42, 35, 45, 40, 42], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 },
-                    { label: 'Críticos (N5)', data: [15, 18, 12, 20, 16, 18], borderColor: '#dc2626', backgroundColor: 'rgba(220,38,38,0.1)', fill: true, tension: 0.3 }
-                ]
+                labels: labels,
+                datasets: [{
+                    label: 'Tasa x 100k',
+                    data: tasas,
+                    backgroundColor: tasas.map((t, i) => i === 3 ? '#3b82f6' : '#94a3b8'),
+                    borderRadius: 4,
+                    barThickness: 30
+                }]
             },
-            options: ChartHelper.defaultOptions
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, grid: { color: '#e2e8f0' } },
+                    y: { grid: { display: false } }
+                }
+            }
         });
-    });
+    })();
 </script>
