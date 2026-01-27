@@ -532,6 +532,11 @@ body {
     border-radius: 2px;
 }
 
+/* Subtitle after section header - closer to title */
+.section-header+.text-muted {
+    margin-top: -1.5rem;
+}
+
 /* ========================================
    Utilities
    ======================================== */

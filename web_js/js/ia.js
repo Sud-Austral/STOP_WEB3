@@ -40,7 +40,6 @@ const IAModule = {
      */
     init() {
         this.API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf");
-        console.log(this.API_KEY)
     },
 
     /**

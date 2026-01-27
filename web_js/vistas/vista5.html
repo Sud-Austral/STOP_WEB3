@@ -84,7 +84,7 @@
         // Calculate totals for analysis
         const totalActual = actual.reduce((a, b) => a + b, 0);
         const totalAnterior = anterior.reduce((a, b) => a + b, 0);
-        const change = ((totalActual - totalAnterior) / totalAnterior * 100).toFixed(1);
+        const change = totalAnterior > 0 ? ((totalActual - totalAnterior) / totalAnterior * 100).toFixed(1) : 0;
 
         // Try AI interpretation
         if (typeof IAModule !== 'undefined') {
@@ -95,6 +95,12 @@
             document.getElementById('alertText5').innerHTML =
                 `Los delitos asociados a <strong>VIOLENCIA</strong> han variado un <strong>${Math.abs(change)}%</strong>. ` +
                 `Esto podría indicar percepción de inseguridad para la comunidad.`;
+        }
+
+        // Only create chart if we have data
+        if (sortedDelitos.length === 0) {
+            document.getElementById('chartPerfil').parentElement.innerHTML = '<p class="text-muted">No hay datos disponibles</p>';
+            return;
         }
 
         new Chart(document.getElementById('chartPerfil'), {

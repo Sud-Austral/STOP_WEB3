@@ -107,6 +107,13 @@
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
         const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
 
+        // Early exit if no data
+        if (!currentWeekData || currentWeekData.length === 0) {
+            document.getElementById('alertText4').innerHTML = 'No hay datos disponibles para esta semana.';
+            document.getElementById('chartMatriz').parentElement.innerHTML = '<p class="text-muted" style="text-align:center;padding:2rem;">No hay datos disponibles</p>';
+            return;
+        }
+
         // Calculate total for bubble size
         const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
 

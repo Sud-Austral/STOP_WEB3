@@ -77,10 +77,17 @@
         const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
 
         // Get ranking data (simulate regional comparison with delitos as "comunas")
-        const rankingData = currentData
+        let rankingData = currentData
             .filter(r => r[COLS.RANKING] && r[COLS.RANKING] > 0)
             .sort((a, b) => (a[COLS.RANKING] || 999) - (b[COLS.RANKING] || 999))
             .slice(0, 8);
+
+        // Fallback: if no ranking data, use top delitos by cases
+        if (rankingData.length === 0) {
+            rankingData = [...currentData]
+                .sort((a, b) => (b[COLS.CASOS_ACTUAL] || 0) - (a[COLS.CASOS_ACTUAL] || 0))
+                .slice(0, 8);
+        }
 
         const labels = rankingData.map(r => {
             const name = r[COLS.DELITO] || 'Sin nombre';
