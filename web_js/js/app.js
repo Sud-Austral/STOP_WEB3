@@ -11,7 +11,7 @@ const App = {
         pdfScale: 2,
         views: [
             'vista1', 'vista2', 'vista3', 'vista4', 'vista5',
-            'vista6', 'vista7', 'vista8', 'vista9', 'vista14'
+            'vista6', 'vista7', 'vista8', 'vista9', 'vista14', 'vista15'
         ]
     },
 

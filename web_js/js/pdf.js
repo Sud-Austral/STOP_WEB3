@@ -12,7 +12,11 @@ const PDFModule = {
         const pageWidth = 210;
         const pageHeight = 297;
         const comunaName = window.STATE_DATA?.comunaName || 'Santiago';
-        const semanaId = window.STATE_DATA?.semanaId || '';
+        const semanaId = window.STATE_DATA?.semanaDetalle || '';
+
+        // Visual Center Adjustment (0 for true center)
+        const vOff = 0;
+        const centerX = 105 + vOff;
 
         // Format date as dd/mm/yyyy
         const now = new Date();
@@ -35,61 +39,95 @@ const PDFModule = {
 
         // STOP Logo circle
         pdf.setFillColor(99, 102, 241);
-        pdf.circle(105, 55, 22, 'F');
+        pdf.circle(centerX, 55, 22, 'F');
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(18);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('STOP', 105, 52, { align: 'center' });
+        pdf.text('STOP', centerX, 52, { align: 'center' });
         pdf.setFontSize(8);
-        pdf.text('SISTEMA', 105, 60, { align: 'center' });
+        pdf.text('SISTEMA', centerX, 60, { align: 'center' });
 
         // Main Title
         pdf.setTextColor(255, 255, 255);
         pdf.setFontSize(26);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('REPORTE DE INTELIGENCIA', 105, 110, { align: 'center' });
-        pdf.text('DELICTUAL', 105, 122, { align: 'center' });
+        pdf.text('REPORTE DE INTELIGENCIA', centerX, 110, { align: 'center' });
+        pdf.text('DELICTUAL', centerX, 122, { align: 'center' });
 
         // Subtitle - Ley 21.332
         pdf.setFontSize(11);
         pdf.setTextColor(156, 163, 175);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('Ley 21.332: Sistema Táctico de Operación Policial', 105, 138, { align: 'center' });
+        pdf.text('Ley 21.332: Sistema Táctico de Operación Policial', centerX, 138, { align: 'center' });
 
         // Divider line
         pdf.setDrawColor(99, 102, 241);
         pdf.setLineWidth(0.5);
-        pdf.line(55, 152, 155, 152);
+        pdf.line(55 + vOff, 152, 155 + vOff, 152);
 
         // Metadata Box
         pdf.setFillColor(51, 65, 85);
-        pdf.roundedRect(35, 170, 140, 65, 5, 5, 'F');
+        pdf.roundedRect(35 + vOff, 165, 140, 80, 5, 5, 'F'); // Increased height and moved up slightly
 
         // Labels
         pdf.setTextColor(156, 163, 175);
         pdf.setFontSize(9);
-        pdf.text('COMUNA', 55, 188);
-        pdf.text('SEMANA DE ANÁLISIS', 55, 205);
-        pdf.text('FECHA DE GENERACIÓN', 55, 222);
+        const labelX = 50 + vOff; // Moved left to 50
+        pdf.text('COMUNA', labelX, 180);
+        pdf.text('SEMANA DE ANÁLISIS', labelX, 198);
+        pdf.text('FECHA DE GENERACIÓN', labelX, 230); // Moved down
 
         // Values
         pdf.setTextColor(255, 255, 255);
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(11);
-        pdf.text(comunaName.toUpperCase(), 140, 188);
-        pdf.text(semanaId ? `N° ${semanaId}` : 'ACTUAL', 140, 205);
-        pdf.text(dateFormatted, 140, 222);
+        const valueX = 130 + vOff; // Moved left to 130 to reduce gap
+
+        // Comuna
+        pdf.text(comunaName.toUpperCase(), valueX, 180); // Aligned with label
+
+        // Semana Multi-line Parsing
+        let semanaTextY = 198;
+        if (semanaId && semanaId.includes(' (del ')) {
+            const parts1 = semanaId.split(' (del ');
+            const titlePart = parts1[0]; // "SEMANA XX/XXXX"
+
+            // Draw Part 1
+            pdf.text(titlePart, valueX, semanaTextY);
+
+            if (parts1[1]) {
+                const parts2 = parts1[1].split(' al ');
+                const dateStart = '(del ' + parts2[0]; // "(del dd/mm/yyyy"
+
+                // Draw Part 2
+                pdf.setFontSize(10); // Slightly smaller for dates
+                pdf.text(dateStart, valueX, semanaTextY + 5);
+
+                if (parts2[1]) {
+                    const dateEnd = 'al ' + parts2[1]; // "al dd/mm/yyyy)"
+                    // Draw Part 3
+                    pdf.text(dateEnd, valueX, semanaTextY + 10);
+                }
+                pdf.setFontSize(11); // Reset size
+            }
+        } else {
+            // Fallback for simple text
+            pdf.text(semanaId || 'ACTUAL', valueX, semanaTextY);
+        }
+
+        // Date
+        pdf.text(dateFormatted, valueX, 230);
 
         // Footer
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(8);
         pdf.setTextColor(100, 116, 139);
-        pdf.text('Documento generado automáticamente por STOP WEB', 105, 260, { align: 'center' });
-        pdf.text('Centro de Análisis del Delito • Inteligencia Policial', 105, 268, { align: 'center' });
+        pdf.text('Documento generado automáticamente por STOP WEB', centerX, 260, { align: 'center' });
+        pdf.text('Centro de Análisis del Delito • Inteligencia Policial', centerX, 268, { align: 'center' });
 
         // Version
         pdf.setFontSize(7);
-        pdf.text('v1.0.0 | Powered by AI', 105, 285, { align: 'center' });
+        pdf.text('v1.0.0 | Powered by AI', centerX, 285, { align: 'center' });
     },
 
     /**

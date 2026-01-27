@@ -66,9 +66,18 @@ const IAModule = {
         const varSemanal = totalCasosAnt > 0 ? ((totalCasos - totalCasosAnt) / totalCasosAnt * 100).toFixed(1) : 0;
         const varAnual = totalCasosYearAnt > 0 ? ((totalCasos - totalCasosYearAnt) / totalCasosYearAnt * 100).toFixed(1) : 0;
 
-        // Average Z-Score
-        const avgZScore = currentWeekData.reduce((sum, row) => sum + (row[COLS.Z_SCORE] || 0), 0) / currentWeekData.length;
+        // Average Z-Score (Weighted by Cases)
+        let weightedZSum = 0;
+        let totalCasesForZ = 0;
 
+        currentWeekData.forEach(row => {
+            const z = row[COLS.Z_SCORE] || 0;
+            const c = row[COLS.CASOS_ACTUAL] || 0;
+            weightedZSum += z * c;
+            totalCasesForZ += c;
+        });
+
+        const avgZScore = totalCasesForZ > 0 ? (weightedZSum / totalCasesForZ) : 0;
         // Top delitos
         const delitoGroups = {};
         currentWeekData.forEach(row => {
@@ -97,6 +106,8 @@ const IAModule = {
             comunaName,
             semanaId: maxSemana,
             totalCasos,
+            totalCasosAnt,      // Added for Vista 15
+            totalCasosYearAnt,  // Added for Vista 15
             varSemanal,
             varAnual,
             avgZScore: avgZScore.toFixed(2),
@@ -104,7 +115,9 @@ const IAModule = {
             alertas,
             alertasCriticas,
             highRiskDelitos,
-            numDelitos: currentWeekData.length
+            numDelitos: currentWeekData.length,
+            // Vista 15 specific derived data
+            v15_risk: avgZScore > 1 ? 'ALTO' : (avgZScore > 0.5 ? 'MEDIO' : 'BAJO')
         };
     },
 
@@ -134,7 +147,7 @@ const IAModule = {
                 messages: [
                     {
                         role: "system",
-                        content: "Eres un analista experto en seguridad pública y criminología. Debes generar interpretaciones breves y profesionales para un dashboard de inteligencia delictual municipal. Responde SOLO con el JSON solicitado, sin explicaciones adicionales."
+                        content: "Eres un analista experto en seguridad pública y criminología con un enfoque en comunicación estratégica. Debes generar interpretaciones breves y profesionales para un dashboard de inteligencia delictual municipal. Responde SOLO con el JSON solicitado, sin explicaciones adicionales."
                     },
                     {
                         role: "user",
@@ -177,6 +190,7 @@ const IAModule = {
     /**
      * Build the prompt for generating all interpretations
      */
+
     buildPrompt(context) {
         return `
 Analiza los siguientes datos delictuales de ${context.comunaName} y genera interpretaciones para 13 vistas de un dashboard de seguridad.
@@ -192,6 +206,16 @@ DATOS ACTUALES:
 - Alertas críticas: ${context.alertasCriticas}
 - Top 5 delitos: ${context.topDelitos.join(', ')}
 - Delitos alto riesgo: ${context.highRiskDelitos.join(', ')}
+
+Data para vista15 (Diagnóstico Inmediato):
+- Casos Actuales: ${context.totalCasos}
+- Casos Semana Anterior: ${context.totalCasosAnt}
+- Casos Año Anterior: ${context.totalCasosYearAnt}
+- Variación Semanal: ${context.varSemanal}%
+- Variación Anual: ${context.varAnual}%
+- Z-Score Global: ${context.avgZScore}
+- Riesgo Global Estimado: ${context.v15_risk}
+- Principales Delitos: ${context.topDelitos.slice(0, 3).join(', ')}
 
 Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser de 1-2 oraciones, profesional y específica:
 
@@ -209,7 +233,8 @@ Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser
   "vista11": "Interpretación sobre simulador de impacto",
   "vista12": "Interpretación sobre predicción del próximo peak delictual",
   "vista13": "Notas metodológicas y fuentes de datos",
-  "vista14": "Interpretación sobre la proyección futura (regresión lineal) y tendencia"
+  "vista14": "Interpretación sobre la proyección futura (regresión lineal) y tendencia",
+  "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo. Analiza las variaciones (semanal/anual), el Z-Score y el nivel de riesgo para identificar anomalías críticas y métricas estables."
 }
 
 Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
@@ -296,7 +321,8 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
             vista11: "Simulador de impacto disponible...",
             vista12: "Prediciendo el próximo peak delictual...",
             vista13: "Revisando fuentes y notas metodológicas...",
-            vista14: "Calculando proyección y regresión lineal delictual..."
+            vista14: "Calculando proyección y regresión lineal delictual...",
+            vista15: "Generando diagnóstico crítico inmediato de seguridad..."
         };
     },
 
