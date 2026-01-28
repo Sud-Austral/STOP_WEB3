@@ -1,0 +1,264 @@
+<!-- Vista 11: ¿Qué pasaría si intensificamos ciertos delitos? (Simulación) -->
+
+<!-- Header Alert -->
+<div class="alert alert--accent" id="alertIA11">
+    <strong>🔬 Laboratorio de Simulación:</strong> Ajusta los controles para ver el impacto proyectado en el nivel de
+    riesgo global
+</div>
+
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿Qué pasaría si intensificamos ciertos delitos?</h2>
+    </div>
+    <p class="text-muted mb-lg">Simulador de hipótesis en índice de riesgo</p>
+
+    <!-- Alert -->
+    <div class="alert alert--warning mb-lg" id="simAlert">
+        <strong>🤖 Interpretación de IA:</strong> El simulador permite anticipar escenarios futuros porque suma mayor
+        impacto en el nivel de riesgo global que el estimado sobre su entidaz, dando alternativas para la planificación
+        con dato objetivo.
+    </div>
+
+    <div class="simulation-layout">
+        <!-- Sliders Column -->
+        <div class="simulation-controls">
+            <div class="slider-group">
+                <label class="slider-label">
+                    <span>Robos con Violencia (%)</span>
+                    <span class="slider-value" id="sliderVal1">0%</span>
+                </label>
+                <input type="range" min="-50" max="50" value="0" class="sim-slider" id="slider1"
+                    oninput="updateSimulation()">
+                <div class="slider-scale">
+                    <span>-50%</span>
+                    <span>0%</span>
+                    <span>+50%</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <label class="slider-label">
+                    <span>Hurtos (%)</span>
+                    <span class="slider-value" id="sliderVal2">0%</span>
+                </label>
+                <input type="range" min="-50" max="50" value="0" class="sim-slider" id="slider2"
+                    oninput="updateSimulation()">
+                <div class="slider-scale">
+                    <span>-50%</span>
+                    <span>0%</span>
+                    <span>+50%</span>
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <label class="slider-label">
+                    <span>Consumo Alcohol/Drogas (%)</span>
+                    <span class="slider-value" id="sliderVal3">0%</span>
+                </label>
+                <input type="range" min="-50" max="50" value="0" class="sim-slider" id="slider3"
+                    oninput="updateSimulation()">
+                <div class="slider-scale">
+                    <span>-50%</span>
+                    <span>0%</span>
+                    <span>+50%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Indicator -->
+        <div class="risk-indicator-panel">
+            <h4>Proyección de Riesgo</h4>
+            <div class="risk-circle" id="riskCircle">
+                <span id="riskLevel">MEDIO</span>
+            </div>
+            <p class="risk-description" id="riskDescription">
+                Mantiene la situación actual indefinidamente sin alertas de alto con nivel de riesgo a través a largo
+                plazo.
+            </p>
+            <div class="risk-rate">
+                Tasa Proyectada: <strong id="projectedRate">450</strong> / 100k hab
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .simulation-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .simulation-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .slider-group {
+        background: var(--color-bg);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+    }
+
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .slider-value {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+
+    .sim-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(to right, #10b981, #f59e0b, #ef4444);
+        appearance: none;
+        cursor: pointer;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border: 3px solid var(--color-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .slider-scale {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+    }
+
+    .risk-indicator-panel {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--color-bg);
+        border-radius: var(--radius-lg);
+    }
+
+    .risk-indicator-panel h4 {
+        font-size: 0.9rem;
+        color: var(--color-text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .risk-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        transition: all 0.3s;
+    }
+
+    .risk-circle span {
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .risk-circle.low {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .risk-circle.high {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .risk-description {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .risk-rate {
+        font-size: 0.9rem;
+        color: var(--color-text);
+    }
+
+    .risk-rate strong {
+        color: var(--color-primary);
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .simulation-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    let baseRate = 450;
+
+    (async function initVista11() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        // Calculate base rate from data
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
+        const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
+        const totalCasos = currentData.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        baseRate = Math.round(totalCasos * 2.5); // Simulated rate per 100k
+
+        updateSimulation();
+    })();
+
+    function updateSimulation() {
+        const v1 = parseInt(document.getElementById('slider1').value);
+        const v2 = parseInt(document.getElementById('slider2').value);
+        const v3 = parseInt(document.getElementById('slider3').value);
+
+        document.getElementById('sliderVal1').textContent = (v1 >= 0 ? '+' : '') + v1 + '%';
+        document.getElementById('sliderVal2').textContent = (v2 >= 0 ? '+' : '') + v2 + '%';
+        document.getElementById('sliderVal3').textContent = (v3 >= 0 ? '+' : '') + v3 + '%';
+
+        // Calculate impact
+        const impact = (v1 * 0.4 + v2 * 0.3 + v3 * 0.3) / 100;
+        const projectedRate = Math.round(baseRate * (1 + impact));
+
+        document.getElementById('projectedRate').textContent = projectedRate;
+
+        const circle = document.getElementById('riskCircle');
+        const levelEl = document.getElementById('riskLevel');
+        const descEl = document.getElementById('riskDescription');
+
+        if (impact > 0.15) {
+            circle.className = 'risk-circle high';
+            levelEl.textContent = 'ALTO';
+            descEl.textContent = 'Escenario de alto riesgo. Se requieren medidas preventivas inmediatas.';
+        } else if (impact < -0.15) {
+            circle.className = 'risk-circle low';
+            levelEl.textContent = 'BAJO';
+            descEl.textContent = 'Escenario favorable. Las medidas actuales están funcionando.';
+        } else {
+            circle.className = 'risk-circle';
+            levelEl.textContent = 'MEDIO';
+            descEl.textContent = 'Mantiene la situación actual indefinidamente sin alertas de alto con nivel de riesgo a través a largo plazo.';
+        }
+    }
+</script>

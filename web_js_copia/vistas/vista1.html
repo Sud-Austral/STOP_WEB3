@@ -1,0 +1,243 @@
+<!-- Vista 1: Ficha Comunal - Dashboard Principal (Datos Dinámicos) -->
+
+<!-- Section: ¿Cuál es la situación general? -->
+<div class="card mb-lg">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">¿Cuál es la situación general?</h2>
+    </div>
+    <p class="text-muted mb-md">Estado actual de la seguridad y distribución de los delitos principales</p>
+
+    <!-- Alert Box (Interpretación IA) -->
+    <div class="alert alert--warning mb-lg" id="alertIA">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText">Cargando análisis...</span>
+    </div>
+
+    <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card">
+            <div class="kpi-label">Casos de la Semana</div>
+            <div class="kpi-value" id="kpiCasos">--</div>
+            <div class="kpi-change" id="kpiCasosChange">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Variación Anual</div>
+            <div class="kpi-value" id="kpiVarAnual">--</div>
+            <div class="kpi-change" id="kpiVarAnualChange">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">TASA X 100MIL</div>
+            <div class="kpi-value" id="kpiTasa">--</div>
+            <div class="kpi-change kpi-change--neutral">promedio comunal</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">NIVEL DE RIESGO</div>
+            <div class="kpi-value" id="kpiRiesgo">--</div>
+            <div class="kpi-change kpi-change--neutral" id="kpiRiesgoLabel">--</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section - 2 Rows -->
+<div class="chart-card mb-lg">
+    <div class="chart-card-title">Distribución de Casos Semanal</div>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartDistribucion"></canvas>
+    </div>
+</div>
+<div class="chart-card">
+    <div class="chart-card-title">Evolución Semanal</div>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartEvolucion"></canvas>
+    </div>
+</div>
+
+<script>
+    (async function initVista1() {
+        // Wait for data to be loaded
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Wait for Chart.js
+        const waitForChart = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof Chart !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        await waitForChart();
+
+        // Get max ID_SEMANA
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
+
+        // Filter data for current week
+        const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
+
+        // Calculate KPIs
+        const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+        const totalCasosAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
+        const totalCasosYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
+
+        const varSemanal = totalCasosAnt > 0 ? ((totalCasos - totalCasosAnt) / totalCasosAnt * 100).toFixed(1) : 0;
+        const varAnual = totalCasosYearAnt > 0 ? ((totalCasos - totalCasosYearAnt) / totalCasosYearAnt * 100).toFixed(1) : 0;
+
+        // Calculate average Z-Score for risk level
+        const avgZScore = currentWeekData.reduce((sum, row) => sum + (row[COLS.Z_SCORE] || 0), 0) / currentWeekData.length;
+
+        // Determine risk level
+        let riskLevel = 'BAJO';
+        let riskColor = 'text-success';
+        if (avgZScore > 1.5) {
+            riskLevel = 'ALTO';
+            riskColor = 'text-danger';
+        } else if (avgZScore > 0.5) {
+            riskLevel = 'MEDIO';
+            riskColor = 'text-warning';
+        }
+
+        // Update KPIs in DOM
+        document.getElementById('kpiCasos').textContent = totalCasos.toLocaleString();
+        document.getElementById('kpiCasosChange').textContent = `${varSemanal >= 0 ? '▲' : '▼'} ${Math.abs(varSemanal)}% vs Sem. Ant.`;
+        document.getElementById('kpiCasosChange').className = `kpi-change ${varSemanal >= 0 ? 'kpi-change--negative' : 'kpi-change--positive'}`;
+
+        document.getElementById('kpiVarAnual').textContent = `${varAnual >= 0 ? '+' : ''}${varAnual}%`;
+        document.getElementById('kpiVarAnual').className = `kpi-value ${varAnual >= 0 ? 'text-danger' : 'text-success'}`;
+        document.getElementById('kpiVarAnualChange').textContent = 'vs Año Anterior';
+
+        // Tasa (placeholder - would need population data)
+        document.getElementById('kpiTasa').textContent = (totalCasos * 0.15).toFixed(1);
+
+        document.getElementById('kpiRiesgo').textContent = riskLevel;
+        document.getElementById('kpiRiesgo').className = `kpi-value ${riskColor}`;
+        document.getElementById('kpiRiesgoLabel').textContent = `Z-Score: ${avgZScore.toFixed(2)}`;
+
+        // Update Alert Text
+        const alertClass = avgZScore > 1.5 ? 'alert--danger' : avgZScore > 0.5 ? 'alert--warning' : 'alert--success';
+        const alertEl = document.getElementById('alertIA');
+        alertEl.className = `alert ${alertClass}`;
+
+        // Try to get AI interpretation, fallback to calculated text
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista1').then(interpretation => {
+                document.getElementById('alertText').innerHTML = interpretation;
+            });
+        } else {
+            const trendText = varSemanal >= 0 ? 'han aumentado' : 'han disminuido';
+            document.getElementById('alertText').innerHTML = `Esta semana los delitos ${trendText} un <strong>${Math.abs(varSemanal)}%</strong>. ` +
+                `Los robos con violencia ${varAnual >= 0 ? 'han aumentado' : 'bajaron'} un <strong>${Math.abs(varAnual)}%</strong> situándose ${avgZScore > 0 ? 'sobre' : 'bajo'} el promedio histórico.`;
+        }
+
+        // Prepare chart data
+        // Group by DELITO for distribution
+        const delitoGroups = {};
+        currentWeekData.forEach(row => {
+            const delito = row[COLS.DELITO];
+            const casos = row[COLS.CASOS_ACTUAL] || 0;
+            delitoGroups[delito] = (delitoGroups[delito] || 0) + casos;
+        });
+
+        // Sort and take top 6
+        const sortedDelitos = Object.entries(delitoGroups)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6);
+
+        // Chart 1: Doughnut - Distribución
+        new Chart(document.getElementById('chartDistribucion'), {
+            type: 'doughnut',
+            data: {
+                labels: sortedDelitos.map(d => d[0].length > 20 ? d[0].substring(0, 20) + '...' : d[0]),
+                datasets: [{
+                    data: sortedDelitos.map(d => d[1]),
+                    backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#64748b']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '55%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 10 },
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        });
+
+        // Get last 8 weeks for evolution chart
+        const uniqueSemanas = [...new Set(STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]))]
+            .sort((a, b) => b - a)
+            .slice(0, 8)
+            .reverse();
+
+        const weeklyTotals = uniqueSemanas.map(semana => {
+            return STATE_DATA.allDataHistory
+                .filter(row => row[COLS.ID_SEMANA] === semana)
+                .reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+        });
+
+        const weekLabels = uniqueSemanas.map(s => `Sem ${s % 100}`);
+
+        // Chart 2: Line - Evolución
+        new Chart(document.getElementById('chartEvolucion'), {
+            type: 'line',
+            data: {
+                labels: weekLabels,
+                datasets: [{
+                    label: 'Total Delitos',
+                    data: weeklyTotals,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top' } },
+                scales: {
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+
+        // Update sidebar comuna name
+        if (document.getElementById('sidebarComuna')) {
+            document.getElementById('sidebarComuna').textContent = `Comuna de ${STATE_DATA.comunaName || 'Santiago'}`;
+        }
+    })();
+</script>

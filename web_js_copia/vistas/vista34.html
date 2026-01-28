@@ -1,0 +1,209 @@
+<!-- Vista 34: Proyección Delictual  -->
+
+<!-- Section Header with Filter -->
+<div class="card mb-lg">
+    <!-- Comuna/Mes Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-cead">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="periodo-fill-cead">--</span>
+    </div>
+
+    <div class="row mb-md" style="align-items: center; justify-content: space-between;">
+        <div class="col-8">
+            <div class="section-header">
+                <h2 class="section-title">¿Cuál es la Situación Delictual? </h2>
+            </div>
+            <p class="text-muted">Análisis proyectivo mensual basado en tendencias históricas</p>
+        </div>
+        <div class="col-4">
+            <select id="delitoSelector34" class="form-select"
+                style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--color-border);">
+                <option value="TODOS">Todos los Delitos</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info" id="alertIA34">
+        <strong>📊 Proyección IA:</strong> <span id="alertText34">Calculando tendencias futuras...</span>
+    </div>
+</div>
+
+<!-- KPI Cards Grid -->
+<div class="kpi-grid mb-lg">
+    <!-- Card 1: Historica -->
+    <div class="kpi-card">
+        <div class="kpi-label">Promedio Histórico (4 Meses)</div>
+        <div class="kpi-value" id="kpiHist34">--</div>
+        <div class="kpi-change text-muted">Datos reales consolidados</div>
+    </div>
+
+    <!-- Card 2: Actual -->
+    <div class="kpi-card" style="border-left: 4px solid var(--color-primary);">
+        <div class="kpi-label">Situación Actual (Mes)</div>
+        <div class="kpi-value" id="kpiActual34">--</div>
+        <div class="kpi-change" id="kpiActualChange34">vs Promedio</div>
+    </div>
+
+    <!-- Card 3: Proyectada -->
+    <div class="kpi-card" style="border-left: 4px solid var(--color-accent); background: #fffbeb;">
+        <div class="kpi-label">Proyección (Próx. 4 Meses)</div>
+        <div class="kpi-value" id="kpiProj34">--</div>
+        <div class="kpi-change text-warning">Estimación lineal</div>
+    </div>
+</div>
+
+<!-- Main Chart -->
+<div class="card">
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartProyeccion34"></canvas>
+    </div>
+    <p class="text-center text-muted mt-md" style="font-size: 0.8rem;">
+        <i class="fa-solid fa-circle-info"></i> La proyección se calcula mediante regresión lineal basada en la
+        tendencia de los últimos 12 meses.
+    </p>
+</div>
+
+<script>
+    (async function initVista34() {
+        const waitForDataCead = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForDataCead();
+        await new Promise(r => { if (typeof Chart !== 'undefined') r(); else setTimeout(() => new Promise(x => setTimeout(x, 100)).then(r), 100); });
+
+        const COLS = window.COLS_CEAD;
+
+        // Update Headers
+        const currentPeriodRow = STATE_DATA_CEAD.allData[0];
+        document.querySelectorAll('.comuna-fill-cead').forEach(el => el.textContent = STATE_DATA_CEAD.comunaName);
+        document.querySelectorAll('.periodo-fill-cead').forEach(el => el.textContent = `${currentPeriodRow[COLS.MES]} ${currentPeriodRow[COLS.ANIO]}`);
+
+        // Setup Selector
+        const selector = document.getElementById('delitoSelector34');
+        const delitos = [...new Set(STATE_DATA_CEAD.allDataHistory.map(r => r[COLS.DESCRIPCION]))].sort();
+        delitos.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            selector.appendChild(opt);
+        });
+        selector.addEventListener('change', (e) => updateView34(e.target.value));
+
+        updateView34('TODOS');
+
+        function updateView34(selectedDelito) {
+            let filteredData = STATE_DATA_CEAD.allDataHistory;
+            if (selectedDelito !== 'TODOS') {
+                filteredData = filteredData.filter(r => r[COLS.DESCRIPCION] === selectedDelito);
+            }
+
+            // Aggregate by Month (YYYY-MM index)
+            // Use 2024-01 -> 1, 2024-02 -> 2 etc relative indexing for simple graph?
+            // Or just map unique YYYY-MM
+            const monthsMap = {};
+            filteredData.forEach(r => {
+                const key = `${r[COLS.ANIO]}-${String(r[COLS.MES_NUM]).padStart(2, '0')}`;
+                monthsMap[key] = (monthsMap[key] || 0) + (r[COLS.CASOS_MES_ACTUAL] || 0);
+            });
+
+            const timeline = Object.keys(monthsMap).sort().map((k, i) => ({
+                label: k, // YYYY-MM
+                val: monthsMap[k],
+                idx: i
+            }));
+
+            // Calc KPIs
+            const len = timeline.length;
+            if (len === 0) return;
+
+            // Last 4 months historic (excluding current?) No, included.
+            const historicSlice = timeline.slice(Math.max(0, len - 4), len);
+            const histAvg = historicSlice.reduce((a, b) => a + b.val, 0) / historicSlice.length;
+
+            const current = timeline[len - 1];
+
+            // Projection
+            // Regression on last 12
+            const regressionData = timeline.slice(Math.max(0, len - 12), len);
+            const n = regressionData.length;
+
+            // Simple Linear Regression
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            regressionData.forEach((t, i) => { // i is local index 0..n-1
+                sumX += i;
+                sumY += t.val;
+                sumXY += i * t.val;
+                sumXX += i * i;
+            });
+
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX || 1);
+            const intercept = (sumY - slope * sumX) / n;
+
+            // Project next 4 (indices n, n+1... relative to regression start)
+            const projected = [];
+            let projSum = 0;
+            for (let i = 0; i < 4; i++) {
+                const val = slope * (n + i) + intercept;
+                const cleanVal = Math.max(0, Math.round(val));
+                projected.push(cleanVal);
+                projSum += cleanVal;
+            }
+            const projAvg = projSum / 4;
+
+            // Render KPIs
+            document.getElementById('kpiHist34').textContent = histAvg.toFixed(1);
+            document.getElementById('kpiActual34').textContent = current.val;
+
+            const diff = current.val - histAvg;
+            const diffPct = histAvg > 0 ? ((diff / histAvg) * 100).toFixed(1) : 0;
+
+            document.getElementById('kpiActualChange34').innerHTML = `${diff > 0 ? '+' : ''}${diffPct}% vs Promedio`;
+            document.getElementById('kpiActualChange34').className = diff > 0 ? 'kpi-change text-danger' : 'kpi-change text-success';
+            document.getElementById('kpiProj34').textContent = projAvg.toFixed(1);
+
+            // Chart
+            const ctx = document.getElementById('chartProyeccion34');
+            if (window.chartInstance34) window.chartInstance34.destroy();
+
+            const histLabels = regressionData.map(d => d.label);
+            const projLabels = Array.from({ length: 4 }, (_, i) => `+${i + 1} Mes`);
+            const labels = [...histLabels, ...projLabels];
+
+            const histVals = regressionData.map(d => d.val);
+            const dataReal = [...histVals, ...Array(4).fill(null)];
+
+            // Trend line across historic + projection
+            // Calculate trend points for historic part
+            const trendPoints = [];
+            for (let i = 0; i < n + 4; i++) {
+                trendPoints.push(Math.max(0, Math.round(slope * i + intercept)));
+            }
+
+            // dataProj: only future part is usually emphasized, but let's show full trend line in orange
+            // Actually, Vista 14 connects current to future separately. 
+            // We'll just show full trend line.
+
+            document.getElementById('alertText34').innerHTML =
+                `Se proyecta un promedio de <strong>${projAvg.toFixed(0)}</strong> casos para los próximos meses. ` +
+                `Tendencia: <strong>${slope > 0 ? 'Alza' : 'Baja'}</strong>.`;
+
+            window.chartInstance34 = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Casos Reales', data: dataReal, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3, pointRadius: 4 },
+                        { label: 'Tendencia/Proyección', data: trendPoints, borderColor: '#f59e0b', borderDash: [5, 5], fill: false, tension: 0, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+                }
+            });
+        }
+    })();
+</script>

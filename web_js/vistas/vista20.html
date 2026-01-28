@@ -1,4 +1,4 @@
-<!-- Vista 20: Tablero de Mando Ejecutivo (Unificado) -->
+﻿<!-- Vista 20: Tablero de Mando Ejecutivo (Unificado) -->
 <style>
     .flex-between {
         display: flex;
@@ -50,10 +50,14 @@
 </style>
 
 <div class="card">
-    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-        <span class="semana-fill">--</span>
+    <!-- Location/Week and Source Row -->
+    <div class="location-source-row" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
     </div>
 
     <div class="section-header">
@@ -221,7 +225,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { legend: { display: true, position: 'top' } },
                 scales: { y: { beginAtZero: true } }
             }
         });
@@ -252,7 +256,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false },
+                    legend: { display: true, position: 'top' },
                     tooltip: {
                         callbacks: {
                             label: function (context) {

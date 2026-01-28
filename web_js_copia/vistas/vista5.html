@@ -1,0 +1,140 @@
+<!-- Vista 5: ¿La violencia está aumentando o son solo delitos menores? -->
+
+<!-- Section -->
+<div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">¿La violencia está aumentando o son solo delitos menores?</h2>
+    </div>
+    <p class="text-muted mb-md">Perspectiva de la distribución de los delitos según su naturaleza</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA5">
+        <strong>📊 Análisis de Perfil:</strong> <span id="alertText5">Analizando perfil delictual...</span>
+    </div>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Casos Semana Actual
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #94a3b8;"></span>
+            Casos Semana Anterior
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b;"></span>
+            Promedio Histórico
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartPerfil"></canvas>
+    </div>
+</div>
+
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 12px;
+        border-radius: 3px;
+    }
+</style>
+
+<script>
+    (async function initVista5() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Process data
+        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
+        const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
+
+        // Get top 5 delitos by cases
+        const sortedDelitos = [...currentData].sort((a, b) => (b[COLS.CASOS_ACTUAL] || 0) - (a[COLS.CASOS_ACTUAL] || 0)).slice(0, 6);
+
+        const labels = sortedDelitos.map(r => {
+            const name = r[COLS.DELITO] || 'Sin nombre';
+            return name.length > 25 ? name.substring(0, 22) + '...' : name;
+        });
+
+        const actual = sortedDelitos.map(r => r[COLS.CASOS_ACTUAL] || 0);
+        const anterior = sortedDelitos.map(r => r[COLS.CASOS_ANT] || 0);
+        const historico = sortedDelitos.map(r => r[COLS.PROMEDIO_HIST] || 0);
+
+        // Calculate totals for analysis
+        const totalActual = actual.reduce((a, b) => a + b, 0);
+        const totalAnterior = anterior.reduce((a, b) => a + b, 0);
+        const change = totalAnterior > 0 ? ((totalActual - totalAnterior) / totalAnterior * 100).toFixed(1) : 0;
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista5').then(interpretation => {
+                document.getElementById('alertText5').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText5').innerHTML =
+                `Los delitos asociados a <strong>VIOLENCIA</strong> han variado un <strong>${Math.abs(change)}%</strong>. ` +
+                `Esto podría indicar percepción de inseguridad para la comunidad.`;
+        }
+
+        // Only create chart if we have data
+        if (sortedDelitos.length === 0) {
+            document.getElementById('chartPerfil').parentElement.innerHTML = '<p class="text-muted">No hay datos disponibles</p>';
+            return;
+        }
+
+        new Chart(document.getElementById('chartPerfil'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Casos Actual', data: actual, backgroundColor: '#3b82f6', borderRadius: 4 },
+                    { label: 'Casos Anterior', data: anterior, backgroundColor: '#94a3b8', borderRadius: 4 },
+                    { label: 'Promedio Hist.', data: historico, backgroundColor: '#f59e0b', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    })();
+</script>

@@ -1,0 +1,183 @@
+<!-- Vista 8: ¿Existe estacionalidad? -->
+
+<!-- Section -->
+<div class="card">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">¿Existe estacionalidad?</h2>
+    </div>
+    <p class="text-muted mb-md">Análisis de patrones mensuales y estacionales en los delitos</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA8">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText8">Analizando patrones estacionales...</span>
+    </div>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Año Actual (2025 + 2026)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #10b981;"></span>
+            Año Anterior (2024)
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b; border-style: dashed;"></span>
+            Promedio Histórico
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartEstacional"></canvas>
+    </div>
+
+    <p class="chart-footnote text-muted">
+        * El eje muestra la variación porcentual respecto al promedio anual. Meses con valores positivos indican más
+        delitos.
+    </p>
+</div>
+
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 3px;
+        border-radius: 2px;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        margin-top: 1rem;
+        font-style: italic;
+        text-align: center;
+    }
+</style>
+
+<script>
+    (async function initVista8() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Calculate seasonal data
+        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+        // Calculate monthly averages
+        const monthlyData = {};
+        months.forEach((m, i) => { monthlyData[i + 1] = { current: [], previous: [], all: [] }; });
+
+        STATE_DATA.allDataHistory.forEach(r => {
+            const mes = r[COLS.MES];
+            const anio = r[COLS.ANIO];
+            const casos = r[COLS.CASOS_ACTUAL] || 0;
+            if (mes && monthlyData[mes]) {
+                monthlyData[mes].all.push(casos);
+                if (anio >= 2025) monthlyData[mes].current.push(casos);
+                else if (anio === 2024) monthlyData[mes].previous.push(casos);
+            }
+        });
+
+        const currentYear = months.map((_, i) => {
+            const data = monthlyData[i + 1].current;
+            return data.length ? data.reduce((a, b) => a + b, 0) / data.length : null;
+        });
+
+        const previousYear = months.map((_, i) => {
+            const data = monthlyData[i + 1].previous;
+            return data.length ? data.reduce((a, b) => a + b, 0) / data.length : null;
+        });
+
+        const historical = months.map((_, i) => {
+            const data = monthlyData[i + 1].all;
+            return data.length ? data.reduce((a, b) => a + b, 0) / data.length : 0;
+        });
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista8').then(interpretation => {
+                document.getElementById('alertText8').innerHTML = interpretation;
+            });
+        } else {
+            document.getElementById('alertText8').innerHTML =
+                `Estamos entrando en la zona de mayor concentración estacional. ` +
+                `Se sugiere preparar recursos adicionales para este período.`;
+        }
+
+        new Chart(document.getElementById('chartEstacional'), {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: 'Año Actual',
+                        data: currentYear,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Año Anterior',
+                        data: previousYear,
+                        borderColor: '#10b981',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Promedio',
+                        data: historical,
+                        borderColor: '#f59e0b',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top' } },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: '#e2e8f0' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    })();
+</script>

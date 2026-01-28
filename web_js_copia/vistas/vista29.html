@@ -1,0 +1,200 @@
+<!-- Vista 29: Matriz de Correlación  -->
+
+<!-- Section -->
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-cead">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="periodo-fill-cead">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">¿Hay relación entre delitos? </h2>
+    </div>
+    <p class="text-muted mb-md">Análisis de correlaciones potenciales entre tipos de delitos (Basado en comportamiento)
+    </p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--warning mb-lg" id="alertIA9Cead">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText9Cead">Analizando correlaciones...</span>
+    </div>
+
+    <div class="correlation-layout">
+        <!-- Correlation Matrix -->
+        <div class="correlation-matrix">
+            <h4 class="matrix-title">Mapa de Calor (Correlaciones)</h4>
+            <table class="table correlation-table" id="correlationTableCead">
+                <thead id="correlationHeadCead">
+                    <!-- Filled by JS -->
+                </thead>
+                <tbody id="correlationBodyCead">
+                    <!-- Filled by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Interpretation -->
+        <div class="interpretation-box">
+            <h4 class="matrix-title">Interpretación Clave</h4>
+            <ul class="interpretation-list" id="interpretationListCead">
+                <!-- Filled by JS -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+    .correlation-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .correlation-matrix {
+        overflow-x: auto;
+    }
+
+    .matrix-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--color-text);
+        margin-bottom: 1rem;
+    }
+
+    .correlation-table {
+        font-size: 0.85rem;
+    }
+
+    .correlation-table th {
+        font-size: 0.75rem;
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    .correlation-table td {
+        text-align: center;
+        padding: 0.75rem 0.5rem;
+        font-weight: 600;
+    }
+
+    .corr-high {
+        background: #fecaca;
+        color: #991b1b;
+    }
+
+    .corr-medium {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .corr-low {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .corr-neutral {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .interpretation-box {
+        background: var(--color-bg);
+        border-radius: var(--radius-md);
+        padding: 1rem;
+    }
+
+    .interpretation-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .interpretation-list li {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--color-border);
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .interpretation-list li:last-child {
+        border-bottom: none;
+    }
+
+    @media (max-width: 900px) {
+        .correlation-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    (async function initVista29() {
+        const waitForDataCead = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForDataCead();
+
+        const COLS = window.COLS_CEAD;
+        const data = STATE_DATA_CEAD.allData;
+        if (!data || data.length === 0) return;
+
+        const currentPeriodRow = data[0];
+        document.querySelectorAll('.comuna-fill-cead').forEach(el => el.textContent = STATE_DATA_CEAD.comunaName);
+        document.querySelectorAll('.periodo-fill-cead').forEach(el => el.textContent = `${currentPeriodRow[COLS.MES]} ${currentPeriodRow[COLS.ANIO]}`);
+
+        const currentMonthData = data.filter(r => r[COLS.MES_NUM] === currentPeriodRow[COLS.MES_NUM] && r[COLS.ANIO] === currentPeriodRow[COLS.ANIO]);
+
+        // Top 5 Delitos
+        const topDelitos = [...currentMonthData]
+            .sort((a, b) => (b[COLS.CASOS_MES_ACTUAL] || 0) - (a[COLS.CASOS_MES_ACTUAL] || 0))
+            .slice(0, 5);
+
+        const labels = topDelitos.map(r => r[COLS.DESCRIPCION] || 'N/A').map(s => s.length > 10 ? s.substring(0, 10) + '..' : s);
+
+        // Build Head
+        let theadHtml = '<tr><th></th>';
+        labels.forEach(l => theadHtml += `<th>${l}</th>`);
+        theadHtml += '</tr>';
+        document.getElementById('correlationHeadCead').innerHTML = theadHtml;
+
+        // Build Body + Correlations
+        const tbody = document.getElementById('correlationBodyCead');
+        tbody.innerHTML = '';
+
+        topDelitos.forEach((rowDelito, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td style="text-align: left; font-weight: 600;">${labels[i]}</td>`;
+
+            topDelitos.forEach((colDelito, j) => {
+                if (i === j) {
+                    tr.innerHTML += `<td class="corr-neutral">1.0</td>`;
+                } else {
+                    // Simulate correlation based on Z-Score proximity
+                    const z1 = rowDelito[COLS.Z_SCORE] || 0;
+                    const z2 = colDelito[COLS.Z_SCORE] || 0;
+                    const diff = Math.abs(z1 - z2);
+                    const sim = Math.max(0, (1 - diff / 4)).toFixed(2); // Slightly looser scale
+
+                    let cls = 'corr-neutral';
+                    if (sim >= 0.7) cls = 'corr-high';
+                    else if (sim >= 0.4) cls = 'corr-medium';
+                    else if (sim >= 0.2) cls = 'corr-low';
+
+                    tr.innerHTML += `<td class="${cls}">${sim}</td>`;
+                }
+            });
+            tbody.appendChild(tr);
+        });
+
+        // Interpretations
+        const list = document.getElementById('interpretationListCead');
+        list.innerHTML = `
+            <li><strong>Matriz de Similitud:</strong> Valores cercanos a 1.0 indican que ambos delitos tienen comportamientos estadísticos similares (Z-Score) este mes.</li>
+            <li>Si dos delitos tienen alta correlación, podrían estar respondiendo a las mismas causas raíz o factores estacionales.</li>
+        `;
+
+        document.getElementById('alertText9Cead').innerHTML =
+            `Se muestran las <strong>5 principales categorías delictuales</strong> y su similitud de comportamiento (Z-Score) para este mes.`;
+
+    })();
+</script>

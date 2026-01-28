@@ -1,18 +1,24 @@
-<!-- Vista 8: ¿Existe estacionalidad? -->
+﻿<!-- Vista 8: ¿Existe estacionalidad? -->
 
 <!-- Section -->
 <div class="card">
-    <!-- Comuna/Semana Header -->
-    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-        <span class="semana-fill">--</span>
+    <!-- Location/Week and Source Row -->
+    <div class="location-source-row" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <!-- Source badge will be injected here by app.js -->
+        <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="section-header">
-        <h2 class="section-title">¿Existe estacionalidad?</h2>
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+            ¿Existe estacionalidad?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Análisis de patrones mensuales y estacionales en los delitos</p>
     </div>
-    <p class="text-muted mb-md">Análisis de patrones mensuales y estacionales en los delitos</p>
 
     <!-- Alert Box -->
     <div class="alert alert--info mb-lg" id="alertIA8">
@@ -172,7 +178,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { legend: { display: true, position: 'top' } },
                 scales: {
                     y: { beginAtZero: false, grid: { color: '#e2e8f0' } },
                     x: { grid: { display: false } }

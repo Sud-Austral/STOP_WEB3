@@ -1,18 +1,22 @@
-<!-- Vista 34: Proyección Delictual (CEAD) -->
+﻿<!-- Vista 34: Proyección Delictual  -->
 
 <!-- Section Header with Filter -->
 <div class="card mb-lg">
-    <!-- Comuna/Mes Header -->
-    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-cead">CARGANDO...</span>
-        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-        <span class="periodo-fill-cead">--</span>
+    <!-- Location/Period and Source Row -->
+    <div class="location-source-row" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-cead">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="periodo-fill-cead">--</span>
+        </div>
+        <!-- Source badge will be injected here by app.js -->
+        <div id="sourceBadgeContainer"></div>
     </div>
 
     <div class="row mb-md" style="align-items: center; justify-content: space-between;">
         <div class="col-8">
             <div class="section-header">
-                <h2 class="section-title">¿Cuál es la Situación Delictual? (CEAD)</h2>
+                <h2 class="section-title">¿Cuál es la Situación Delictual? </h2>
             </div>
             <p class="text-muted">Análisis proyectivo mensual basado en tendencias históricas</p>
         </div>

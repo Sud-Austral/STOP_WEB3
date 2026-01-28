@@ -602,3 +602,39 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Source Badge */
+.source-badge {
+    text-align: right;
+    color: var(--color-text-muted);
+    font-size: 0.65rem;
+}
+
+.source-badge-label {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.source-badge-items {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+}
+
+.source-badge-item {
+    display: block;
+}
+
+.source-badge-item--stop {
+    color: #1e40af;
+}
+
+.source-badge-item--cead {
+    color: #166534;
+}
+
+.source-badge-item--ine {
+    color: #92400e;
+}

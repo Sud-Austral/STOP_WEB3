@@ -1,0 +1,134 @@
+<!-- Vista 42: Proyección Híbrida (Corto vs Largo Plazo) -->
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-hybrid">CARGANDO...</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">Modelo de Proyección Híbrida</h2>
+    </div>
+    <p class="text-muted mb-lg">Integra la volatilidad táctica (STOP) con la inercia estratégica  para un
+        pronóstico ajustado</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--warning mb-lg" id="alertIA42">
+        <strong>🤖 Ajuste de Modelo:</strong> <span id="alertText42">Calculando factores de corrección...</span>
+    </div>
+
+    <div class="kpi-grid mb-md">
+        <div class="kpi-card">
+            <div class="kpi-label">Tendencia Táctica (4 sem)</div>
+            <div class="kpi-value" id="v42_tactical">--</div>
+            <div class="kpi-sub">Volatilidad STOP</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Inercia Estratégica</div>
+            <div class="kpi-value" id="v42_strategic">--</div>
+            <div class="kpi-sub">Tendencia CEAD</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Proyección Ajustada</div>
+            <div class="kpi-value text-primary" id="v42_proj">--</div>
+            <div class="kpi-sub">Casos Próx. Mes</div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartHybridForecast"></canvas>
+    </div>
+    <p class="chart-footnote text-muted">* Línea Azul: Histórico Combinado | Línea Roja: Proyección Híbrida Ajustada</p>
+</div>
+
+<script>
+    (async function initVista42() {
+        const waitForAll = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.isLoaded && typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForAll();
+        await new Promise(r => { if (typeof Chart !== 'undefined') r(); else setTimeout(() => new Promise(x => setTimeout(x, 100)).then(r), 100); });
+
+        document.querySelectorAll('.comuna-fill-hybrid').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+
+        // 1. Calculate Tactical Trend (STOP - Last 4 Weeks)
+        const stopCols = window.COLS;
+        const stopData = STATE_DATA.allDataHistory;
+        const maxWeek = Math.max(...stopData.map(r => r[stopCols.ID_SEMANA]));
+        const recentWeeks = [];
+        for (let i = 3; i >= 0; i--) {
+            const w = maxWeek - i;
+            const sum = stopData.filter(r => r[stopCols.ID_SEMANA] === w).reduce((s, r) => s + (r[stopCols.CASOS_ACTUAL] || 0), 0);
+            recentWeeks.push(sum);
+        }
+        // Simple slope (end - start) / n roughly
+        const slopeStop = (recentWeeks[3] - recentWeeks[0]) / 3;
+
+        // 2. Calculate Strategic Trend (CEAD - Last 6 Months)
+        const ceadCols = window.COLS_CEAD;
+        const ceadData = STATE_DATA_CEAD.allDataHistory;
+        // Group months
+        const ceadMap = {};
+        ceadData.forEach(r => {
+            const k = `${r[ceadCols.ANIO]}-${String(r[ceadCols.MES_NUM]).padStart(2, '0')}`;
+            ceadMap[k] = (ceadMap[k] || 0) + (r[ceadCols.CASOS_MES_ACTUAL] || 0);
+        });
+        const sortedKeys = Object.keys(ceadMap).sort().slice(-6);
+        const recentMonths = sortedKeys.map(k => ceadMap[k]);
+
+        const slopeCead = (recentMonths[recentMonths.length - 1] - recentMonths[0]) / 5;
+
+        // 3. Normalization (Weekly slope -> Monthly slope approx x4)
+        const tacticalMonthlySlope = slopeStop * 4;
+
+        // 4. Hybrid Weighting (60% Tactical, 40% Strategic for short term)
+        const hybridSlope = (tacticalMonthlySlope * 0.6) + (slopeCead * 0.4);
+
+        // Base value: Last Month CEAD
+        const lastCeadVal = recentMonths[recentMonths.length - 1];
+        const nextMonthProj = Math.max(0, Math.round(lastCeadVal + hybridSlope));
+
+        // UI Updates
+        document.getElementById('v42_tactical').textContent = (tacticalMonthlySlope > 0 ? '+' : '') + tacticalMonthlySlope.toFixed(1) + '/mes';
+        document.getElementById('v42_strategic').textContent = (slopeCead > 0 ? '+' : '') + slopeCead.toFixed(1) + '/mes';
+        document.getElementById('v42_proj').textContent = nextMonthProj;
+
+        document.getElementById('v42_tactical').className = `kpi-value ${tacticalMonthlySlope > 0 ? 'text-danger' : 'text-success'}`;
+        document.getElementById('v42_strategic').className = `kpi-value ${slopeCead > 0 ? 'text-danger' : 'text-success'}`;
+
+        document.getElementById('alertText42').innerHTML =
+            `La inercia histórica ${slopeCead > tacticalMonthlySlope ? 'suaviza' : 'intensifica'} la tendencia reciente. ` +
+            `Se ajusta la proyección en un <strong>${Math.abs((hybridSlope / lastCeadVal) * 100).toFixed(1)}%</strong>.`;
+
+        // Chart Data
+        const chartLabels = [...sortedKeys];
+        const chartData = [...recentMonths];
+
+        // Add projection
+        chartLabels.push('Proyección');
+        chartData.push(nextMonthProj);
+
+        const ctx = document.getElementById('chartHybridForecast').getContext('2d');
+        if (window.chart42) window.chart42.destroy();
+        window.chart42 = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Casos Reales ',
+                    data: recentMonths.concat([null]), // Null for projection point to separate line styles if needed, or continuous
+                    borderColor: '#3b82f6', backgroundColor: '#3b82f6', fill: false, tension: 0.1
+                }, {
+                    label: 'Proyección Híbrida',
+                    data: Array(recentMonths.length - 1).fill(null).concat([recentMonths[recentMonths.length - 1], nextMonthProj]), // Connect last real to proj
+                    borderColor: '#ef4444', borderDash: [5, 5], fill: false, tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: false } }
+            }
+        });
+
+    })();
+</script>

@@ -23,6 +23,7 @@
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -34,17 +35,15 @@
     <!-- Main Content -->
     <main id="mainContent" class="main-content">
         <header class="header">
-            <div>
-                <h1 class="header-title">
-                    <i class="fa-solid fa-shield-halved" style="color: var(--color-primary); margin-right: 8px;"></i>
-                    Reporte de Inteligencia Delictual
-                </h1>
-                <p class="header-subtitle" id="headerSubtitle">Cargando datos...</p>
-            </div>
+
             <div class="header-actions">
                 <button class="btn btn--accent" id="btnExportPdf" style="display: none;">
                     <i class="fa-solid fa-file-pdf"></i>
                     <span>Exportar PDF</span>
+                </button>
+                <button class="btn" id="btnExportSingle" onclick="PDFModule.exportSinglePage()">
+                    <i class="fa-solid fa-file-export"></i>
+                    <span>Generar Hoja</span>
                 </button>
                 <button class="btn btn--primary" id="btnExportCover" onclick="PDFModule.exportWithCover()">
                     <i class="fa-solid fa-book"></i>
@@ -65,7 +64,7 @@
             </div>
         </header>
 
-        <section id="viewContainer" class="view-container">
+        <section id="viewContainer" class="view-container" style="position: relative;">
             <div class="loading"></div>
         </section>
     </main>

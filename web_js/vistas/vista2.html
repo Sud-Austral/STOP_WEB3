@@ -1,18 +1,28 @@
-<!-- Vista 2: ¿Hay alertas activas o anomalías? -->
+﻿<!-- Vista 2: ¿Hay alertas activas o anomalías? -->
 
 <!-- Section Header -->
 <div class="card mb-lg">
-    <!-- Comuna/Semana Header -->
-    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-        <span class="semana-fill">--</span>
+    <!-- Location/Week and Source Row -->
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <!-- Source badge will be injected here by app.js -->
+        <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="section-header">
-        <h2 class="section-title">¿Hay alertas activas o anomalías?</h2>
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+        <h2
+            style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+            ¿Hay alertas activas o anomalías?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Análisis de alertas por semáforo de
+            indicadores en la base de datos del CEAD</p>
     </div>
-    <p class="text-muted mb-md">Análisis de alertas por semáforo de indicadores en la base de datos del CEAD</p>
 
     <!-- Alert Box (Interpretación IA) -->
     <div class="alert alert--warning mb-lg" id="alertIA2">
@@ -193,9 +203,9 @@
         const circle2 = document.getElementById('statusCircle2');
         const circle3 = document.getElementById('statusCircle3');
 
-        circle1.classList.toggle('status-circle--inactive', status !== 'PRECAUCIÓN');
-        circle2.classList.toggle('status-circle--inactive', status !== 'ALERTA');
-        circle3.classList.toggle('status-circle--inactive', status !== 'NORMAL');
+        circle1.classList.toggle('active', status === 'PRECAUCIÓN');
+        circle2.classList.toggle('active', status === 'ALERTA');
+        circle3.classList.toggle('active', status === 'NORMAL');
 
         // Update trend text
         const trendDirection = avgZScore > 0 ? 'creciente de aumento' : 'decreciente de disminución';
@@ -234,7 +244,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false }
+                    legend: { display: true, position: 'top' }
                 },
                 scales: {
                     y: {

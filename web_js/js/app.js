@@ -164,6 +164,23 @@ const App = {
             const html = await response.text();
             container.innerHTML = html;
 
+            // Inject report header and source badge into the first card element
+            const firstCard = container.querySelector('.card');
+            if (firstCard) {
+                // Inject report header at the beginning
+                const reportHeaderHtml = this.getReportHeaderHtml(viewName);
+                firstCard.insertAdjacentHTML('afterbegin', reportHeaderHtml);
+
+                // Inject source badge into the container (if exists)
+                const sourceBadgeContainer = container.querySelector('#sourceBadgeContainer');
+                if (sourceBadgeContainer) {
+                    sourceBadgeContainer.innerHTML = this.getSourceBadgeHtml(viewName);
+                }
+            }
+
+            // Update Source Badge visibility
+            this.updateSourceBadge(viewName);
+
             // Execute embedded scripts
             this.executeScripts(container);
 
@@ -176,6 +193,87 @@ const App = {
                     <p class="text-muted">${viewName}</p>
                 </div>
             `;
+        }
+    },
+
+    /**
+     * Generate report header HTML based on view type
+     */
+    getReportHeaderHtml(viewName) {
+        const match = viewName.match(/^vista(\d+)$/);
+        if (!match) return '';
+
+        const viewNum = parseInt(match[1]);
+        let title = 'Reporte de Inteligencia Delictual';
+        let icon = 'fa-shield-halved';
+
+        // CEAD views (21-40) have a different title
+        if (viewNum >= 21 && viewNum <= 40) {
+            title = 'Reporte CEAD';
+            icon = 'fa-chart-line';
+        } else if (viewNum >= 41 && viewNum <= 45) {
+            title = 'Reporte Integrado STOP-CEAD';
+            icon = 'fa-layer-group';
+        }
+
+        return `
+            <div class="report-header-row" style="margin-bottom: 0.5rem;">
+                <h1 class="header-title" style="margin: 0; font-size: 1.3rem;">
+                    <i class="fa-solid ${icon}" style="color: var(--color-primary); margin-right: 8px;"></i>
+                    ${title}
+                </h1>
+            </div>
+        `;
+    },
+
+    /**
+          * Generate source badge HTML based on view
+          */
+    getSourceBadgeHtml(viewName) {
+        const match = viewName.match(/^vista(\d+)$/);
+        if (!match) return '';
+
+        const viewNum = parseInt(match[1]);
+        const sources = [];
+
+        // Determine sources based on view number
+        if (viewNum >= 1 && viewNum <= 20) {
+            sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });
+        } else if (viewNum >= 21 && viewNum <= 40) {
+            sources.push({ name: 'CEAD (Centro de Análisis del Delito)', class: 'cead' });
+        } else if (viewNum >= 41 && viewNum <= 45) {
+            sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });
+            sources.push({ name: 'CEAD (Centro de Análisis del Delito)', class: 'cead' });
+        }
+
+        // Add INE for views that use population data
+        const ineViews = [1, 16, 17, 21, 26, 34, 41];
+        if (ineViews.includes(viewNum)) {
+            sources.push({ name: 'INE (Instituto Nacional de Estadísticas)', class: 'ine' });
+        }
+
+        if (sources.length === 0) return '';
+
+        const itemsHtml = sources.map(s =>
+            `<div class="source-badge-item source-badge-item--${s.class}">${s.name}</div>`
+        ).join('');
+
+        return `
+            <div class="source-badge" id="sourceBadge" style="text-align: right;">
+                <div class="source-badge-label">FUENTE OFICIAL:</div>
+                <div class="source-badge-items" id="sourceBadgeItems">${itemsHtml}</div>
+            </div>
+        `;
+    },
+
+    /**
+     * Update source badge based on current view
+     */
+    updateSourceBadge(viewName) {
+        // Badge is now injected via getSourceBadgeHtml, this just ensures visibility
+        const badge = document.getElementById('sourceBadge');
+        if (badge) {
+            badge.style.display = 'block';
         }
     },
 

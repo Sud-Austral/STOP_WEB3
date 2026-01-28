@@ -1,0 +1,244 @@
+<!-- Vista 3: ¿Es un hecho delictivo o una tendencia sostenida? -->
+
+<!-- Section -->
+<div class="card mb-lg">
+    <!-- Comuna/Semana Header -->
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">¿Es un hecho delictivo o una tendencia sostenida?</h2>
+    </div>
+    <p class="text-muted mb-md">Muestra el histórico de delitos para detectar patrones de actividad</p>
+
+    <!-- Alert Box -->
+    <div class="alert alert--info mb-lg" id="alertIA3">
+        <strong>🤖 Interpretación de IA:</strong> <span id="alertText3">Analizando tendencias históricas...</span>
+    </div>
+
+    <!-- Legend -->
+    <div class="chart-legend mb-md">
+        <div class="legend-item">
+            <span class="legend-color" style="background: #3b82f6;"></span>
+            Frecuencia Real
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #f59e0b;"></span>
+            Promedio Móvil 4S
+        </div>
+        <div class="legend-item">
+            <span class="legend-color" style="background: #10b981; border-style: dashed;"></span>
+            Tendencia Lineal
+        </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="chart-wrapper chart-wrapper--xl">
+        <canvas id="chartTendencia"></canvas>
+    </div>
+
+    <p class="chart-footnote text-muted">
+        * Cada punto representa el total de delitos de una semana. La tendencia se calcula con regresión lineal de las
+        últimas 12 semanas.
+    </p>
+</div>
+
+<style>
+    .chart-legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+        padding: 0.5rem 0;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+    }
+
+    .legend-color {
+        width: 24px;
+        height: 3px;
+        border-radius: 2px;
+    }
+
+    .chart-footnote {
+        font-size: 0.75rem;
+        font-style: italic;
+        margin-top: 1rem;
+        text-align: center;
+    }
+</style>
+
+<script>
+    (async function initVista3() {
+        // Wait for data
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+
+        // Update Header Info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Wait for Chart.js
+        const waitForChart = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (typeof Chart !== 'undefined') resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForChart();
+
+        // Get unique weeks and sort
+        const uniqueSemanas = [...new Set(STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]))]
+            .sort((a, b) => a - b)
+            .slice(-12); // Last 12 weeks
+
+        // Calculate totals per week
+        const weeklyData = uniqueSemanas.map(semana => {
+            const weekRows = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === semana);
+            const total = weekRows.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+            const promedioMovil = weekRows.reduce((sum, row) => sum + (row[COLS.MEDIA_MOVIL_4S] || 0), 0);
+            return { semana, total, promedioMovil };
+        });
+
+        const labels = weeklyData.map(d => `Sem ${d.semana % 100}`);
+        const frecuenciaReal = weeklyData.map(d => d.total);
+        const promedioMovil = weeklyData.map(d => Math.round(d.promedioMovil));
+
+        // Calculate linear trend line
+        const n = frecuenciaReal.length;
+        const xMean = (n - 1) / 2;
+        const yMean = frecuenciaReal.reduce((a, b) => a + b, 0) / n;
+
+        let numerator = 0;
+        let denominator = 0;
+        for (let i = 0; i < n; i++) {
+            numerator += (i - xMean) * (frecuenciaReal[i] - yMean);
+            denominator += (i - xMean) ** 2;
+        }
+        const slope = numerator / denominator;
+        const intercept = yMean - slope * xMean;
+        const tendenciaLineal = frecuenciaReal.map((_, i) => Math.round(slope * i + intercept));
+
+        // Determine trend direction
+        const trendDirection = slope > 0 ? 'creciente' : slope < 0 ? 'decreciente' : 'estable';
+        const lastWeekValue = frecuenciaReal[frecuenciaReal.length - 1];
+        const prevWeekValue = frecuenciaReal[frecuenciaReal.length - 2] || lastWeekValue;
+        const weekChange = ((lastWeekValue - prevWeekValue) / prevWeekValue * 100).toFixed(1);
+
+        // Update alert
+        const alertEl = document.getElementById('alertIA3');
+        if (slope > 0) {
+            alertEl.className = 'alert alert--warning';
+        } else {
+            alertEl.className = 'alert alert--success';
+        }
+
+        // Try AI interpretation
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista3').then(interpretation => {
+                document.getElementById('alertText3').innerHTML = interpretation;
+            });
+        } else {
+            if (slope > 0) {
+                document.getElementById('alertText3').innerHTML =
+                    `La media móvil muestra una tendencia <strong>${trendDirection}</strong> en las últimas 4 semanas.`;
+            } else {
+                document.getElementById('alertText3').innerHTML =
+                    `La tendencia general es <strong>${trendDirection}</strong>. Los casos están ${slope < 0 ? 'disminuyendo' : 'manteniéndose estables'}.`;
+            }
+        }
+
+        // Create chart
+        new Chart(document.getElementById('chartTendencia'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Frecuencia Real',
+                        data: frecuenciaReal,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Promedio Móvil 4S',
+                        data: promedioMovil,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Tendencia Lineal',
+                        data: tendenciaLineal,
+                        borderColor: '#10b981',
+                        borderDash: [8, 4],
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                        padding: 12,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: '#e2e8f0' },
+                        ticks: { font: { size: 11 } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+    })();
+</script>
