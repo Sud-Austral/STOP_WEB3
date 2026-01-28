@@ -65,41 +65,34 @@ const dataLoaderCead = {
         try {
             console.log('📊 Loading CEAD data...');
 
-            const files = ['data/data_cead_casos_1.json.gz', 'data/data_cead_casos_2.json.gz'];
-            //const files = ['data/data3.json.gz'];
-
-            // Allow processing partial results if one fails, or stricter? 
-            // Usually we want both.
-            const responses = await Promise.all(files.map(f => fetch(f)));
-
-            let combinedData = [];
-
-            for (const response of responses) {
-                if (!response.ok) {
-                    console.error(`Error fetching ${response.url}`);
-                    continue;
-                }
-                const ds = new DecompressionStream('gzip');
-                const decompressed = new Response(response.body.pipeThrough(ds));
-                const json = await decompressed.json();
-                combinedData = combinedData.concat(json);
-            }
-
-            // Determine target CODCOM
+            // Determine target CODCOM first to know which file to load
             const targetCod = codcom_url_cead ? parseInt(codcom_url_cead) : 13101;
             STATE_DATA_CEAD.codcom = targetCod;
 
-            // Filter by Comuna
-            // Columns are 0-indexed based on the provided list
-            STATE_DATA_CEAD.allData = combinedData.filter(row => row[COLS_CEAD.CODCOM] == targetCod);
-            // allDataHistory is same as allData here since we don't have standard "weeks" to filter out, 
-            // but usually history implies all historical records for valid comparatives.
+            console.log(`📊 Loading CEAD data for comuna ${targetCod}...`);
+
+            // Use the split data file for the specific comuna
+            const fileUrl = `data/cead_split/${targetCod}.json`;
+
+            const response = await fetch(fileUrl);
+            if (!response.ok) {
+                // If specific file not found, maybe fallback or error
+                if (response.status === 404) {
+                    console.warn(`Data file for ${targetCod} not found. Using empty dataset.`);
+                    STATE_DATA_CEAD.allData = [];
+                } else {
+                    throw new Error(`Failed to load ${fileUrl}: ${response.status} ${response.statusText}`);
+                }
+            } else {
+                STATE_DATA_CEAD.allData = await response.json();
+            }
+
+            // allDataHistory is same as allData here
             STATE_DATA_CEAD.allDataHistory = [...STATE_DATA_CEAD.allData];
 
             if (STATE_DATA_CEAD.allData.length > 0) {
                 // Determine latest date (max FECHA or ANIO/MES)
-                // Assuming FECHA is roughly comparable or we sort by Anio then Mes_Num
-                // Let's sort to find the latest "current" state
+                // Sort to find the latest "current" state
                 STATE_DATA_CEAD.allData.sort((a, b) => {
                     // Sort by year desc, then month_num desc
                     if (b[COLS_CEAD.ANIO] !== a[COLS_CEAD.ANIO]) {

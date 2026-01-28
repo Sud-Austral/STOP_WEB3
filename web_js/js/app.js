@@ -83,7 +83,8 @@ const App = {
         this.elements = {
             sidebar: document.getElementById('sidebarContainer'),
             viewContainer: document.getElementById('viewContainer'),
-            exportBtn: document.getElementById('btnExportPdf')
+            exportBtn: document.getElementById('btnExportPdf'),
+            coverBtn: document.getElementById('btnExportCover')
         };
     },
 
@@ -141,6 +142,17 @@ const App = {
         // Show loading state
         container.innerHTML = '<div class="loading"></div>';
         this.state.currentView = viewName;
+
+        // Toggle PDF button visibility (STOP Views 1-20 only)
+        if (this.elements.coverBtn) {
+            const match = viewName.match(/^vista(\d+)$/);
+            if (match) {
+                const viewNum = parseInt(match[1]);
+                this.elements.coverBtn.style.display = (viewNum >= 1 && viewNum <= 20) ? 'inline-flex' : 'none';
+            } else {
+                this.elements.coverBtn.style.display = 'none';
+            }
+        }
 
         try {
             const response = await fetch(`vistas/${viewName}.html`);

@@ -167,12 +167,22 @@ const PDFModule = {
             // STEP 1: Capture all views
             const capturedPages = [];
 
-            for (let i = 0; i < App.config.views.length; i++) {
-                const viewName = App.config.views[i];
-                const progressText = `Capturando vista ${i + 1} de ${App.config.views.length}...`;
+            // Filter to include only STOP views (vista1 to vista20)
+            const stopViews = App.config.views.filter(view => {
+                const match = view.match(/^vista(\d+)$/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    return num >= 1 && num <= 20;
+                }
+                return false;
+            });
+
+            for (let i = 0; i < stopViews.length; i++) {
+                const viewName = stopViews[i];
+                const progressText = `Capturando vista ${i + 1} de ${stopViews.length}...`;
 
                 // Update progress
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${App.config.views.length}`;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${stopViews.length}`;
                 App.updateExportOverlay(progressText);
 
                 // Destroy previous charts
@@ -239,6 +249,128 @@ const PDFModule = {
         } catch (error) {
             console.error('Error exporting PDF with cover:', error);
             alert('Error al exportar PDF. Por favor intente nuevamente.');
+        } finally {
+            // Restore state
+            App.hideExportOverlay();
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+            App.state.isExporting = false;
+            App.loadView(originalView);
+        }
+    },
+
+    /**
+     * Export Full PDF Report (All Views)
+     * Captures ALL configured views without filtering
+     */
+    async exportFullReport() {
+        if (App.state.isExporting) return;
+
+        // Check if IA analysis is complete
+        if (typeof IAModule !== 'undefined' && !IAModule.isLoaded) {
+            const proceed = confirm(
+                '⚠️ El análisis de IA aún no ha terminado.\n\n' +
+                '¿Desea generar el informe sin las interpretaciones de IA?\n\n' +
+                'Presione "Aceptar" para continuar o "Cancelar" para esperar.'
+            );
+            if (!proceed) return;
+        }
+
+        App.state.isExporting = true;
+        const originalView = App.state.currentView;
+        const container = App.elements.viewContainer;
+        const btn = document.getElementById('btnExportFull');
+
+        // Update button state
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Capturando...';
+        btn.disabled = true;
+
+        // Show professional overlay
+        App.showExportOverlay();
+
+        try {
+            const pageWidth = 210;
+            const pageHeight = 297;
+
+            // STEP 1: Capture all views
+            const capturedPages = [];
+
+            // USE ALL CONFIGURED VIEWS
+            const viewsToExport = App.config.views;
+
+            for (let i = 0; i < viewsToExport.length; i++) {
+                const viewName = viewsToExport[i];
+                const progressText = `Capturando vista ${i + 1} de ${viewsToExport.length}...`;
+
+                // Update progress
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${i + 1}/${viewsToExport.length}`;
+                App.updateExportOverlay(progressText);
+
+                // Destroy previous charts
+                App.destroyAllCharts();
+
+                // Load view
+                await App.loadView(viewName);
+
+                // Wait for charts to render (8 seconds)
+                await App.delay(8000);
+
+                // Capture
+                const canvas = await html2canvas(container, {
+                    scale: App.config.pdfScale,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#f1f5f9',
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const imgHeight = (canvas.height * pageWidth) / canvas.width;
+
+                // Store captured image
+                capturedPages.push({ imgData, imgHeight });
+            }
+
+            // STEP 2: Create PDF with cover page first
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+            App.updateExportOverlay('Generando documento PDF completo...');
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+
+            // Add cover page FIRST
+            this.generateCoverPage(pdf);
+
+            // STEP 3: Add all captured pages
+            for (let i = 0; i < capturedPages.length; i++) {
+                const { imgData, imgHeight } = capturedPages[i];
+
+                // Add new page for each view
+                pdf.addPage();
+
+                // Handle multi-page content
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+            }
+
+            // Save PDF
+            const date = new Date().toISOString().split('T')[0];
+            pdf.save(`Reporte_RID_Completo_${date}.pdf`);
+
+        } catch (error) {
+            console.error('Error exporting Full PDF:', error);
+            alert('Error al exportar PDF Completo. Por favor intente nuevamente.');
         } finally {
             // Restore state
             App.hideExportOverlay();
