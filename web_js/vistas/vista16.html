@@ -1,0 +1,107 @@
+<!-- Vista 16: Tasas y Demografía -->
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">Análisis de Tasas x 100k Hab.</h2>
+    </div>
+    <p class="text-muted mb-lg">Normalización delictual basada en población comunal (Censo/Proyección)</p>
+
+    <!-- Demographics Info -->
+    <div class="kpi-grid mb-xl">
+        <div class="kpi-card">
+            <div class="kpi-label">Población Comunal</div>
+            <div class="kpi-value" id="v16_poblacion">--</div>
+            <div class="kpi-sub">Habitantes</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Grupo Poblacional</div>
+            <div class="kpi-value" id="v16_clase" style="font-size: 1.2rem;">--</div>
+            <div class="kpi-sub">Clasificación</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Tasa Delictual Semanal</div>
+            <div class="kpi-value" id="v16_tasa">--</div>
+            <div class="kpi-sub">Casos x 100k hab.</div>
+        </div>
+    </div>
+
+    <!-- Chart: Casos vs Tasa -->
+    <h4 class="card-title">Top 5 Delitos por Tasa Ajustada</h4>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartTasaDelito"></canvas>
+    </div>
+</div>
+
+<script>
+    (async function initVista16() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        const data = STATE_DATA.allDataHistory;
+        const maxWeek = Math.max(...data.map(r => r[COLS.ID_SEMANA]));
+        const currentData = data.filter(r => r[COLS.ID_SEMANA] === maxWeek);
+
+        const firstRow = currentData[0] || {};
+        const poblacion = firstRow[COLS.POBLACION] || 0;
+        const clasePob = firstRow[COLS.CLASE_POBLACION] || 'Sin Clasificar';
+
+        document.getElementById('v16_poblacion').textContent = new Intl.NumberFormat('es-CL').format(poblacion);
+        document.getElementById('v16_clase').textContent = clasePob;
+
+        const totalCasos = currentData.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        const tasaGlobal = poblacion > 0 ? (totalCasos / poblacion) * 100000 : 0;
+        document.getElementById('v16_tasa').textContent = tasaGlobal.toFixed(1);
+
+        // Chart Data
+        const crimes = currentData.map(r => ({
+            delito: r[COLS.DELITO],
+            casos: r[COLS.CASOS_ACTUAL] || 0,
+            tasa: poblacion > 0 ? ((r[COLS.CASOS_ACTUAL] || 0) / poblacion) * 100000 : 0
+        })).sort((a, b) => b.tasa - a.tasa).slice(0, 5);
+
+        const ctx = document.getElementById('chartTasaDelito').getContext('2d');
+        if (window.chart16) window.chart16.destroy();
+
+        window.chart16 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: crimes.map(c => c.delito),
+                datasets: [
+                    {
+                        label: 'Tasa x 100k',
+                        data: crimes.map(c => c.tasa),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'line',
+                        label: 'Casos Absolutos',
+                        data: crimes.map(c => c.casos),
+                        borderColor: '#ef4444',
+                        borderWidth: 2,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Tasa x 100k' } },
+                    y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Casos' } }
+                }
+            }
+        });
+    })();
+</script>

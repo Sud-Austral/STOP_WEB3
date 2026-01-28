@@ -5,7 +5,7 @@
 
 // Global State
 window.STATE_DATA = {
-    codcom: 13130,
+    codcom: 13101,
     allData: [],
     allDataHistory: [],
     stats: {},
@@ -50,7 +50,14 @@ window.COLS = {
     Z_SCORE: 28,
     Z_CONCL: 29,
     ALERTA: 30,
-    COMUNA: 31
+    PROVINCIA: 31,
+    COMUNA: 32,
+    REGION: 33,
+    CODREG: 34,
+    POBLACION_CLASE: 35,
+    CLASE_POBLACION: 36,
+    POBLACION: 37,
+    FACTOR_POBLACION: 38
 };
 
 // Parse URL parameters
@@ -66,7 +73,7 @@ const dataLoader = {
         try {
             console.log('📊 Loading data...');
 
-            const response = await fetch('data/data2.json.gz');
+            const response = await fetch('data/data3.json.gz');
             if (!response.ok) throw new Error('Error IO Datos');
 
             const ds = new DecompressionStream('gzip');

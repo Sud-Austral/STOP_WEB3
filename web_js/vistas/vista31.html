@@ -1,0 +1,229 @@
+<!-- Vista 31: Simulación de Impacto (CEAD) -->
+
+<!-- Header Alert -->
+<div class="alert alert--accent" id="alertIA11Cead">
+    <strong>🔬 Laboratorio de Simulación (CEAD):</strong> Ajusta los controles para ver el impacto proyectado en el
+    nivel de riesgo global mensual
+</div>
+
+<!-- Section -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">¿Qué pasaría si intensificamos ciertos delitos? (CEAD)</h2>
+    </div>
+    <p class="text-muted mb-lg">Simulador de hipótesis en índice de riesgo mensual</p>
+
+    <!-- Alert -->
+    <div class="alert alert--warning mb-lg" id="simAlertCead">
+        <strong>🤖 Interpretación:</strong> Anticipa escenarios futuros modificando variables clave.
+    </div>
+
+    <div class="simulation-layout">
+        <!-- Sliders Column -->
+        <div class="simulation-controls">
+            <div class="slider-group">
+                <label class="slider-label"><span>Robos con Violencia (%)</span><span class="slider-value"
+                        id="sliderVal1Cead">0%</span></label>
+                <input type="range" min="-50" max="50" value="0" class="sim-slider" id="slider1Cead"
+                    oninput="updateSimulationCead()">
+                <div class="slider-scale"><span>-50%</span><span>0%</span><span>+50%</span></div>
+            </div>
+            <div class="slider-group">
+                <label class="slider-label"><span>Hurtos (%)</span><span class="slider-value"
+                        id="sliderVal2Cead">0%</span></label>
+                <input type="range" min="-50" max="50" value="0" class="sim-slider" id="slider2Cead"
+                    oninput="updateSimulationCead()">
+                <div class="slider-scale"><span>-50%</span><span>0%</span><span>+50%</span></div>
+            </div>
+            <div class="slider-group">
+                <label class="slider-label"><span>Otros Delitos (%)</span><span class="slider-value"
+                        id="sliderVal3Cead">0%</span></label>
+                <input type="range" min="-50" max="50" value="0" class="sim-slider" id="slider3Cead"
+                    oninput="updateSimulationCead()">
+                <div class="slider-scale"><span>-50%</span><span>0%</span><span>+50%</span></div>
+            </div>
+        </div>
+
+        <!-- Risk Indicator -->
+        <div class="risk-indicator-panel">
+            <h4>Proyección de Riesgo (Mes)</h4>
+            <div class="risk-circle" id="riskCircleCead">
+                <span id="riskLevelCead">MEDIO</span>
+            </div>
+            <p class="risk-description" id="riskDescriptionCead">Mantiene la situación actual indefinidamente.</p>
+            <div class="risk-rate">Casos Proyectados: <strong id="projectedRateCead">--</strong></div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .simulation-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .simulation-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .slider-group {
+        background: var(--color-bg);
+        padding: 1rem;
+        border-radius: var(--radius-md);
+    }
+
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .slider-value {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+
+    .sim-slider {
+        width: 100%;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(to right, #10b981, #f59e0b, #ef4444);
+        appearance: none;
+        cursor: pointer;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border: 3px solid var(--color-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .slider-scale {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        margin-top: 0.25rem;
+    }
+
+    .risk-indicator-panel {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--color-bg);
+        border-radius: var(--radius-lg);
+    }
+
+    .risk-circle {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        transition: all 0.3s;
+    }
+
+    .risk-circle span {
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    .risk-circle.low {
+        background: linear-gradient(135deg, #10b981, #34d399);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .risk-circle.high {
+        background: linear-gradient(135deg, #ef4444, #f87171);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .risk-description {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin-bottom: 1rem;
+    }
+
+    .risk-rate strong {
+        color: var(--color-primary);
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .simulation-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+    let baseRateCead = 450;
+
+    // Global function for onclick
+    window.updateSimulationCead = function () {
+        const v1 = parseInt(document.getElementById('slider1Cead').value);
+        const v2 = parseInt(document.getElementById('slider2Cead').value);
+        const v3 = parseInt(document.getElementById('slider3Cead').value);
+
+        document.getElementById('sliderVal1Cead').textContent = (v1 >= 0 ? '+' : '') + v1 + '%';
+        document.getElementById('sliderVal2Cead').textContent = (v2 >= 0 ? '+' : '') + v2 + '%';
+        document.getElementById('sliderVal3Cead').textContent = (v3 >= 0 ? '+' : '') + v3 + '%';
+
+        const impact = (v1 * 0.4 + v2 * 0.3 + v3 * 0.3) / 100;
+        const projectedRate = Math.round(baseRateCead * (1 + impact));
+
+        document.getElementById('projectedRateCead').textContent = projectedRate;
+
+        const circle = document.getElementById('riskCircleCead');
+        const levelEl = document.getElementById('riskLevelCead');
+        const descEl = document.getElementById('riskDescriptionCead');
+
+        if (impact > 0.15) {
+            circle.className = 'risk-circle high';
+            levelEl.textContent = 'ALTO';
+            descEl.textContent = 'Escenario de alto riesgo mensual.';
+        } else if (impact < -0.15) {
+            circle.className = 'risk-circle low';
+            levelEl.textContent = 'BAJO';
+            descEl.textContent = 'Escenario favorable proyectado.';
+        } else {
+            circle.className = 'risk-circle';
+            levelEl.textContent = 'MEDIO';
+            descEl.textContent = 'Mantiene la situación actual.';
+        }
+    };
+
+    (async function initVista31() {
+        const waitForDataCead = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForDataCead();
+
+        const COLS = window.COLS_CEAD;
+        const data = STATE_DATA_CEAD.allData;
+        if (!data || data.length === 0) return;
+
+        // Base rate = Total cases this month
+        const currentPeriodRow = data[0];
+        const monthData = data.filter(r => r[COLS.MES_NUM] === currentPeriodRow[COLS.MES_NUM] && r[COLS.ANIO] === currentPeriodRow[COLS.ANIO]);
+        const totalCasos = monthData.reduce((sum, r) => sum + (r[COLS.CASOS_MES_ACTUAL] || 0), 0);
+
+        baseRateCead = totalCasos;
+        updateSimulationCead();
+    })();
+</script>

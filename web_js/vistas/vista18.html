@@ -1,0 +1,191 @@
+<!-- Vista 18: Tablero Táctico y Rachas -->
+<style>
+    .badge-pill {
+        padding: 4px 10px;
+        border-radius: 99px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        text-align: center;
+        min-width: 60px;
+    }
+
+    .bg-soft-danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .bg-soft-success {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .bg-soft-warning {
+        background: #ffedd5;
+        color: #c2410c;
+    }
+
+    .bg-soft-gray {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .text-danger-bold {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    .text-success-bold {
+        color: #16a34a;
+        font-weight: 700;
+    }
+
+    .text-muted-sm {
+        color: #9ca3af;
+        font-size: 0.85rem;
+    }
+
+    .t-row:hover {
+        background-color: #f8fafc;
+    }
+</style>
+
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">Análisis Táctico y Rachas</h2>
+    </div>
+    <p class="text-muted mb-lg">Identificación de patrones de repetición y tendencias a corto plazo</p>
+
+    <!-- Tactical KPIs -->
+    <div class="kpi-grid mb-xl">
+        <div class="kpi-card">
+            <div class="kpi-label">Rachas Activas (>2 sem)</div>
+            <div class="kpi-value text-danger-bold" id="v18_rachas">--</div>
+            <div class="kpi-sub">Focos persistentes</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Tendencia Predominante</div>
+            <div class="kpi-value" id="v18_tendencia">--</div>
+            <div class="kpi-sub">Corto Plazo</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Delta Neto Semanal</div>
+            <div class="kpi-value" id="v18_delta">--</div>
+            <div class="kpi-sub">Variación agregada de casos</div>
+        </div>
+    </div>
+
+    <!-- Active Streaks Table -->
+    <h4 class="card-title">Detalle Operativo por Delito</h4>
+    <div class="table-container mb-xl">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Delito</th>
+                    <th style="text-align:center;">Racha (Sem)</th>
+                    <th style="text-align:center;">Tendencia</th>
+                    <th style="text-align:center;">Delta</th>
+                    <th style="text-align:center;">Estado</th>
+                </tr>
+            </thead>
+            <tbody id="v18_t_body">
+                <tr>
+                    <td colspan="5" class="text-center p-3 text-muted">Cargando datos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (async function initVista18() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        const data = STATE_DATA.allDataHistory;
+        const maxWeek = Math.max(...data.map(r => r[COLS.ID_SEMANA]));
+        const currentData = data.filter(r => r[COLS.ID_SEMANA] === maxWeek);
+
+        let rachaCount = 0;
+        let totalDelta = 0;
+        let trendMap = { 'ALZA': 0, 'BAJA': 0, 'ESTABLE': 0 };
+
+        const rows = currentData
+            .sort((a, b) => b[COLS.CASOS_ACTUAL] - a[COLS.CASOS_ACTUAL]);
+
+        const tbody = document.getElementById('v18_t_body');
+        tbody.innerHTML = '';
+
+        rows.forEach(r => {
+            const racha = (typeof r[COLS.RACHA] === 'number') ? r[COLS.RACHA] : 0;
+            const delta = parseFloat(r[COLS.DELTA]) || 0;
+            const tendencia = r[COLS.TENDENCIA] || 'Estable';
+
+            totalDelta += delta;
+
+            if (tendencia.toUpperCase().includes('ALZA') || delta > 0) trendMap['ALZA']++;
+            else if (tendencia.toUpperCase().includes('BAJA') || delta < 0) trendMap['BAJA']++;
+            else trendMap['ESTABLE']++;
+
+            let rachaClass = 'text-muted-sm';
+            if (racha > 2) {
+                rachaCount++;
+                rachaClass = 'text-danger-bold';
+            }
+
+            // Badges
+            let trendBadge = 'badge-pill bg-soft-gray';
+            if (tendencia.toUpperCase().includes('ALZA')) trendBadge = 'badge-pill bg-soft-danger';
+            if (tendencia.toUpperCase().includes('BAJA')) trendBadge = 'badge-pill bg-soft-success';
+
+            // Status logic
+            let status = 'Normal';
+            let statusColor = 'text-muted-sm';
+            if (racha > 3 || delta > 5) { status = 'Crítico'; statusColor = 'text-danger-bold'; }
+            else if (racha > 1 || delta > 0) { status = 'Atención'; statusColor = 'text-danger-bold'; } // Warning?
+            else if (delta < 0) { status = 'Mejora'; statusColor = 'text-success-bold'; }
+
+            const tr = document.createElement('tr');
+            tr.className = 't-row';
+            tr.innerHTML = `
+                <td class="font-bold">${r[COLS.DELITO]}</td>
+                <td style="text-align:center;" class="${rachaClass}">${racha > 0 ? racha + ' sem' : '-'}</td>
+                <td style="text-align:center;">
+                    <span class="${trendBadge}">
+                        ${tendencia}
+                    </span>
+                </td>
+                <td style="text-align:center;" class="${delta > 0 ? 'text-danger-bold' : (delta < 0 ? 'text-success-bold' : 'text-muted')}">
+                    ${delta > 0 ? '+' : ''}${delta}
+                </td>
+                <td style="text-align:center;" class="${statusColor}">${status}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // KPIs
+        document.getElementById('v18_rachas').textContent = rachaCount;
+
+        const mainTrend = Object.keys(trendMap).reduce((a, b) => trendMap[a] >= trendMap[b] ? a : b);
+        const trendEl = document.getElementById('v18_tendencia');
+        trendEl.textContent = mainTrend;
+        trendEl.className = `kpi-value ${mainTrend === 'ALZA' ? 'text-danger' : 'text-success'}`;
+
+        const deltaEl = document.getElementById('v18_delta');
+        deltaEl.textContent = (totalDelta > 0 ? '+' : '') + totalDelta;
+        deltaEl.className = `kpi-value ${totalDelta > 0 ? 'text-danger' : 'text-success'}`;
+
+    })();
+</script>

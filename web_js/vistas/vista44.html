@@ -1,0 +1,150 @@
+<!-- Vista 44: Brechas de Reporte y Eficacia -->
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">Brechas de Volumen (Reporte)</h2>
+    </div>
+    <p class="text-muted mb-lg">Diferencia entre casos Policiales registrados (STOP) y casos Oficiales consolidados
+        (CEAD)</p>
+
+    <!-- Chart -->
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartGapVolume"></canvas>
+    </div>
+
+    <div class="row mt-xl">
+        <div class="col-12">
+            <h4 class="card-title">Detalle de Divergencia</h4>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Delito</th>
+                            <th class="text-center">Vol. STOP (Policial)</th>
+                            <th class="text-center">Vol. CEAD (Oficial)</th>
+                            <th class="text-center">Brecha</th>
+                            <th class="text-center">% Var</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gapTableBody">
+                        <!-- Data -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista44() {
+        const waitForAll = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.isLoaded && typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForAll();
+        await new Promise(r => { if (typeof Chart !== 'undefined') r(); else setTimeout(() => new Promise(x => setTimeout(x, 100)).then(r), 100); });
+
+        // Compare Last Month totals per crime
+        const stopCols = window.COLS;
+        const stopData = STATE_DATA.allDataHistory;
+
+        // Find last full month in STOP
+        // Need to parse dates to be sure. Assumes data sorted.
+        // Let's take the CEAD last month and try to find matching STOP data.
+        const ceadLastRow = STATE_DATA_CEAD.allData[0];
+        const targetYear = ceadLastRow[window.COLS_CEAD.ANIO];
+        const targetMonthNum = ceadLastRow[window.COLS_CEAD.MES_NUM]; // e.g., 5
+
+        // Aggregate STOP data for this Year/Month
+        const stopAgg = {}; // Name -> Count
+        stopData.forEach(r => {
+            // Heuristic: map r[stopCols.FECHA] which is usually "DD-MM-YYYY" or similar? 
+            // Or rely on WeekID mapping to month? 
+            // Let's assume r[stopCols.MES] is a name.
+            // Or r[stopCols.ANIO] is year.
+            // We need robust mapping.
+            // Let's assume we filter by Year first.
+            if (r[stopCols.ANIO] == targetYear) {
+                // Month check.
+                // r[stopCols.MES] contains string like 'Ago' or 'Agosto'?
+                // Manual map:
+                const mStr = String(r[stopCols.MES]).substring(0, 3).toLowerCase();
+                const monthNames = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+                const idx = monthNames.indexOf(mStr) + 1;
+
+                if (idx === targetMonthNum) {
+                    stopAgg[r[stopCols.DELITO]] = (stopAgg[r[stopCols.DELITO]] || 0) + (r[stopCols.CASOS_ACTUAL] || 0);
+                }
+            }
+        });
+
+        // CEAD Data for that month
+        const ceadData = STATE_DATA_CEAD.allData.filter(r => r[window.COLS_CEAD.MES_NUM] === targetMonthNum && r[window.COLS_CEAD.ANIO] === targetYear);
+        const ceadAgg = {};
+        ceadData.forEach(r => {
+            ceadAgg[r[window.COLS_CEAD.DESCRIPCION]] = r[window.COLS_CEAD.CASOS_MES_ACTUAL] || 0;
+        });
+
+        // Match them
+        const rows = [];
+        Object.keys(ceadAgg).forEach(ceadName => {
+            // Find STOP match
+            const stopName = Object.keys(stopAgg).find(s => ceadName.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(ceadName.toLowerCase()));
+            const stopVal = stopName ? stopAgg[stopName] : 0;
+            const ceadVal = ceadAgg[ceadName];
+
+            rows.push({
+                name: ceadName,
+                stop: stopVal,
+                cead: ceadVal,
+                diff: stopVal - ceadVal,
+                pct: ceadVal > 0 ? ((stopVal - ceadVal) / ceadVal) * 100 : 0
+            });
+        });
+
+        rows.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+
+        // Render Table
+        const tbody = document.getElementById('gapTableBody');
+        tbody.innerHTML = '';
+        rows.slice(0, 10).forEach(r => {
+            const tr = document.createElement('tr');
+            const color = r.diff > 0 ? 'text-danger' : (r.diff < 0 ? 'text-warning' : 'text-muted'); // + means Police saw more than Official? - means Police saw less (Under-report in Stop?)
+            // Usually CEAD (Official) should be higher or equal if it includes denouncements + detentions?
+            // Or STOP is only Flagrancy?
+            // Gap interpretation:
+            // Police > Official: Noise, unfounded calls?
+            // Official > Police: Denuncias civil (Fiscalia) not attended by police?
+
+            tr.innerHTML = `
+                <td style="font-weight:600;">${r.name}</td>
+                <td class="text-center">${r.stop}</td>
+                <td class="text-center">${r.cead}</td>
+                <td class="text-center ${color}">${r.diff > 0 ? '+' : ''}${r.diff}</td>
+                <td class="text-center">${r.pct.toFixed(2)}%</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Render Chart
+        const labels = rows.slice(0, 6).map(r => r.name.substring(0, 10));
+        const stopV = rows.slice(0, 6).map(r => r.stop);
+        const ceadV = rows.slice(0, 6).map(r => r.cead);
+
+        const ctx = document.getElementById('chartGapVolume').getContext('2d');
+        if (window.chart44) window.chart44.destroy();
+        window.chart44 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'STOP (Policial)', data: stopV, backgroundColor: '#3b82f6' },
+                    { label: 'CEAD (Oficial)', data: ceadV, backgroundColor: '#f59e0b' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+    })();
+</script>

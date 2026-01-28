@@ -11,7 +11,13 @@ const App = {
         pdfScale: 2,
         views: [
             'vista1', 'vista2', 'vista3', 'vista4', 'vista5',
-            'vista6', 'vista7', 'vista8', 'vista9', 'vista14', 'vista15'
+            'vista6', 'vista7', 'vista8', 'vista9', 'vista14', 'vista15',
+            'vista16', 'vista17', 'vista18', 'vista19', 'vista20',
+            'vista21', 'vista22', 'vista23', 'vista24', 'vista25',
+            'vista26', 'vista27', 'vista28', 'vista29', 'vista30',
+            'vista31', 'vista32', 'vista33', 'vista34', 'vista35',
+            'vista36', 'vista37', 'vista38', 'vista39', 'vista40',
+            'vista41', 'vista42', 'vista43', 'vista44', 'vista45'
         ]
     },
 

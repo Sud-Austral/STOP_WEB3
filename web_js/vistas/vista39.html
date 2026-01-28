@@ -1,0 +1,178 @@
+<!-- Vista 39: Anomalías Z-Score (CEAD) -->
+<style>
+    .grid-2-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    @media(max-width: 768px) {
+        .grid-2-col {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .font-bold {
+        font-weight: 600;
+    }
+
+    .text-danger-v19 {
+        color: #ef4444;
+    }
+
+    .text-success-v19 {
+        color: #10b981;
+    }
+
+    .text-warning-v19 {
+        color: #f59e0b;
+    }
+</style>
+
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-cead">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="periodo-fill-cead">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">Detector de Anomalías (Z-Score) (CEAD)</h2>
+    </div>
+    <p class="text-muted mb-lg">Identificación estadística de comportamientos mensuales inusuales</p>
+
+    <!-- Z-Score KPIs -->
+    <div class="kpi-grid mb-xl">
+        <div class="kpi-card">
+            <div class="kpi-label">Anomalías Graves</div>
+            <div class="kpi-value text-warning-v19" id="v39_anomalies">--</div>
+            <div class="kpi-sub">Z-Score > 1.5</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Mayor Desviación</div>
+            <div class="kpi-value" id="v39_max_z">--</div>
+            <div class="kpi-sub" id="v39_max_z_name">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Diagnóstico Estadístico</div>
+            <div class="kpi-value" id="v39_global_status">--</div>
+            <div class="kpi-change" id="v39_global_desc">--</div>
+        </div>
+    </div>
+
+    <div class="grid-2-col">
+        <!-- Chart -->
+        <div>
+            <h5 class="mb-md font-bold text-center">Distribución de Anomalías</h5>
+            <div class="chart-wrapper chart-wrapper--md">
+                <canvas id="chartZScoreCead"></canvas>
+            </div>
+        </div>
+
+        <!-- Detail Table -->
+        <div class="table-container">
+            <h5 class="mb-md font-bold text-center">Detalle de Alertas Significativas</h5>
+            <table class="data-table" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th>Delito</th>
+                        <th class="text-center">Z-Score</th>
+                        <th>Conclusión</th>
+                        <th class="text-center">Casos</th>
+                    </tr>
+                </thead>
+                <tbody id="v39_t_body">
+                    <tr>
+                        <td colspan="4" class="text-center">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista39() {
+        const waitForDataCead = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForDataCead();
+
+        const COLS = window.COLS_CEAD;
+        const data = STATE_DATA_CEAD.allData;
+        if (!data || data.length === 0) return;
+
+        const currentPeriodRow = data[0];
+        document.querySelectorAll('.comuna-fill-cead').forEach(el => el.textContent = STATE_DATA_CEAD.comunaName);
+        document.querySelectorAll('.periodo-fill-cead').forEach(el => el.textContent = `${currentPeriodRow[COLS.MES]} ${currentPeriodRow[COLS.ANIO]}`);
+
+        const currentData = data.filter(r => r[COLS.MES_NUM] === currentPeriodRow[COLS.MES_NUM] && r[COLS.ANIO] === currentPeriodRow[COLS.ANIO]);
+
+        // Anomalies
+        const deviations = currentData
+            .map(r => ({ ...r, absZ: Math.abs(parseFloat(r[COLS.Z_SCORE]) || 0) }))
+            .sort((a, b) => b.absZ - a.absZ);
+
+        const significant = deviations.filter(r => r.absZ > 1.5);
+        const maxDev = deviations[0] || {};
+
+        document.getElementById('v39_anomalies').textContent = significant.length;
+        document.getElementById('v39_max_z').textContent = parseFloat(maxDev[COLS.Z_SCORE] || 0).toFixed(2);
+        document.getElementById('v39_max_z_name').textContent = maxDev[COLS.DESCRIPCION] || '--';
+
+        const isUnstable = significant.length > 2;
+        const statusEl = document.getElementById('v39_global_status');
+        statusEl.textContent = isUnstable ? 'Inestable' : 'Estable';
+        statusEl.className = `kpi-value ${isUnstable ? 'text-danger-v19' : 'text-success-v19'}`;
+        document.getElementById('v39_global_desc').textContent = `${significant.length} focos detectados`;
+
+        // Table
+        const tbody = document.getElementById('v39_t_body');
+        tbody.innerHTML = '';
+        if (significant.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:2rem;">No hay anomalías estadísticas significativas (> 1.5σ)</td></tr>';
+        } else {
+            significant.slice(0, 6).forEach(r => {
+                const z = parseFloat(r[COLS.Z_SCORE]);
+                const concl = r[COLS.CONCLUSION_Z] || (Math.abs(z) > 2 ? 'Muy Inusual' : 'Inusual');
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-bold">${r[COLS.DESCRIPCION]}</td>
+                    <td class="text-center ${z > 0 ? 'text-danger-v19' : 'text-success-v19'} font-bold">${z > 0 ? '+' : ''}${z.toFixed(2)}</td>
+                    <td>${concl}</td>
+                    <td class="text-center">${r[COLS.CASOS_MES_ACTUAL]}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Chart
+        const top10 = deviations.slice(0, 10);
+        const ctx = document.getElementById('chartZScoreCead').getContext('2d');
+        if (window.chart39) window.chart39.destroy();
+
+        window.chart39 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: top10.map(r => r[COLS.DESCRIPCION]),
+                datasets: [{
+                    label: 'Desviación Estándar (σ)',
+                    data: top10.map(r => r[COLS.Z_SCORE]),
+                    backgroundColor: top10.map(r => r[COLS.Z_SCORE] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
+                    borderColor: top10.map(r => r[COLS.Z_SCORE] > 0 ? '#ef4444' : '#10b981'), borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                scales: { x: { grid: { color: '#f1f5f9' }, title: { display: true, text: 'Z-Score (0 = Promedio Histórico)' }, suggestedMin: -2, suggestedMax: 2 } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+    })();
+</script>

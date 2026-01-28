@@ -234,7 +234,12 @@ Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser
   "vista12": "Interpretación sobre predicción del próximo peak delictual",
   "vista13": "Notas metodológicas y fuentes de datos",
   "vista14": "Interpretación sobre la proyección futura (regresión lineal) y tendencia",
-  "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo. Analiza las variaciones (semanal/anual), el Z-Score y el nivel de riesgo para identificar anomalías críticas y métricas estables."
+  "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo. Analiza las variaciones (semanal/anual), el Z-Score y el nivel de riesgo para identificar anomalías críticas y métricas estables.",
+  "vista16": "Interpretación sobre demografía y tasas delictuales por habitante",
+  "vista17": "Interpretación sobre ranking regional y contexto geográfico",
+  "vista18": "Análisis táctico de rachas y patrones de repetición",
+  "vista19": "Análisis estadístico detallado de desviaciones y anomalías",
+  "vista20": "Resumen ejecutivo integral y estado de alertas críticas"
 }
 
 Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
@@ -322,7 +327,12 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
             vista12: "Prediciendo el próximo peak delictual...",
             vista13: "Revisando fuentes y notas metodológicas...",
             vista14: "Calculando proyección y regresión lineal delictual...",
-            vista15: "Generando diagnóstico crítico inmediato de seguridad..."
+            vista15: "Generando diagnóstico crítico inmediato de seguridad...",
+            vista16: "Analizando tasas ajustadas por población y demografía...",
+            vista17: "Calculando posición en el ranking regional...",
+            vista18: "Identificando rachas tácticas y patrones operativos...",
+            vista19: "Detectando anomalías estadísticas mediante Z-Score...",
+            vista20: "Consolidando tablero de mando ejecutivo..."
         };
     },
 

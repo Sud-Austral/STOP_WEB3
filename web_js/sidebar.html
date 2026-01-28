@@ -8,95 +8,139 @@
     <div class="sidebar-subtitle" id="sidebarComuna">Cargando comuna...</div>
 </div>
 
-<nav class="sidebar-nav">
-    <!-- Resumen Ejecutivo -->
+<!-- Tab Controls -->
+<div class="sidebar-tabs" style="display: flex; gap: 4px; padding: 0 1rem; margin-bottom: 1rem;">
+    <button class="btn-tab active" data-target="tab-stop" onclick="switchSidebarTab('tab-stop')"
+        style="flex:1; padding: 6px; font-size: 0.7rem; border-radius: 4px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer;">STOP</button>
+    <button class="btn-tab" data-target="tab-cead" onclick="switchSidebarTab('tab-cead')"
+        style="flex:1; padding: 6px; font-size: 0.7rem; border-radius: 4px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer;">CEAD</button>
+    <button class="btn-tab" data-target="tab-hybrid" onclick="switchSidebarTab('tab-hybrid')"
+        style="flex:1; padding: 6px; font-size: 0.7rem; border-radius: 4px; border: 1px solid var(--color-border); background: var(--color-bg); cursor: pointer;">MIXTO</button>
+</div>
+
+<!-- STOP Content (1-20) -->
+<div id="tab-stop" class="sidebar-tab-content">
+    <div class="nav-section-title" style="padding-left:1rem; color:#94a3b8; font-size:0.7rem; margin-bottom:0.5rem;">
+        DATOS POLICIALES (SEMANAL)</div>
+
     <div class="nav-section">
-        <div class="nav-section-title">1. Resumen Ejecutivo</div>
-        <a class="nav-link active" data-view="vista1">
-            <i class="fa-solid fa-file-lines"></i>
-            Ficha Comunal
-        </a>
+        <a class="nav-link active" data-view="vista1"><i class="fa-solid fa-file-lines"></i> Ficha Comunal</a>
+        <a class="nav-link" data-view="vista2"><i class="fa-solid fa-chart-pie"></i> Gráficos y Vistas</a>
+        <a class="nav-link" data-view="vista3"><i class="fa-solid fa-bullseye"></i> Metas de Focos</a>
     </div>
 
-    <!-- Análisis Táctico -->
     <div class="nav-section">
-        <div class="nav-section-title">2. Análisis Táctico</div>
-        <a class="nav-link" data-view="vista2">
-            <i class="fa-solid fa-chart-pie"></i>
-            Gráficos y Vistas
-        </a>
-        <a class="nav-link" data-view="vista3">
-            <i class="fa-solid fa-bullseye"></i>
-            Metas de Focos
-        </a>
+        <div class="nav-section-title">Estratégico</div>
+        <a class="nav-link" data-view="vista4"><i class="fa-solid fa-calendar-week"></i> Evol. Multisemanal</a>
+        <a class="nav-link" data-view="vista5"><i class="fa-solid fa-chart-column"></i> Perfil Delictual</a>
+        <a class="nav-link" data-view="vista6"><i class="fa-solid fa-ranking-star"></i> Benchmark Regional</a>
+        <a class="nav-link" data-view="vista7"><i class="fa-solid fa-building"></i> Detalles Sección</a>
     </div>
 
-    <!-- Análisis Estratégico -->
     <div class="nav-section">
-        <div class="nav-section-title">3. Análisis Estratégico</div>
-        <a class="nav-link" data-view="vista4">
-            <i class="fa-solid fa-calendar-week"></i>
-            Evolución Multisemanal
-        </a>
-        <a class="nav-link" data-view="vista5">
-            <i class="fa-solid fa-chart-column"></i>
-            Perfil Delictual
-        </a>
-        <a class="nav-link" data-view="vista6">
-            <i class="fa-solid fa-ranking-star"></i>
-            Benchmark Regional
-        </a>
-        <a class="nav-link" data-view="vista7">
-            <i class="fa-solid fa-building"></i>
-            Vista Detalles Sección
-        </a>
+        <div class="nav-section-title">Proyecciones</div>
+        <a class="nav-link" data-view="vista8"><i class="fa-solid fa-chart-line"></i> Tendencias LP</a>
+        <a class="nav-link" data-view="vista9"><i class="fa-solid fa-bolt"></i> Pronósticos CP</a>
+        <a class="nav-link" data-view="vista10"><i class="fa-solid fa-arrows-to-dot"></i> Estacionalidad</a>
+        <a class="nav-link" data-view="vista14"><i class="fa-solid fa-chart-line"></i> Proyección Evol.</a>
     </div>
 
-    <!-- Proyecciones -->
     <div class="nav-section">
-        <div class="nav-section-title">4. Proyecciones</div>
-        <a class="nav-link" data-view="vista8">
-            <i class="fa-solid fa-chart-line"></i>
-            Tendencias Plurianuales
-        </a>
-        <a class="nav-link" data-view="vista9">
-            <i class="fa-solid fa-bolt"></i>
-            Pronósticos (Corto Plazo)
-        </a>
-        <a class="nav-link" data-view="vista10">
-            <i class="fa-solid fa-arrows-to-dot"></i>
-            Estacionalidad Esperada
-        </a>
+        <div class="nav-section-title">Avanzado</div>
+        <a class="nav-link" data-view="vista11"><i class="fa-solid fa-diagram-project"></i> Correlación Riesgos</a>
+        <a class="nav-link" data-view="vista15"><i class="fa-solid fa-radiation"></i> Diagnóstico Inmediato</a>
+        <a class="nav-link" data-view="vista16"><i class="fa-solid fa-users"></i> Tasas y Demografía</a>
+        <a class="nav-link" data-view="vista17"><i class="fa-solid fa-map-location-dot"></i> Contexto Regional</a>
+        <a class="nav-link" data-view="vista18"><i class="fa-solid fa-chess"></i> Tablero Táctico</a>
+        <a class="nav-link" data-view="vista19"><i class="fa-solid fa-fingerprint"></i> Anomalías (Z-Score)</a>
+        <a class="nav-link" data-view="vista20"><i class="fa-solid fa-gauge-high"></i> Tablero Ejecutivo</a>
+    </div>
+</div>
+
+<!-- CEAD Content (21-40) -->
+<div id="tab-cead" class="sidebar-tab-content" style="display:none;">
+    <div class="nav-section-title" style="padding-left:1rem; color:#f59e0b; font-size:0.7rem; margin-bottom:0.5rem;">
+        DATOS OFICIALES (MENSUAL)</div>
+
+    <div class="nav-section">
+        <a class="nav-link" data-view="vista21"><i class="fa-solid fa-file-lines"></i> Ficha CEAD</a>
+        <a class="nav-link" data-view="vista22"><i class="fa-solid fa-chart-pie"></i> Estado General</a>
+        <a class="nav-link" data-view="vista23"><i class="fa-solid fa-bullseye"></i> Metas Mensuales</a>
     </div>
 
-    <!-- Análisis Avanzado -->
     <div class="nav-section">
-        <div class="nav-section-title">5. Análisis Avanzado</div>
-        <a class="nav-link" data-view="vista11">
-            <i class="fa-solid fa-diagram-project"></i>
-            Correlación de Riesgos
-        </a>
-        <a class="nav-link" data-view="vista14">
-            <i class="fa-solid fa-chart-line"></i>
-            Proyección y Evolución
-        </a>
-        <a class="nav-link" data-view="vista15">
-            <i class="fa-solid fa-radiation"></i>
-            Diagnóstico Inmediato
-        </a>
+        <div class="nav-section-title">Estratégico</div>
+        <a class="nav-link" data-view="vista24"><i class="fa-solid fa-calendar-week"></i> Evolución Mensual</a>
+        <a class="nav-link" data-view="vista25"><i class="fa-solid fa-chart-column"></i> Perfil Delictual</a>
+        <a class="nav-link" data-view="vista26"><i class="fa-solid fa-ranking-star"></i> Posición Regional</a>
+        <a class="nav-link" data-view="vista27"><i class="fa-solid fa-building"></i> Tendencias LP</a>
     </div>
 
-    <!-- Utilidades -->
-    <div class="nav-section" style="display: none;">
-        <div class="nav-section-title">Utilidades</div>
-        <a class="nav-link" data-view="printer">
-            <i class="fa-solid fa-print"></i>
-            Región Prpt
-        </a>
+    <div class="nav-section">
+        <div class="nav-section-title">Proyecciones</div>
+        <a class="nav-link" data-view="vista28"><i class="fa-solid fa-chart-line"></i> Estacionalidad</a>
+        <a class="nav-link" data-view="vista29"><i class="fa-solid fa-bolt"></i> Correlaciones</a>
+        <a class="nav-link" data-view="vista30"><i class="fa-solid fa-arrows-to-dot"></i> Pronóstico 6M</a>
+        <a class="nav-link" data-view="vista31"><i class="fa-solid fa-flask"></i> Simulador Impacto</a>
+        <a class="nav-link" data-view="vista32"><i class="fa-solid fa-stopwatch"></i> Próximo Peak</a>
+        <a class="nav-link" data-view="vista34"><i class="fa-solid fa-chart-line"></i> Proyección Evol.</a>
     </div>
-</nav>
+
+    <div class="nav-section">
+        <div class="nav-section-title">Avanzado</div>
+        <a class="nav-link" data-view="vista35"><i class="fa-solid fa-radiation"></i> Diagnóstico Mensual</a>
+        <a class="nav-link" data-view="vista36"><i class="fa-solid fa-users"></i> Tasas x 100k</a>
+        <a class="nav-link" data-view="vista37"><i class="fa-solid fa-map-location-dot"></i> Ranking Regional</a>
+        <a class="nav-link" data-view="vista38"><i class="fa-solid fa-chess"></i> Tablero Táctico</a>
+        <a class="nav-link" data-view="vista39"><i class="fa-solid fa-fingerprint"></i> Anomalías Z</a>
+        <a class="nav-link" data-view="vista40"><i class="fa-solid fa-gauge-high"></i> Ejecutivo CEAD</a>
+        <a class="nav-link" data-view="vista33"><i class="fa-solid fa-book"></i> Metodología</a>
+    </div>
+</div>
+
+<!-- Hybrid Content (41-45) -->
+<div id="tab-hybrid" class="sidebar-tab-content" style="display:none;">
+    <div class="nav-section-title" style="padding-left:1rem; color:#8b5cf6; font-size:0.7rem; margin-bottom:0.5rem;">
+        INTELIGENCIA MIXTA</div>
+
+    <div class="nav-section">
+        <a class="nav-link" data-view="vista41"><i class="fa-solid fa-code-compare"></i> Convergencia</a>
+        <a class="nav-link" data-view="vista42"><i class="fa-solid fa-shuffle"></i> Proy. Híbrida</a>
+        <a class="nav-link" data-view="vista43"><i class="fa-solid fa-table-cells"></i> Matriz Riesgo</a>
+        <a class="nav-link" data-view="vista44"><i class="fa-solid fa-left-right"></i> Brechas Reporte</a>
+        <a class="nav-link" data-view="vista45"><i class="fa-solid fa-traffic-light"></i> Semáforo Integral</a>
+    </div>
+</div>
+
+<script>
+    function switchSidebarTab(tabId) {
+        // Hide all contents
+        document.querySelectorAll('.sidebar-tab-content').forEach(el => el.style.display = 'none');
+        // Show target
+        document.getElementById(tabId).style.display = 'block';
+
+        // Update buttons
+        document.querySelectorAll('.btn-tab').forEach(btn => {
+            if (btn.dataset.target === tabId) {
+                btn.classList.add('active');
+                btn.style.background = 'var(--color-primary-light)';
+                btn.style.borderColor = 'var(--color-primary)';
+                btn.style.color = 'var(--color-primary)';
+                btn.style.fontWeight = '700';
+            } else {
+                btn.classList.remove('active');
+                btn.style.background = 'var(--color-bg)';
+                btn.style.borderColor = 'var(--color-border)';
+                btn.style.color = 'var(--color-text-muted)';
+                btn.style.fontWeight = '400';
+            }
+        });
+    }
+    // Init state
+    switchSidebarTab('tab-stop');
+</script>
 
 <!-- Footer -->
 <div class="sidebar-footer">
-    <p>v2.0 · <span id="sidebarVersion">11 vistas disponibles</span></p>
+    <p>v2.2 · <span id="sidebarVersion">45 vistas disponibles</span></p>
 </div>

@@ -1,0 +1,148 @@
+<!-- Vista 17: Contexto Regional y Rankings -->
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="semana-fill">--</span>
+    </div>
+
+    <div class="section-header">
+        <h2 class="section-title">Posicionamiento Regional</h2>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mb-lg">
+        <p class="text-muted mb-0">Comparativa y contexto geográfico</p>
+        <div class="badge bg-light text-dark border">
+            <i class="fa-solid fa-map"></i> <span id="v17_provincia">--</span> / <span id="v17_region">--</span>
+        </div>
+    </div>
+
+    <!-- Ranking KPIs -->
+    <div class="kpi-grid mb-xl">
+        <div class="kpi-card">
+            <div class="kpi-label">Ranking Regional (Promedio)</div>
+            <div class="kpi-value" id="v17_ranking">--</div>
+            <div class="kpi-change" id="v17_ranking_change">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Variación Ranking</div>
+            <div class="kpi-value" id="v17_rank_delta">--</div>
+            <div class="kpi-sub">Puestos vs Semana Ant.</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Delitos en Top 3 Regional</div>
+            <div class="kpi-value text-warning" id="v17_top_risk">--</div>
+            <div class="kpi-sub" id="v17_top_risk_names">--</div>
+        </div>
+    </div>
+
+    <!-- Chart: Ranking por Tipo de Delito -->
+    <h4 class="card-title mt-lg">Posición en el Ranking por Delito (Menor es peor)</h4>
+    <div class="chart-wrapper chart-wrapper--lg">
+        <canvas id="chartRanking"></canvas>
+    </div>
+</div>
+
+<script>
+    (async function initVista17() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        const data = STATE_DATA.allDataHistory;
+        const maxWeek = Math.max(...data.map(r => r[COLS.ID_SEMANA]));
+        const currentData = data.filter(r => r[COLS.ID_SEMANA] === maxWeek);
+        const prevData = data.filter(r => r[COLS.ID_SEMANA] === maxWeek - 1);
+
+        // 1. Geo Info
+        if (currentData.length > 0) {
+            document.getElementById('v17_provincia').textContent = currentData[0][COLS.PROVINCIA] || 'Provincia no disp.';
+            document.getElementById('v17_region').textContent = currentData[0][COLS.REGION] || 'Región no disp.';
+        }
+
+        // 2. Ranking Calculations
+        // Calculate average ranking across all crimes
+        let sumRank = 0;
+        let sumRankAnt = 0;
+        let count = 0;
+
+        let badRankings = []; // Rankings closests to 1 (assuming 1 is worst/highest crime)
+
+        currentData.forEach(r => {
+            const rank = parseInt(r[COLS.RANKING]) || 0;
+            const rankAnt = parseInt(r[COLS.RANKING_ANT]) || 0;
+
+            if (rank > 0) {
+                sumRank += rank;
+                sumRankAnt += rankAnt;
+                count++;
+
+                // Track "bad" rankings (e.g., being top 1, 2 or 3 in the region for a crime)
+                if (rank <= 3) {
+                    badRankings.push(`${r[COLS.DELITO]} (#${rank})`);
+                }
+            }
+        });
+
+        const avgRank = count > 0 ? Math.round(sumRank / count) : 0;
+        const avgRankAnt = count > 0 ? Math.round(sumRankAnt / count) : 0; // Using current count for simplicity
+
+        document.getElementById('v17_ranking').textContent = avgRank > 0 ? '#' + avgRank : '--';
+
+        const rankDelta = avgRankAnt - avgRank; // Positive means rank improved (number got smaller, e.g. 5 -> 3 is bad? Wait. Usually #1 is worst in crime rankings (most crimes). So 5->3 means we got worse.)
+        // Let's assume #1 is "Mayor Cantidad de Delitos" (Peor).
+        // So simple delta: 
+        // Actual #5. Ant #8.  5 - 8 = -3. We moved UP the list (closer to #1). That is BAD.
+        // Actual #10. Ant #5. 10 - 5 = +5. We moved DOWN the list (better).
+
+        const deltaText = rankDelta > 0 ? `▼ ${rankDelta} (Mejora)` : (rankDelta < 0 ? `▲ ${Math.abs(rankDelta)} (Empeora)` : 'Sin cambio');
+        const deltaClass = rankDelta > 0 ? 'text-success' : (rankDelta < 0 ? 'text-danger' : 'text-muted');
+
+        document.getElementById('v17_rank_delta').textContent = deltaText;
+        document.getElementById('v17_rank_delta').className = `kpi-value ${deltaClass}`;
+
+        document.getElementById('v17_top_risk').textContent = badRankings.length;
+        document.getElementById('v17_top_risk_names').textContent = badRankings.slice(0, 3).join(', ');
+
+        // 3. Chart
+        const sortedByRank = [...currentData]
+            .filter(r => r[COLS.RANKING] > 0)
+            .sort((a, b) => a[COLS.RANKING] - b[COLS.RANKING]) // Ascending (1, 2, 3...)
+            .slice(0, 7); // Show top 7 "Worst" rankings
+
+        const ctx = document.getElementById('chartRanking').getContext('2d');
+        if (window.chart17) window.chart17.destroy();
+
+        window.chart17 = new Chart(ctx, {
+            type: 'bar', // Horizontal bar clearer for rankings
+            data: {
+                labels: sortedByRank.map(r => r[COLS.DELITO]),
+                datasets: [{
+                    label: 'Ranking Regional',
+                    data: sortedByRank.map(r => r[COLS.RANKING]),
+                    backgroundColor: sortedByRank.map(r => r[COLS.RANKING] <= 3 ? '#ef4444' : '#64748b'),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        reverse: true, // In rankings, 1 is visually "more" or "first" on left? Or simply use normal axis but interpret context.
+                        // Let's keep normal axis. Short bar = Rank 1? No. Rank 1 is usually "Big bar" in "Importance", but here it's a number.
+                        // Let's invert X so #1 is at the far right? Or standard:
+                        title: { display: true, text: 'Posición (1 = Más Delitos)' },
+                        suggestedMin: 1
+                    }
+                }
+            }
+        });
+
+    })();
+</script>

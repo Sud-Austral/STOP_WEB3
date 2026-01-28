@@ -1,0 +1,286 @@
+<!-- Vista 35: Diagnóstico Inmediato (CEAD) -->
+
+<style>
+    .slider-track {
+        height: 6px;
+        background: var(--color-border);
+        border-radius: 3px;
+        position: relative;
+        margin: 0 1rem 3rem 1rem;
+    }
+
+    .slider-thumb {
+        width: 16px;
+        height: 16px;
+        background: var(--color-card);
+        border: 3px solid var(--color-danger);
+        border-radius: 50%;
+        position: absolute;
+        top: -5px;
+        transform: translateX(-50%);
+        box-shadow: var(--shadow-sm);
+        transition: left 1s ease-out;
+    }
+
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: -2rem;
+    }
+
+    .slider-labels span {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin: 0.5rem 0;
+        color: var(--color-text);
+    }
+
+    .kpi-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .kpi-sub {
+        font-size: 0.8rem;
+        color: var(--color-text-light);
+    }
+
+    .trend-indicator {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        float: right;
+    }
+
+    .trend-up {
+        color: var(--color-danger);
+    }
+
+    .trend-down {
+        color: var(--color-success);
+    }
+
+    .alert-box-simple {
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        background: var(--color-bg);
+        text-align: center;
+        border: 1px solid var(--color-border);
+    }
+
+    .alert-box-simple.active {
+        border-color: var(--color-danger);
+        background: #fef2f2;
+    }
+
+    .alert-val {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-top: 0.25rem;
+        color: var(--color-text);
+    }
+
+    .text-success {
+        color: var(--color-success) !important;
+    }
+
+    .text-danger {
+        color: var(--color-danger) !important;
+    }
+
+    .text-warning {
+        color: var(--color-warning) !important;
+    }
+</style>
+
+<div class="card">
+    <div class="mb-sm" style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+        <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill-cead">CARGANDO...</span>
+        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+        <span class="periodo-fill-cead">--</span>
+    </div>
+
+    <!-- Title Row -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-size: 1.75rem; font-weight: 700; color: var(--color-text); margin: 0;">Diagnóstico Inmediato
+                (CEAD)</h2>
+            <p class="text-muted" style="margin-top: 0.25rem;">¿Qué pasó este mes?</p>
+        </div>
+        <div class="alert alert--danger" id="topAlert35"
+            style="display: none; padding: 0.5rem 1rem; align-items: center; gap: 0.5rem; margin: 0;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="topAlertText35" style="font-weight: 600; font-size: 0.85rem;">Alza Crítica Detectada</span>
+        </div>
+    </div>
+
+    <!-- AI Interpretation -->
+    <div class="alert alert--warning" style="margin-bottom: 2rem;">
+        <i class="fa-solid fa-robot" style="margin-right: 0.5rem;"></i>
+        <strong style="margin-right: 0.5rem;">Interpretación IA:</strong>
+        <span id="v35_ia_content">Analizando contexto de seguridad mensual...</span>
+    </div>
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+        <!-- Card 1 -->
+        <div class="kpi-card" style="border-top: 4px solid var(--color-primary)">
+            <div class="kpi-label">Casos Este Mes</div>
+            <div class="kpi-value"><span id="v35_casos">--</span><span class="trend-indicator" id="v35_trend">--</span>
+            </div>
+            <div class="kpi-sub" id="v35_prev_month">Frente a -- del mes pasado</div>
+        </div>
+        <!-- Card 2 -->
+        <div class="kpi-card" style="border-top: 4px solid var(--color-success)">
+            <div class="kpi-label">Mismo Mes Año Ant.</div>
+            <div class="kpi-value"><span id="v35_last_year">--</span><span class="trend-indicator trend-down"
+                    id="v35_trend_year">--</span></div>
+            <div class="kpi-sub">Comparativo anual</div>
+        </div>
+        <!-- Card 3 -->
+        <div class="kpi-card" style="border-top: 4px solid var(--color-warning)">
+            <div class="kpi-label">Concentración Top 3</div>
+            <div class="kpi-value" id="v35_concentration">--%</div>
+            <div class="kpi-sub" id="v35_top3_list">Cargando...</div>
+        </div>
+        <!-- Card 4 -->
+        <div class="kpi-card" style="border-top: 4px solid var(--color-danger)">
+            <div class="kpi-label">Riesgo Global</div>
+            <div class="kpi-value text-danger" id="v35_risk">ALTO</div>
+            <div class="kpi-sub">Puntaje Compuesto: <span id="v35_score">--</span>/10</div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="kpi-grid"
+        style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 2rem; margin-top: 1.5rem;">
+        <div class="alert-box-simple" id="box_critical_cead">
+            <div class="kpi-label">Aumento Crítico</div>
+            <div class="alert-val" id="status_critical_cead">--</div>
+        </div>
+        <div class="alert-box-simple">
+            <div class="kpi-label">Tendencia Sost.</div>
+            <div class="alert-val text-success" id="v35_tendencia_sost">NORMAL</div>
+        </div>
+    </div>
+
+    <!-- Z-Score -->
+    <div style="background: var(--color-bg); border-radius: 12px; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h3 style="color: var(--color-text); margin: 0; font-size: 1.1rem;">Puntaje Z (Anomalía)</h3>
+            <div style="font-size: 1.5rem; font-weight: 700; color: var(--color-danger);" id="v35_z_val">+0.00</div>
+        </div>
+        <div style="position: relative;">
+            <div class="slider-track">
+                <div class="slider-thumb" id="z_thumb_cead" style="left: 50%;"></div>
+            </div>
+            <div class="slider-labels"><span>-3 (Bajo)</span><span>0 (Media)</span><span>+3 (Alarma)</span></div>
+        </div>
+        <div class="alert alert--info" style="margin-top: 1.5rem; margin-bottom: 0;">
+            <strong>Interpretación:</strong> <span id="v35_interpretation">Calculando análisis...</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista35() {
+        const waitForDataCead = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForDataCead();
+
+        const COLS = window.COLS_CEAD;
+        const data = STATE_DATA_CEAD.allData;
+        if (!data || data.length === 0) return;
+
+        const currentPeriodRow = data[0];
+        document.querySelectorAll('.comuna-fill-cead').forEach(el => el.textContent = STATE_DATA_CEAD.comunaName);
+        document.querySelectorAll('.periodo-fill-cead').forEach(el => el.textContent = `${currentPeriodRow[COLS.MES]} ${currentPeriodRow[COLS.ANIO]}`);
+
+        // Current Month Data
+        const currentData = data.filter(r => r[COLS.MES_NUM] === currentPeriodRow[COLS.MES_NUM] && r[COLS.ANIO] === currentPeriodRow[COLS.ANIO]);
+        const totalActual = currentData.reduce((sum, r) => sum + (r[COLS.CASOS_MES_ACTUAL] || 0), 0);
+        const totalMesPasado = currentData.reduce((sum, r) => sum + (r[COLS.CASOS_MES_ANTERIOR] || 0), 0);
+        const totalAnioPasado = currentData.reduce((sum, r) => sum + (r[COLS.CASOS_MISMO_MES_ANIO_ANTERIOR] || 0), 0);
+
+        // Card 1
+        document.getElementById('v35_casos').textContent = totalActual;
+        document.getElementById('v35_prev_month').textContent = `Frente a ${totalMesPasado} del mes pasado`;
+        let momDiff = totalMesPasado > 0 ? ((totalActual - totalMesPasado) / totalMesPasado) * 100 : 0;
+        const momEl = document.getElementById('v35_trend');
+        momEl.innerHTML = (momDiff > 0 ? '▲' : '▼') + ' ' + Math.abs(momDiff).toFixed(1) + '%';
+        momEl.className = `trend-indicator ${momDiff > 0 ? 'trend-up' : 'trend-down'}`;
+
+        // Card 2
+        document.getElementById('v35_last_year').textContent = totalAnioPasado;
+        let yoyDiff = totalAnioPasado > 0 ? ((totalActual - totalAnioPasado) / totalAnioPasado) * 100 : 0;
+        const yoyEl = document.getElementById('v35_trend_year');
+        yoyEl.innerHTML = (yoyDiff > 0 ? '▲' : '▼') + ' ' + Math.abs(yoyDiff).toFixed(1) + '%';
+        yoyEl.className = `trend-indicator ${yoyDiff > 0 ? 'trend-up' : 'trend-down'}`;
+
+        // Card 3: Top 3
+        const sortedDelitos = [...currentData].sort((a, b) => (b[COLS.CASOS_MES_ACTUAL] || 0) - (a[COLS.CASOS_MES_ACTUAL] || 0));
+        const top3 = sortedDelitos.slice(0, 3);
+        const top3Sum = top3.reduce((sum, r) => sum + (r[COLS.CASOS_MES_ACTUAL] || 0), 0);
+        const concentration = totalActual > 0 ? (top3Sum / totalActual) * 100 : 0;
+
+        document.getElementById('v35_concentration').textContent = Math.round(concentration) + '%';
+        document.getElementById('v35_top3_list').textContent = top3.map(r => r[COLS.DESCRIPCION] || 'N/A').join(', ');
+
+        // Avg Z-Score
+        let weightedZ = 0, totalZCases = 0;
+        currentData.forEach(r => {
+            weightedZ += (r[COLS.Z_SCORE] || 0) * (r[COLS.CASOS_MES_ACTUAL] || 0);
+            totalZCases += (r[COLS.CASOS_MES_ACTUAL] || 0);
+        });
+        const avgZ = totalZCases > 0 ? weightedZ / totalZCases : 0;
+
+        document.getElementById('v35_z_val').textContent = avgZ > 0 ? '+' + avgZ.toFixed(2) : avgZ.toFixed(2);
+        let sliderPct = ((avgZ + 3) / 6) * 100;
+        sliderPct = Math.max(0, Math.min(100, sliderPct));
+        setTimeout(() => document.getElementById('z_thumb_cead').style.left = `${sliderPct}%`, 500);
+
+        // Risk Score
+        let riskScore = 5 + (avgZ * 1.5);
+        if (momDiff > 10) riskScore += 1;
+        if (riskScore > 10) riskScore = 10;
+        if (riskScore < 1) riskScore = 1;
+
+        document.getElementById('v35_score').textContent = riskScore.toFixed(1);
+
+        // Critical Logic
+        const boxCrit = document.getElementById('box_critical_cead');
+        const statusCrit = document.getElementById('status_critical_cead');
+        const topAlert = document.getElementById('topAlert35');
+        const riskEl = document.getElementById('v35_risk');
+
+        if (riskScore >= 7) {
+            riskEl.textContent = 'ALTO'; riskEl.className = 'kpi-value text-danger';
+            boxCrit.className = 'alert-box-simple active'; statusCrit.textContent = 'ACTIVA'; statusCrit.className = 'alert-val text-danger';
+            topAlert.style.display = 'flex';
+        } else if (riskScore >= 4) {
+            riskEl.textContent = 'MEDIO'; riskEl.className = 'kpi-value text-warning';
+            statusCrit.textContent = 'NORMAL'; statusCrit.className = 'alert-val text-success';
+            topAlert.style.display = 'none';
+        } else {
+            riskEl.textContent = 'BAJO'; riskEl.className = 'kpi-value text-success';
+            statusCrit.textContent = 'NORMAL'; statusCrit.className = 'alert-val text-success';
+            topAlert.style.display = 'none';
+        }
+
+        const interpretation = `La frecuencia actual está <strong>${Math.abs(avgZ).toFixed(2)}</strong> desviaciones estándar ${avgZ >= 0 ? 'sobre' : 'bajo'} la media. ` +
+            `Riesgo ${riskScore >= 7 ? 'Crítico' : 'Controlado'}.`;
+        document.getElementById('v35_interpretation').innerHTML = interpretation;
+        document.getElementById('v35_ia_content').innerHTML = `Se detecta una variación mensual del ${momDiff.toFixed(1)}%. ${avgZ > 1.5 ? 'Anomalía fuerte detectada.' : 'Comportamiento dentro de lo esperado.'}`;
+
+    })();
+</script>

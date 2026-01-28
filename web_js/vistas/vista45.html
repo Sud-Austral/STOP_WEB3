@@ -1,0 +1,157 @@
+<!-- Vista 45: Semáforo Integral de Riesgo (Unificado) -->
+<style>
+    .traffic-light {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .tl-red {
+        background: #ef4444;
+        box-shadow: 0 0 5px #ef4444;
+    }
+
+    .tl-yellow {
+        background: #f59e0b;
+        box-shadow: 0 0 5px #f59e0b;
+    }
+
+    .tl-green {
+        background: #10b981;
+    }
+
+    .action-btn {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        color: #475569;
+    }
+</style>
+
+<div class="card">
+    <div class="section-header">
+        <h2 class="section-title">Semáforo Integral de Riesgo</h2>
+    </div>
+    <p class="text-muted mb-lg">Evaluación combinada de alertas semanales (STOP) y mensuales (CEAD)</p>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Delito</th>
+                    <th class="text-center">Alerta Táctica (STOP)</th>
+                    <th class="text-center">Alerta Estratégica (CEAD)</th>
+                    <th class="text-center">Riesgo Combinado</th>
+                    <th class="text-center">Acción Recomendada</th>
+                </tr>
+            </thead>
+            <tbody id="riskTable45">
+                <!-- Rows -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-lg">
+        <div class="col-6">
+            <div class="alert alert--danger">
+                <strong>Prioridad 1:</strong> Intervención Mixta (Operativo + Social)
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="alert alert--warning">
+                <strong>Prioridad 2:</strong> Vigilancia Táctica Reforzada
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista45() {
+        const waitForAll = () => new Promise(r => {
+            const c = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.isLoaded && typeof STATE_DATA_CEAD !== 'undefined' && STATE_DATA_CEAD.isLoaded) ? r() : setTimeout(c, 100); c();
+        });
+        await waitForAll();
+
+        // Prepare Data Maps
+        // STOP Z-Scores (Last Week)
+        const stopCols = window.COLS;
+        const stopData = STATE_DATA.allDataHistory;
+        const maxWeek = Math.max(...stopData.map(r => r[stopCols.ID_SEMANA]));
+        const currentStop = stopData.filter(r => r[stopCols.ID_SEMANA] === maxWeek);
+        const stopMap = {};
+        currentStop.forEach(r => stopMap[r[stopCols.DELITO]] = parseFloat(r[stopCols.Z_SCORE]) || 0);
+
+        // CEAD Z-Scores (Last Month)
+        const ceadCols = window.COLS_CEAD;
+        const ceadData = STATE_DATA_CEAD.allData;
+        const ceadMap = {};
+        ceadData.forEach(r => ceadMap[r[ceadCols.DESCRIPCION]] = parseFloat(r[ceadCols.Z_SCORE]) || 0);
+
+        // Unified List
+        const stopKeys = Object.keys(stopMap);
+        const ceadKeys = Object.keys(ceadMap);
+
+        // Use CEAD keys as base for formal names, map STOP
+        const rows = [];
+
+        ceadKeys.forEach(name => {
+            const ceadZ = ceadMap[name];
+            // Simple match
+            const stopName = stopKeys.find(s => name.toLowerCase().includes(s.toLowerCase()));
+            const stopZ = stopName ? stopMap[stopName] : 0;
+
+            // Logic
+            let riskLevel = 0; // 0=Low, 1=Med, 2=High
+            let recommendation = 'Monitoreo Base';
+
+            if (stopZ > 1.5 && ceadZ > 1.5) {
+                riskLevel = 3;
+                recommendation = 'Intervención Integral Urgente';
+            } else if (stopZ > 1.5) {
+                riskLevel = 2;
+                recommendation = 'Focalización Policial (Táctica)';
+            } else if (ceadZ > 1.5) {
+                riskLevel = 2;
+                recommendation = 'Prevención Situacional (Estratégica)';
+            } else if (stopZ > 0.5 || ceadZ > 0.5) {
+                riskLevel = 1;
+                recommendation = 'Alertar Patrullaje';
+            }
+
+            rows.push({ name, stopZ, ceadZ, riskLevel, recommendation });
+        });
+
+        // Sort by Risk
+        rows.sort((a, b) => b.riskLevel - a.riskLevel);
+
+        const tbody = document.getElementById('riskTable45');
+        tbody.innerHTML = '';
+
+        rows.slice(0, 10).forEach(r => {
+            const lighting = (val) => {
+                if (val > 1.5) return '<span class="traffic-light tl-red"></span> ALTO';
+                if (val > 0.5) return '<span class="traffic-light tl-yellow"></span> MEDIO';
+                return '<span class="traffic-light tl-green"></span> BAJO';
+            };
+
+            const combinedLight = r.riskLevel >= 3 ? '<span class="badge bg-danger text-white">CRÍTICO</span>' :
+                (r.riskLevel >= 2 ? '<span class="badge bg-warning text-dark">ALTO</span>' :
+                    (r.riskLevel >= 1 ? '<span class="badge bg-light text-dark">MEDIO</span>' : '<span class="badge bg-success text-white">BAJO</span>'));
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="font-weight:600;">${r.name}</td>
+                <td class="text-center">${lighting(r.stopZ)}</td>
+                <td class="text-center">${lighting(r.ceadZ)}</td>
+                <td class="text-center">${combinedLight}</td>
+                <td class="text-center"><span class="action-btn">${r.recommendation}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    })();
+</script>
