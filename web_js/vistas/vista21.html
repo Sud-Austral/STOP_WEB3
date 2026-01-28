@@ -78,6 +78,8 @@
         const COLS = window.COLS_CEAD;
         const data = STATE_DATA_CEAD.allData; // Sorted desc by date in loader
 
+        const MONTH_NAMES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
         if (!data || data.length === 0) {
             document.getElementById('alertTextCead').textContent = "No hay datos disponibles para esta comuna.";
             return;
@@ -183,7 +185,8 @@
         const monthlyTotalsMap = {};
         STATE_DATA_CEAD.allData.forEach(row => {
             const key = `${row[COLS.ANIO]}-${String(row[COLS.MES_NUM]).padStart(2, '0')}`; // YYYY-MM for sorting
-            const label = `${row[COLS.MES].substring(0, 3)} ${row[COLS.ANIO]}`;
+            const monthName = MONTH_NAMES[row[COLS.MES_NUM]] || String(row[COLS.MES]);
+            const label = `${monthName} ${row[COLS.ANIO]}`;
             if (!monthlyTotalsMap[key]) monthlyTotalsMap[key] = { label: label, total: 0 };
             monthlyTotalsMap[key].total += (row[COLS.CASOS_MES_ACTUAL] || 0);
         });

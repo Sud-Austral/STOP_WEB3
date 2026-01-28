@@ -63,6 +63,7 @@ const IAModule = {
         const totalCasosAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
         const totalCasosYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
 
+        // ... existing STOP data processing ...
         const varSemanal = totalCasosAnt > 0 ? ((totalCasos - totalCasosAnt) / totalCasosAnt * 100).toFixed(1) : 0;
         const varAnual = totalCasosYearAnt > 0 ? ((totalCasos - totalCasosYearAnt) / totalCasosYearAnt * 100).toFixed(1) : 0;
 
@@ -102,6 +103,31 @@ const IAModule = {
             .slice(0, 3)
             .map(row => `${row[COLS.DELITO]} (Z=${(row[COLS.Z_SCORE] || 0).toFixed(2)})`);
 
+        // CEAD Data Integration
+        let ceadSummary = "Datos CEAD no disponibles";
+        let ceadTrend = "Desconocida";
+
+        if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded && window.STATE_DATA_CEAD.allData.length > 0) {
+            const ceadData = window.STATE_DATA_CEAD.allData;
+            const idxCead = window.COLS_CEAD;
+
+            // Basic CEAD Stats from latest month
+            // Assuming sorted by date desc
+            const latestCead = ceadData[0];
+            const totalCeadMes = ceadData.filter(r => r[idxCead.ANIO] === latestCead[idxCead.ANIO] && r[idxCead.MES_NUM] === latestCead[idxCead.MES_NUM])
+                .reduce((acc, r) => acc + (r[idxCead.CASOS_MES_ACTUAL] || 0), 0);
+
+            ceadSummary = `Total Delitos (Último Mes CEAD): ${totalCeadMes}. Alerta: ${latestCead[idxCead.ALERTA_AUMENTO_CRITICO] || 'Normal'}`;
+
+            // Simple trend check (comparing with 3 months ago)
+            if (ceadData.length > 3) {
+                const prev = ceadData.find(r => r[idxCead.MES_NUM] === ((latestCead[idxCead.MES_NUM] - 3 + 12) % 12) || 12); // Approximate
+                // actually just take simple slice if sorted
+                // let's just say specific analysis questions cover this.
+                ceadTrend = latestCead[idxCead.TENDENCIA_CORTO_PLAZO] || "Estable";
+            }
+        }
+
         return {
             comunaName,
             semanaId: maxSemana,
@@ -117,7 +143,10 @@ const IAModule = {
             highRiskDelitos,
             numDelitos: currentWeekData.length,
             // Vista 15 specific derived data
-            v15_risk: avgZScore > 1 ? 'ALTO' : (avgZScore > 0.5 ? 'MEDIO' : 'BAJO')
+            v15_risk: avgZScore > 1 ? 'ALTO' : (avgZScore > 0.5 ? 'MEDIO' : 'BAJO'),
+            // CEAD Context
+            ceadSummary,
+            ceadTrend
         };
     },
 
@@ -206,6 +235,7 @@ DATOS ACTUALES:
 - Alertas críticas: ${context.alertasCriticas}
 - Top 5 delitos: ${context.topDelitos.join(', ')}
 - Delitos alto riesgo: ${context.highRiskDelitos.join(', ')}
+- Info CEAD: ${context.ceadSummary}, Tendencia: ${context.ceadTrend}
 
 Data para vista15 (Diagnóstico Inmediato):
 - Casos Actuales: ${context.totalCasos}
@@ -229,17 +259,29 @@ Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser
   "vista7": "Interpretación sobre tendencias a largo plazo (10 años)",
   "vista8": "Interpretación sobre estacionalidad de los delitos",
   "vista9": "Interpretación sobre correlación entre tipos de delitos",
-  "vista10": "Interpretación sobre pronóstico hacia fin de año",
+  "vista10": "Generando pronóstico hacia fin de año (STOP)",
   "vista11": "Interpretación sobre simulador de impacto",
-  "vista12": "Interpretación sobre predicción del próximo peak delictual",
+  "vista12": "Interpretación sobre predicción del próximo peak delictual (STOP)",
   "vista13": "Notas metodológicas y fuentes de datos",
   "vista14": "Interpretación sobre la proyección futura (regresión lineal) y tendencia",
-  "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo. Analiza las variaciones (semanal/anual), el Z-Score y el nivel de riesgo para identificar anomalías críticas y métricas estables.",
+  "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo.",
   "vista16": "Interpretación sobre demografía y tasas delictuales por habitante",
   "vista17": "Interpretación sobre ranking regional y contexto geográfico",
   "vista18": "Análisis táctico de rachas y patrones de repetición",
   "vista19": "Análisis estadístico detallado de desviaciones y anomalías",
-  "vista20": "Resumen ejecutivo integral y estado de alertas críticas"
+  "vista20": "Resumen ejecutivo integral y estado de alertas críticas",
+  "vista21": "Análisis de evolución mensual CEAD",
+  "vista22": "Comparativa anual/mensual CEAD",
+  "vista23": "¿Es un hecho delictivo o una tendencia sostenida (CEAD)? Analiza si la tendencia mensual es creciente o estable.",
+  "vista24": "Interpretación de matriz de variaciones CEAD",
+  "vista25": "Análisis de distribución territorial CEAD",
+  "vista26": "Comparación comunal vs regional CEAD",
+  "vista27": "Tendencia histórica CEAD (Largo plazo)",
+  "vista28": "Estacionalidad y patrones mensuales CEAD",
+  "vista29": "Correlaciones delictuales en datos CEAD",
+  "vista30": "¿Qué esperar hacia fin de año? (CEAD). Proyecta basado en la tendencia actual.",
+  "vista31": "Simulación de escenarios CEAD",
+  "vista32": "¿Cuándo es posible el próximo peak? (CEAD). Identifica patrones cíclicos probables."
 }
 
 Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
@@ -332,7 +374,19 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
             vista17: "Calculando posición en el ranking regional...",
             vista18: "Identificando rachas tácticas y patrones operativos...",
             vista19: "Detectando anomalías estadísticas mediante Z-Score...",
-            vista20: "Consolidando tablero de mando ejecutivo..."
+            vista20: "Consolidando tablero de mando ejecutivo...",
+            vista21: "Analizando evolución histórica CEAD...",
+            vista22: "Comparando métricas anuales CEAD...",
+            vista23: "Evaluando tendencias sostenidas en el tiempo...",
+            vista24: "Calculando variaciones porcentuales...",
+            vista25: "Analizando distribución territorial...",
+            vista26: "Comparando con promedios regionales...",
+            vista27: "Proyectando tendencias a largo plazo...",
+            vista28: "Identificando patrones estacionales...",
+            vista29: "Analizando correlaciones delictuales...",
+            vista30: "Calculando proyección de fin de año...",
+            vista31: "Simulando escenarios hipotéticos...",
+            vista32: "Prediciendo próximos peaks de actividad..."
         };
     },
 

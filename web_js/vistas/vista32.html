@@ -65,12 +65,14 @@
         const data = STATE_DATA_CEAD.allDataHistory;
         if (!data || data.length === 0) return;
 
+        const MONTH_NAMES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
         // Get last 8-12 months
         // Group by Month
         const monthlyTotalsMap = {};
         data.forEach(row => {
             const key = `${row[COLS.ANIO]}-${String(row[COLS.MES_NUM]).padStart(2, '0')}`;
-            const label = row[COLS.MES].substring(0, 3);
+            const label = MONTH_NAMES[row[COLS.MES_NUM]] || String(row[COLS.MES]);
             if (!monthlyTotalsMap[key]) monthlyTotalsMap[key] = { label: label, total: 0 };
             monthlyTotalsMap[key].total += (row[COLS.CASOS_MES_ACTUAL] || 0);
         });
@@ -90,8 +92,20 @@
         const maxForecast = Math.max(...forecast);
         const peakIndex = forecast.indexOf(maxForecast);
 
-        document.getElementById('alertText12Cead').innerHTML =
-            `Se pronostica un posible peak de actividad en <strong>+${peakIndex + 1} meses</strong> basado en patrones cíclicos mensuales.`;
+        // Integrate AI Module
+        if (typeof IAModule !== 'undefined') {
+            const localText = `Se pronostica un posible peak de actividad en <strong>+${peakIndex + 1} meses</strong> basado en patrones cíclicos mensuales.`;
+            document.getElementById('alertText12Cead').innerHTML = localText;
+
+            IAModule.getInterpretation('vista32').then(text => {
+                if (text && text !== "Prediciendo próximos peaks de actividad...") {
+                    document.getElementById('alertText12Cead').innerHTML = text;
+                }
+            });
+        } else {
+            document.getElementById('alertText12Cead').innerHTML =
+                `Se pronostica un posible peak de actividad en <strong>+${peakIndex + 1} meses</strong> basado en patrones cíclicos mensuales.`;
+        }
 
         const historicData = [...totals, ...Array(4).fill(null)];
         const forecastData = [...Array(totals.length - 1).fill(null), lastValue, ...forecast];

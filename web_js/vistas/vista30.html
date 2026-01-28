@@ -79,12 +79,14 @@
         const data = STATE_DATA_CEAD.allDataHistory;
         if (!data || data.length === 0) return;
 
+        const MONTH_NAMES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
         // Group data by Month (YYYY-MM) for last 12 months
         // Similar to Vista 23 logic
         const monthlyTotalsMap = {};
         data.forEach(row => {
             const key = `${row[COLS.ANIO]}-${String(row[COLS.MES_NUM]).padStart(2, '0')}`;
-            const label = `${row[COLS.MES].substring(0, 3)}`; // Just Month name
+            const label = MONTH_NAMES[row[COLS.MES_NUM]] || String(row[COLS.MES]); // Just Month name
             if (!monthlyTotalsMap[key]) monthlyTotalsMap[key] = { label: label, total: 0 };
             monthlyTotalsMap[key].total += (row[COLS.CASOS_MES_ACTUAL] || 0);
         });
@@ -125,9 +127,23 @@
         const lowerData = [...Array(n - 1).fill(null), monthlyTotals[n - 1], ...lowerBound];
 
         const trend = slope > 0 ? 'aumento' : 'disminución';
-        document.getElementById('alertText10Cead').innerHTML =
-            `El modelo mensual proyecta una ligera tendencia de <strong>${trend}</strong>. ` +
-            `Los próximos 3 meses se mantendrían dentro del rango de confianza histórico.`;
+
+        // Integrate AI Module
+        if (typeof IAModule !== 'undefined') {
+            const localText = `El modelo mensual proyecta una ligera tendencia de <strong>${trend}</strong>. ` +
+                `Los próximos 3 meses se mantendrían dentro del rango de confianza histórico.`;
+            document.getElementById('alertText10Cead').innerHTML = localText;
+
+            IAModule.getInterpretation('vista30').then(text => {
+                if (text && text !== "Calculando proyección de fin de año...") {
+                    document.getElementById('alertText10Cead').innerHTML = text;
+                }
+            });
+        } else {
+            document.getElementById('alertText10Cead').innerHTML =
+                `El modelo mensual proyecta una ligera tendencia de <strong>${trend}</strong>. ` +
+                `Los próximos 3 meses se mantendrían dentro del rango de confianza histórico.`;
+        }
 
         new Chart(document.getElementById('chartPronosticoCead'), {
             type: 'line',

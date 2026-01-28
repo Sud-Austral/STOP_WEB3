@@ -97,6 +97,8 @@
         const COLS = window.COLS_CEAD;
         const data = STATE_DATA_CEAD.allDataHistory; // Using history part of data (same as allData here)
 
+        const MONTH_NAMES = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
         if (!data || data.length === 0) return;
 
         const currentPeriodRow = STATE_DATA_CEAD.allData[0]; // Assuming sorted descending in data loader
@@ -114,7 +116,8 @@
         const monthlyTotalsMap = {};
         data.forEach(row => {
             const key = `${row[COLS.ANIO]}-${String(row[COLS.MES_NUM]).padStart(2, '0')}`;
-            const label = `${row[COLS.MES].substring(0, 3)} ${row[COLS.ANIO]}`;
+            const monthName = MONTH_NAMES[row[COLS.MES_NUM]] || String(row[COLS.MES]);
+            const label = `${monthName} ${row[COLS.ANIO]}`;
             if (!monthlyTotalsMap[key]) monthlyTotalsMap[key] = { label: label, total: 0, mediaMovil: 0, count: 0 };
             monthlyTotalsMap[key].total += (row[COLS.CASOS_MES_ACTUAL] || 0);
 
@@ -153,9 +156,23 @@
         const alertEl = document.getElementById('alertIA3Cead');
         alertEl.className = slope > 1 ? 'alert alert--warning' : 'alert alert--success';
 
-        document.getElementById('alertText3Cead').innerHTML =
-            `La tendencia de los últimos 12 meses es <strong>${trendDirection}</strong> (Pendiente: ${slope.toFixed(2)}). ` +
-            `Los casos están ${slope < 0 ? 'disminuyendo' : 'manteniéndose o aumentando'}.`;
+        // Integrate AI Module
+        if (typeof IAModule !== 'undefined') {
+            // First show local calc while AI loads if not ready
+            const localText = `La tendencia de los últimos 12 meses es <strong>${trendDirection}</strong> (Pendiente: ${slope.toFixed(2)}).`;
+            document.getElementById('alertText3Cead').innerHTML = localText;
+
+            // Try to get AI text
+            IAModule.getInterpretation('vista23').then(text => {
+                if (text && text !== "Evaluando tendencias sostenidas en el tiempo...") {
+                    document.getElementById('alertText3Cead').innerHTML = text;
+                }
+            });
+        } else {
+            document.getElementById('alertText3Cead').innerHTML =
+                `La tendencia de los últimos 12 meses es <strong>${trendDirection}</strong> (Pendiente: ${slope.toFixed(2)}). ` +
+                `Los casos están ${slope < 0 ? 'disminuyendo' : 'manteniéndose o aumentando'}.`;
+        }
 
 
         // Chart
