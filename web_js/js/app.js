@@ -3,6 +3,31 @@
  * Handles view loading, navigation, and PDF export
  */
 
+// Global function for Sidebar Tab Switching
+window.switchSidebarTab = function (tabId) {
+    // Hide all contents
+    document.querySelectorAll('.sidebar-tab-content').forEach(el => el.style.display = 'none');
+    // Show target
+    document.getElementById(tabId).style.display = 'block';
+
+    // Update buttons
+    document.querySelectorAll('.btn-tab').forEach(btn => {
+        if (btn.dataset.target === tabId) {
+            btn.classList.add('active');
+            btn.style.background = 'var(--color-primary-light)';
+            btn.style.borderColor = 'var(--color-primary)';
+            btn.style.color = 'var(--color-primary)';
+            btn.style.fontWeight = '700';
+        } else {
+            btn.classList.remove('active');
+            btn.style.background = 'var(--color-bg)';
+            btn.style.borderColor = 'var(--color-border)';
+            btn.style.color = 'var(--color-text-muted)';
+            btn.style.fontWeight = '400';
+        }
+    });
+};
+
 const App = {
     // Configuration
     config: {
@@ -71,6 +96,8 @@ const App = {
             const html = await response.text();
             this.elements.sidebar.innerHTML = html;
             this.initNavigation();
+            // Init tabs
+            if (window.switchSidebarTab) window.switchSidebarTab('tab-stop');
         } catch (error) {
             console.error('Error loading sidebar:', error);
         }
