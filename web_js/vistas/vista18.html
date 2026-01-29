@@ -48,11 +48,20 @@
     .t-row:hover {
         background-color: #f8fafc;
     }
+
+    .data-table tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .data-table th {
+        border-bottom: 2px solid #cbd5e1;
+    }
 </style>
 
 <div class="card">
     <!-- Location/Week and Source Row -->
-    <div class="location-source-row" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
         <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
@@ -61,9 +70,13 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
-        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">Análisis Táctico y Rachas</h2>
-        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Identificación de patrones de repetición y tendencias a corto plazo</p>
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+        <h2
+            style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+            Análisis Táctico y Rachas</h2>
+        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Identificación de patrones de
+            repetición y tendencias a corto plazo</p>
     </div>
 
     <!-- Tactical KPIs -->
@@ -86,7 +99,7 @@
     </div>
 
     <!-- Active Streaks Table -->
-    <h4 class="card-title">Detalle Operativo por Delito</h4>
+    <h3 class="section-title mb-lg">Detalle Operativo por Delito</h3>
     <div class="table-container mb-xl">
         <table class="data-table">
             <thead>

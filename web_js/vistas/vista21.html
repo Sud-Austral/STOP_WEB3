@@ -170,6 +170,8 @@
             .sort((a, b) => b[1] - a[1])
             .slice(0, 6); // Top 6
 
+        const totalChart = sortedDelitos.reduce((sum, d) => sum + d[1], 0);
+
         new Chart(document.getElementById('chartDistribucionCead'), {
             type: 'doughnut',
             data: {
@@ -184,9 +186,51 @@
                 maintainAspectRatio: false,
                 cutout: '55%',
                 plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 12 } }
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            font: { size: 10 },
+                            boxWidth: 12,
+                            generateLabels: function (chart) {
+                                const data = chart.data;
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const pct = ((value / totalChart) * 100).toFixed(1);
+                                    return {
+                                        text: `${label}: ${value} (${pct}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        hidden: false,
+                                        index: i
+                                    };
+                                });
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = context.raw;
+                                const pct = ((value / totalChart) * 100).toFixed(1);
+                                return `${context.label}: ${value} casos (${pct}%)`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: function (value, context) {
+                            const pct = ((value / totalChart) * 100).toFixed(0);
+                            return `${value}\n(${pct}%)`;
+                        },
+                        textAlign: 'center',
+                        display: function (context) {
+                            const pct = (context.dataset.data[context.dataIndex] / totalChart) * 100;
+                            return pct > 5;
+                        }
+                    }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // 3. Chart: Evolution (Last 12 months?)

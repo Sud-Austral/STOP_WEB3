@@ -11,123 +11,154 @@ const PDFModule = {
     generateCoverPage(pdf) {
         const pageWidth = 210;
         const pageHeight = 297;
-        const comunaName = window.STATE_DATA?.comunaName || 'Santiago';
-        const semanaId = window.STATE_DATA?.semanaDetalle || '';
+        const state = window.STATE_DATA || {};
+        const comuna = state.comunaName ? (state.comunaName.charAt(0).toUpperCase() + state.comunaName.slice(1).toLowerCase()) : 'Comuna';
+        const region = state.regionName ? (state.regionName.charAt(0).toUpperCase() + state.regionName.slice(1).toLowerCase()) : 'Región';
+        const semanaFull = state.semanaDetalle || 'Semana --';
+        const warning = state.warningZ || 'Nivel --';
 
-        // Visual Center Adjustment (0 for true center)
-        const vOff = 0;
-        const centerX = 105 + vOff;
+        function capitalizeWords(str) { return str.toLowerCase().replace(/(?:^|\s)\S/g, a => a.toUpperCase()); }
+        const comunaDisplay = capitalizeWords(state.comunaName || 'Comuna');
+        const regionDisplay = capitalizeWords(state.regionName || 'Región');
 
-        // Format date as dd/mm/yyyy
+        let semanaTitle = "Semana --";
+        let semanaDates = "--";
+        if (semanaFull.includes(' (')) {
+            const parts = semanaFull.split(' (');
+            semanaTitle = parts[0];
+            semanaDates = parts[1].replace(')', '');
+        } else { semanaTitle = semanaFull; }
+
         const now = new Date();
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = now.getFullYear();
-        const dateFormatted = `${day}/${month}/${year}`;
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('es-ES', dateOptions);
+        const dateCap = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
 
-        // Dark background
-        pdf.setFillColor(30, 41, 59);
+        // 1. Background White
+        pdf.setFillColor(255, 255, 255);
         pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-        // Left accent bar
-        pdf.setFillColor(99, 102, 241);
-        pdf.rect(0, 0, 8, pageHeight, 'F');
+        // 2. Header Dark Blue/Black
+        pdf.setFillColor(10, 15, 30);
+        pdf.rect(0, 0, pageWidth, 50, 'F');
 
-        // Top accent line
-        pdf.setFillColor(245, 158, 11);
-        pdf.rect(8, 85, pageWidth - 8, 3, 'F');
-
-        // STOP Logo circle
-        pdf.setFillColor(99, 102, 241);
-        pdf.circle(centerX, 55, 22, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(18);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('STOP', centerX, 52, { align: 'center' });
+        // Header Text Left
+        pdf.setTextColor(200, 200, 200);
         pdf.setFontSize(8);
-        pdf.text('SISTEMA', centerX, 60, { align: 'center' });
+        pdf.setFont('helvetica', 'italic');
+        pdf.text('Un producto elaborado por el Instituto', 15, 18);
+        pdf.text('Libertad con base en fuentes públicas', 15, 22);
+        pdf.text('de información.', 15, 26);
+
+        // Header Center (Logo Text)
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(16);
+        pdf.text('INSTITUTO', 105, 20, { align: 'center' });
+        pdf.setFontSize(22);
+        pdf.text('LIBERTAD', 105, 28, { align: 'center' });
+
+        // Header Right (Last update)
+        pdf.setDrawColor(16, 185, 129);
+        pdf.setLineWidth(0.5);
+        pdf.roundedRect(145, 12, 50, 8, 4, 4, 'D');
+        pdf.setFillColor(16, 185, 129);
+        pdf.circle(148, 16, 1.5, 'F');
+        pdf.setTextColor(16, 185, 129);
+        pdf.setFontSize(7);
+        pdf.text('Última actualización de datos', 152, 18);
+
+        pdf.setTextColor(156, 163, 175);
+        pdf.text(dateCap, 145, 26);
+
+        // 3. Body
+        const startY = 80;
+
+        // Badge
+        pdf.setFillColor(254, 243, 199);
+        pdf.roundedRect(30, startY - 5, 35, 8, 1, 1, 'F');
+        pdf.setTextColor(180, 83, 9);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('INFORME SEMANAL', 47.5, startY, { align: 'center' });
+
+        // Location Info
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Comuna de ${comunaDisplay}, Región: ${regionDisplay}`, 70, startY);
 
         // Main Title
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(26);
+        const titleY = startY + 25;
+        pdf.setFontSize(28);
         pdf.setFont('helvetica', 'bold');
-        pdf.text('REPORTE DE INTELIGENCIA', centerX, 110, { align: 'center' });
-        pdf.text('DELICTUAL', centerX, 122, { align: 'center' });
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('REPORTE DE INTELIGENCIA', 30, titleY);
 
-        // Subtitle - Ley 21.332
-        pdf.setFontSize(11);
+        pdf.text('DELICTUAL', 30, titleY + 12);
+        const delWidth = pdf.getTextWidth('DELICTUAL ');
+
+        // Comuna in Orange
+        pdf.setTextColor(249, 115, 22);
+        pdf.text(comunaDisplay, 30 + delWidth, titleY + 12);
+
+        // Subtitle
+        pdf.setFontSize(12);
+        pdf.setTextColor(107, 114, 128);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Análisis táctico, estratégico y predictivo para la toma de decisiones.', 30, titleY + 30);
+
+        // 4. Info Blocks
+        const infoY = titleY + 60;
+
+        // Block 1
+        pdf.setFontSize(7);
+        pdf.setTextColor(156, 163, 175);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('PERIODO ANALIZADO', 32, infoY);
+
+        pdf.setFontSize(18);
+        pdf.setTextColor(30, 41, 59);
+        pdf.text(semanaTitle, 32, infoY + 8);
+
+        pdf.setFontSize(9);
         pdf.setTextColor(156, 163, 175);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('Ley 21.332: Sistema Táctico de Operación Policial', centerX, 138, { align: 'center' });
+        pdf.text(semanaDates, 32, infoY + 14);
 
-        // Divider line
-        pdf.setDrawColor(99, 102, 241);
+        // Vertical Line
+        pdf.setDrawColor(200, 200, 200);
         pdf.setLineWidth(0.5);
-        pdf.line(55 + vOff, 152, 155 + vOff, 152);
+        pdf.line(95, infoY, 95, infoY + 15);
 
-        // Metadata Box
-        pdf.setFillColor(51, 65, 85);
-        pdf.roundedRect(35 + vOff, 165, 140, 80, 5, 5, 'F'); // Increased height and moved up slightly
-
-        // Labels
+        // Block 2
+        pdf.setFontSize(7);
         pdf.setTextColor(156, 163, 175);
-        pdf.setFontSize(9);
-        const labelX = 50 + vOff; // Moved left to 50
-        pdf.text('COMUNA', labelX, 180);
-        pdf.text('SEMANA DE ANÁLISIS', labelX, 198);
-        pdf.text('FECHA DE GENERACIÓN', labelX, 230); // Moved down
-
-        // Values
-        pdf.setTextColor(255, 255, 255);
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        const valueX = 130 + vOff; // Moved left to 130 to reduce gap
+        pdf.text('ESTADO DE ALERTA IA', 105, infoY);
 
-        // Comuna
-        pdf.text(comunaName.toUpperCase(), valueX, 180); // Aligned with label
-
-        // Semana Multi-line Parsing
-        let semanaTextY = 198;
-        if (semanaId && semanaId.includes(' (del ')) {
-            const parts1 = semanaId.split(' (del ');
-            const titlePart = parts1[0]; // "SEMANA XX/XXXX"
-
-            // Draw Part 1
-            pdf.text(titlePart, valueX, semanaTextY);
-
-            if (parts1[1]) {
-                const parts2 = parts1[1].split(' al ');
-                const dateStart = '(del ' + parts2[0]; // "(del dd/mm/yyyy"
-
-                // Draw Part 2
-                pdf.setFontSize(10); // Slightly smaller for dates
-                pdf.text(dateStart, valueX, semanaTextY + 5);
-
-                if (parts2[1]) {
-                    const dateEnd = 'al ' + parts2[1]; // "al dd/mm/yyyy)"
-                    // Draw Part 3
-                    pdf.text(dateEnd, valueX, semanaTextY + 10);
-                }
-                pdf.setFontSize(11); // Reset size
-            }
+        pdf.setFontSize(18);
+        pdf.setTextColor(30, 41, 59);
+        if (warning.includes('Nivel')) {
+            pdf.text(warning, 105, infoY + 8);
         } else {
-            // Fallback for simple text
-            pdf.text(semanaId || 'ACTUAL', valueX, semanaTextY);
+            pdf.text('Nivel ' + warning, 105, infoY + 8);
         }
 
-        // Date
-        pdf.text(dateFormatted, valueX, 230);
-
-        // Footer
+        pdf.setFontSize(9);
+        pdf.setTextColor(156, 163, 175);
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.setTextColor(100, 116, 139);
-        pdf.text('Documento generado automáticamente por STOP WEB', centerX, 260, { align: 'center' });
-        pdf.text('Centro de Análisis del Delito • Inteligencia', centerX, 268, { align: 'center' });
+        pdf.text('Foco: Robos con Violencia', 105, infoY + 14);
 
-        // Version
-        pdf.setFontSize(7);
-        pdf.text('v1.0.0 | Powered', centerX, 285, { align: 'center' });
+        // 5. Footer
+        const footerY = 250;
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text('Fecha Emisión del Reporte:', 50, footerY);
+
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(dateCap, 100, footerY);
     },
 
     /**

@@ -162,10 +162,12 @@
         const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
 
         // Calculate totals
-        const totalActual = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
-        const totalAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
-        const totalYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
-        const promedioMovil = currentWeekData.reduce((sum, row) => sum + (row[COLS.MEDIA_MOVIL_4S] || 0), 0);
+        // Calculate totals from Total row
+        const totalRow = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] === maxSemana) || {};
+        const totalActual = totalRow[COLS.CASOS_ACTUAL] || 0;
+        const totalAnt = totalRow[COLS.CASOS_ANT] || 0;
+        const totalYearAnt = totalRow[COLS.CASOS_YEAR_ANT] || 0;
+        const promedioMovil = totalRow[COLS.MEDIA_MOVIL_4S] || 0;
 
         // Calculate average Z-Score and determine status
         const avgZScore = currentWeekData.reduce((sum, row) => sum + (row[COLS.Z_SCORE] || 0), 0) / currentWeekData.length;
@@ -228,35 +230,66 @@
         }
 
         // Create comparison chart
+        const totalPolar = totalActual + Math.round(promedioMovil) + totalAnt + totalYearAnt;
+
         new Chart(document.getElementById('chartComparativa'), {
-            type: 'bar',
+            type: 'doughnut',
             data: {
                 labels: ['Casos Actuales', 'Promedio Móvil 4S', 'Sem. Anterior', 'vs 2024/2025'],
                 datasets: [{
                     label: 'Casos',
                     data: [totalActual, Math.round(promedioMovil), totalAnt, totalYearAnt],
                     backgroundColor: ['#3b82f6', '#f59e0b', '#94a3b8', '#10b981'],
-                    borderRadius: 8,
-                    barThickness: 60
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '55%',
                 plugins: {
-                    legend: { display: true, position: 'top' }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#e2e8f0' }
+                    legend: {
+                        display: true,
+                        position: 'right',
+                        labels: {
+                            font: { size: 10 },
+                            generateLabels: function (chart) {
+                                const data = chart.data;
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const pct = totalPolar > 0 ? ((value / totalPolar) * 100).toFixed(1) : 0;
+                                    return {
+                                        text: `${label}: ${value} (${pct}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        hidden: false,
+                                        index: i
+                                    };
+                                });
+                            }
+                        }
                     },
-                    x: {
-                        grid: { display: false }
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const value = context.raw;
+                                const pct = totalPolar > 0 ? ((value / totalPolar) * 100).toFixed(1) : 0;
+                                return `${context.label}: ${value} (${pct}%)`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: function (value, context) {
+                            const pct = totalPolar > 0 ? ((value / totalPolar) * 100).toFixed(0) : 0;
+                            return `${value}\n(${pct}%)`;
+                        },
+                        textAlign: 'center'
                     }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
-
     })();
 </script>

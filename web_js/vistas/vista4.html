@@ -3,7 +3,8 @@
 <!-- Section -->
 <div class="card">
     <!-- Location/Week and Source Row -->
-    <div class="location-source-row" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
         <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
@@ -13,12 +14,15 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
-        <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+        <h2
+            style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
             ¿El número es grave o moderado?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Muestra el perfil de la comuna y la concentración de datos según su nivel de gravedad
-    </p>
+        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Muestra el perfil de la comuna y la
+            concentración de datos según su nivel de gravedad
+        </p>
     </div>
 
     <!-- Alert Box -->
@@ -26,7 +30,34 @@
         <strong>🤖 Interpretación de IA:</strong> <span id="alertText4">Analizando perfil de gravedad...</span>
     </div>
 
+    <!-- Risk Lists -->
+    <div class="kpi-grid mb-lg" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        <div class="kpi-card" style="border-top: 4px solid #10b981; padding: 1rem;">
+            <div class="kpi-label" style="color: #10b981; font-weight: bold; margin-bottom: 0.5rem;">Bajo Impacto</div>
+            <ol id="listBajo"
+                style="padding-left: 1.2rem; margin: 0; font-size: 0.85rem; text-align: left; color: var(--color-text);">
+                <li>--</li>
+            </ol>
+        </div>
+        <div class="kpi-card" style="border-top: 4px solid #f59e0b; padding: 1rem;">
+            <div class="kpi-label" style="color: #f59e0b; font-weight: bold; margin-bottom: 0.5rem;">Impacto Moderado
+            </div>
+            <ol id="listModerado"
+                style="padding-left: 1.2rem; margin: 0; font-size: 0.85rem; text-align: left; color: var(--color-text);">
+                <li>--</li>
+            </ol>
+        </div>
+        <div class="kpi-card" style="border-top: 4px solid #ef4444; padding: 1rem;">
+            <div class="kpi-label" style="color: #ef4444; font-weight: bold; margin-bottom: 0.5rem;">Alto Impacto</div>
+            <ol id="listAlto"
+                style="padding-left: 1.2rem; margin: 0; font-size: 0.85rem; text-align: left; color: var(--color-text);">
+                <li>--</li>
+            </ol>
+        </div>
+    </div>
+
     <!-- Legend -->
+    <h3 class="section-title mb-lg">Matriz de Riesgo por Delito con base en Z-Score</h3>
     <div class="matrix-legend mb-md">
         <div class="legend-item">
             <span class="legend-dot" style="background: #10b981;"></span>
@@ -133,13 +164,21 @@
             return;
         }
 
-        // Calculate total for bubble size
-        const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+        // Calculate total for bubble size from Total row
+        const totalRow = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] === maxSemana) || {};
+        const totalCasos = totalRow[COLS.CASOS_ACTUAL] || 0;
 
         // Prepare scatter data
         const scatterData = currentWeekData.map(row => {
             const casos = row[COLS.CASOS_ACTUAL] || 0;
-            const varAnual = row[COLS.VAR_PCT_ANUAL] || 0;
+            const casosYearAnt = row[COLS.CASOS_YEAR_ANT] || 0;
+            let varAnual = 0;
+            if (casosYearAnt > 0) {
+                varAnual = ((casos - casosYearAnt) / casosYearAnt) * 100;
+            } else if (casos > 0) {
+                varAnual = 100;
+            }
+            varAnual = parseFloat(varAnual.toFixed(1));
             const zScore = row[COLS.Z_SCORE] || 0;
             const delito = row[COLS.DELITO] || 'Sin nombre';
 
@@ -170,6 +209,20 @@
         const topRisk = currentWeekData.reduce((max, row) =>
             (row[COLS.Z_SCORE] || 0) > (max[COLS.Z_SCORE] || 0) ? row : max
             , currentWeekData[0]);
+
+        // Populate Risk Lists (Top 3 by Casos)
+        const sortRisk = (data) => data.sort((a, b) => b.y - a.y).slice(0, 3);
+        const listAltoData = sortRisk(scatterData.filter(d => d.zScore > 0.5));
+        const listModData = sortRisk(scatterData.filter(d => d.zScore >= -0.5 && d.zScore <= 0.5));
+        const listBajoData = sortRisk(scatterData.filter(d => d.zScore < -0.5));
+
+        const renderList = (id, data) => {
+            const html = data.map(d => `<li>${d.delito}</li>`).join('') || '<li>-</li>';
+            document.getElementById(id).innerHTML = html;
+        };
+        renderList('listAlto', listAltoData);
+        renderList('listModerado', listModData);
+        renderList('listBajo', listBajoData);
 
         // Update alert
         const alertEl = document.getElementById('alertIA4');
@@ -212,14 +265,26 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: true, position: 'top' },
+                    datalabels: {
+                        align: 'top',
+                        anchor: 'end',
+                        offset: 4,
+                        color: '#1e293b',
+                        font: { size: 9, weight: 'bold' },
+                        formatter: function (value) {
+                            const name = value.delito || '';
+                            return name.length > 18 ? name.substring(0, 16) + '...' : name;
+                        },
+                        display: true
+                    },
+                    legend: { display: false },
                     tooltip: {
                         backgroundColor: 'rgba(30, 41, 59, 0.95)',
                         padding: 12,
                         cornerRadius: 8,
                         callbacks: {
                             label: function (context) {
-                                const item = scatterData[context.dataIndex];
+                                const item = context.raw;
                                 return [
                                     `Delito: ${item.delito}`,
                                     `Casos: ${item.y}`,
@@ -232,29 +297,18 @@
                 },
                 scales: {
                     x: {
-                        title: {
-                            display: true,
-                            text: 'Variación % vs Año Anterior',
-                            font: { size: 12, weight: 600 }
-                        },
+                        title: { display: true, text: 'Variación % vs Misma Semana Año Anterior' },
                         grid: { color: '#e2e8f0' },
-                        ticks: {
-                            callback: v => v + '%',
-                            font: { size: 11 }
-                        }
+                        ticks: { callback: v => v + '%' }
                     },
                     y: {
-                        title: {
-                            display: true,
-                            text: 'Casos Actuales',
-                            font: { size: 12, weight: 600 }
-                        },
+                        title: { display: true, text: 'Casos de la Semana' },
                         beginAtZero: true,
-                        grid: { color: '#e2e8f0' },
-                        ticks: { font: { size: 11 } }
+                        grid: { color: '#e2e8f0' }
                     }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
     })();

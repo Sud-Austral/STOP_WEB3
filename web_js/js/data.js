@@ -8,15 +8,16 @@ window.STATE_DATA = {
     codcom: 13101,
     allData: [],
     allDataHistory: [],
+    allDataHistory_total: [],
     stats: {},
     currentSection: 'seccion1',
     comunaName: 'Sin Comuna',
+    regionName: 'Sin Región',
     semanaId: "Sin Semana",
     semanaDetalle: "",
     warning: "",
     isLoaded: false
 };
-
 // Column Indices
 window.COLS = {
     DELITO: 0,
@@ -30,34 +31,37 @@ window.COLS = {
     SEMANA: 8,
     CASOS_ACTUAL: 9,
     CASOS_ANT: 10,
-    CASOS_YEAR_ANT: 11,
-    ACUM_MENSUAL: 12,
-    ACUM_ANUAL: 13,
-    ACUM_ANUAL_ANT: 14,
-    MEDIA_MOVIL_4S: 15,
-    MEDIA_MOVIL_4S_ANT: 16,
-    PROMEDIO_HIST: 17,
+    DELTA: 11,
+    ACUM_ANUAL: 12,
+    ACUM_TOTAL: 13,
+    MEDIA_MOVIL_4S: 14,
+    MEDIA_MOVIL_8S: 15,
+    PROMEDIO_HIST: 16,
+    STD_HIST: 17,
     MAX_HIST: 18,
-    STD_HIST: 19,
-    SEMANA_MAX_HIST: 20,
-    VAR_PCT_SEM: 21,
-    VAR_PCT_ANUAL: 22,
-    DELTA: 23,
-    TENDENCIA: 24,
-    RACHA: 25,
-    RANKING: 26,
-    RANKING_ANT: 27,
-    Z_SCORE: 28,
-    Z_CONCL: 29,
-    ALERTA: 30,
-    PROVINCIA: 31,
-    COMUNA: 32,
-    REGION: 33,
-    CODREG: 34,
-    POBLACION_CLASE: 35,
-    CLASE_POBLACION: 36,
-    POBLACION: 37,
-    FACTOR_POBLACION: 38
+    PROMEDIO_HIST_ANUAL: 19,
+    STD_HIST_ANUAL: 20,
+    MAX_HIST_ANUAL: 21,
+    VAR_PCT_SEM: 22,
+    Z_SCORE: 23,
+    Z_SCORE_YEAR_ANT: 24,
+    Z_CONCL: 25,
+    TENDENCIA: 26,
+    RACHA: 27,
+    SEMANA_MAX_HIST: 28,
+    ALERTA: 29,
+    ALERTA_YEAR_ANT: 30,
+    CASOS_YEAR_ANT: 31,
+    PROVINCIA: 32,
+    COMUNA: 33,
+    REGION: 34,
+    CODREG: 35,
+    RANKING: 36,
+    RANKING_ANT: 37,
+    POBLACION_CLASE: 38,
+    CLASE_POBLACION: 39,
+    POBLACION: 40,
+    FACTOR_POBLACION: 41
 };
 
 // Parse URL parameters
@@ -84,25 +88,41 @@ const dataLoader = {
             const targetCod = codcom_url ? parseInt(codcom_url) : 13101;
             STATE_DATA.codcom = targetCod;
 
-            // Filter by Comuna
-            STATE_DATA.allData = rawData.filter(row => row[COLS.CODCOM] == targetCod);
-            STATE_DATA.allDataHistory = rawData.filter(row => row[COLS.CODCOM] == targetCod);
+            // Filter by Comuna first
+            const comunaData = rawData.filter(row => row[COLS.CODCOM] == targetCod);
+
+            // Separate 'Total' from individual Delitos
+            // Assuming 'Total' or 'TOTAL' as the identifier
+            STATE_DATA.allDataHistory = comunaData.filter(row => row[COLS.DELITO] !== 'Total' && row[COLS.DELITO] !== 'TOTAL');
+            STATE_DATA.allDataHistory_total = comunaData.filter(row => row[COLS.DELITO] === 'Total' || row[COLS.DELITO] === 'TOTAL');
+
+            // Main allData currently points to history of individual crimes
+            STATE_DATA.allData = STATE_DATA.allDataHistory;
 
             // Get max ID_SEMANA
             const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
             const targetSemana = semana_id_url ? parseInt(semana_id_url) : maxSemana;
 
             // Find target week row for metadata
-            const targetWeekRow = STATE_DATA.allData.find(row => row[COLS.ID_SEMANA] == targetSemana);
+            //const targetWeekRow = STATE_DATA.allData.find(row => row[COLS.ID_SEMANA] == targetSemana);
+            const targetWeekRow = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] == targetSemana);
 
             if (targetWeekRow) {
-                STATE_DATA.comunaName = targetWeekRow[COLS.COMUNA];
+                STATE_DATA.comunaName = String(targetWeekRow[COLS.COMUNA] || 'Sin Comuna');
+                STATE_DATA.regionName = String(targetWeekRow[COLS.REGION] || 'Sin Región');
                 STATE_DATA.semanaId = targetWeekRow[COLS.ID_SEMANA];
                 STATE_DATA.semanaDetalle = targetWeekRow[COLS.SEMANA_DETALLE];
                 STATE_DATA.warning = targetWeekRow[COLS.ALERTA];
+                STATE_DATA.warningZ = targetWeekRow[COLS.Z_CONCL];
+
             } else if (STATE_DATA.allData.length > 0) {
                 // Fallback to first row
-                STATE_DATA.comunaName = STATE_DATA.allData[0][COLS.COMUNA];
+                STATE_DATA.comunaName = String(STATE_DATA.allData[0][COLS.COMUNA] || 'Sin Comuna');
+            }
+
+            // Debug: Log first row
+            if (STATE_DATA.allData.length > 0) {
+                console.log('🔍 First Row Data:', STATE_DATA.allData[0]);
             }
 
             STATE_DATA.isLoaded = true;

@@ -117,10 +117,11 @@
         // Filter data for current week
         const currentWeekData = STATE_DATA.allDataHistory.filter(row => row[COLS.ID_SEMANA] === maxSemana);
 
-        // Calculate KPIs
-        const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
-        const totalCasosAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
-        const totalCasosYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
+        // Calculate KPIs using Total row
+        const totalRow = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] === maxSemana) || {};
+        const totalCasos = totalRow[COLS.CASOS_ACTUAL] || 0;
+        const totalCasosAnt = totalRow[COLS.CASOS_ANT] || 0;
+        const totalCasosYearAnt = totalRow[COLS.CASOS_YEAR_ANT] || 0;
 
         const varSemanal = totalCasosAnt > 0 ? ((totalCasos - totalCasosAnt) / totalCasosAnt * 100).toFixed(1) : 0;
         const varAnual = totalCasosYearAnt > 0 ? ((totalCasos - totalCasosYearAnt) / totalCasosYearAnt * 100).toFixed(1) : 0;
@@ -284,15 +285,13 @@
             .reverse();
 
         const weeklyTotals = uniqueSemanas.map(semana => {
-            return STATE_DATA.allDataHistory
-                .filter(row => row[COLS.ID_SEMANA] === semana)
-                .reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+            const r = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] === semana);
+            return r ? (r[COLS.CASOS_ACTUAL] || 0) : 0;
         });
 
         const weeklyAvgHist = uniqueSemanas.map(semana => {
-            return STATE_DATA.allDataHistory
-                .filter(row => row[COLS.ID_SEMANA] === semana)
-                .reduce((sum, row) => sum + (row[COLS.PROMEDIO_HIST] || 0), 0);
+            const r = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] === semana);
+            return r ? (r[COLS.PROMEDIO_HIST] || 0) : 0;
         });
 
         // Get week/year labels from data

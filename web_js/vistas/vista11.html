@@ -236,8 +236,8 @@
 
         // Calculate base rate from data
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
-        const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
-        const totalCasos = currentData.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        const totalRow = STATE_DATA.allDataHistory_total.find(r => r[COLS.ID_SEMANA] === maxSemana) || {};
+        const totalCasos = totalRow[COLS.CASOS_ACTUAL] || 0;
         baseRate = Math.round(totalCasos * 2.5); // Simulated rate per 100k
 
         updateSimulation();

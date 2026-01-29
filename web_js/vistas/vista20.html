@@ -51,7 +51,8 @@
 
 <div class="card">
     <!-- Location/Week and Source Row -->
-    <div class="location-source-row" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
         <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
@@ -112,13 +113,13 @@
     <!-- Double Chart Layout -->
     <div class="grid-double">
         <div class="card-panel">
-            <h5 class="panel-title">Evolución de Tasa x 100k (8 semanas)</h5>
+            <h3 class="section-title mb-lg">Evolución de Tasa x 100k (8 semanas)</h3>
             <div class="chart-wrapper chart-wrapper--sm">
                 <canvas id="chartEvoTasa"></canvas>
             </div>
         </div>
         <div class="card-panel">
-            <h5 class="panel-title">Matriz de Riesgo (Ranking vs Racha)</h5>
+            <h3 class="section-title mb-lg">Matriz de Riesgo (Ranking vs Racha)</h3>
             <div class="chart-wrapper chart-wrapper--sm">
                 <canvas id="chartMatrix"></canvas>
             </div>
@@ -180,7 +181,8 @@
         }
 
         // 3. KPIs
-        const totalCases = currentData.reduce((s, r) => s + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        const totalRow = STATE_DATA.allDataHistory_total.find(r => r[COLS.ID_SEMANA] === maxWeek) || {};
+        const totalCases = totalRow[COLS.CASOS_ACTUAL] || 0;
         const pobVal = currentData[0]?.[COLS.POBLACION] || 1;
         const pressure = (totalCases / pobVal) * 10000;
         document.getElementById('v20_pressure').textContent = pressure.toFixed(1);
@@ -202,7 +204,8 @@
 
         const evoTasa = weekIds.map(wid => {
             const wData = data.filter(d => d[COLS.ID_SEMANA] === wid);
-            const sum = wData.reduce((s, x) => s + (x[COLS.CASOS_ACTUAL] || 0), 0);
+            const tRow = STATE_DATA.allDataHistory_total.find(d => d[COLS.ID_SEMANA] === wid) || {};
+            const sum = tRow[COLS.CASOS_ACTUAL] || 0;
             const p = wData[0]?.[COLS.POBLACION] || 1;
             return (sum / p) * 100000;
         });
@@ -212,7 +215,10 @@
         window.chart20_1 = new Chart(ctx1, {
             type: 'line',
             data: {
-                labels: weekIds.map(w => 'S' + w), // Simplify label
+                labels: weekIds.map(w => {
+                    const r = STATE_DATA.allDataHistory_total.find(d => d[COLS.ID_SEMANA] === w);
+                    return (r && r[COLS.SEMANA] && r[COLS.ANIO]) ? `${r[COLS.SEMANA]}/${r[COLS.ANIO]}` : `S${w}`;
+                }),
                 datasets: [{
                     label: 'Tasa x 100k',
                     data: evoTasa,

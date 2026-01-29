@@ -42,6 +42,7 @@
     </div>
 
     <!-- Chart -->
+    <h3 class="section-title mb-lg">Titulo por definir</h3>
     <div class="chart-wrapper chart-wrapper--xl">
         <canvas id="chartHybridForecast"></canvas>
     </div>
@@ -65,7 +66,8 @@
         const recentWeeks = [];
         for (let i = 3; i >= 0; i--) {
             const w = maxWeek - i;
-            const sum = stopData.filter(r => r[stopCols.ID_SEMANA] === w).reduce((s, r) => s + (r[stopCols.CASOS_ACTUAL] || 0), 0);
+            const tr = STATE_DATA.allDataHistory_total.find(r => r[stopCols.ID_SEMANA] === w) || {};
+            const sum = tr[stopCols.CASOS_ACTUAL] || 0;
             recentWeeks.push(sum);
         }
         // Simple slope (end - start) / n roughly
