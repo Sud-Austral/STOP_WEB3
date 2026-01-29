@@ -79,7 +79,10 @@
         const waitForData = () => {
             return new Promise((resolve) => {
                 const check = () => {
-                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
+                    if (typeof STATE_DATA !== 'undefined' &&
+                        STATE_DATA.allDataHistory &&
+                        STATE_DATA.allDataHistory.length > 0 &&
+                        STATE_DATA.allDataHistory_total) {
                         resolve();
                     } else {
                         setTimeout(check, 100);

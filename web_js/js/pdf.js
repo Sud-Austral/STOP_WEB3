@@ -50,26 +50,43 @@ const PDFModule = {
         pdf.text('Libertad con base en fuentes públicas', 15, 22);
         pdf.text('de información.', 15, 26);
 
-        // Header Center (Logo Text)
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(16);
-        pdf.text('INSTITUTO', 105, 20, { align: 'center' });
-        pdf.setFontSize(22);
-        pdf.text('LIBERTAD', 105, 28, { align: 'center' });
+        // Header Center (Logo Image)
+        try {
+            const logoW = 50;
+            const logoH = 15;
+            const logoX = (pageWidth - logoW) / 2;
+            pdf.addImage('img/logo_instituto.png', 'PNG', logoX, 15, logoW, logoH);
+        } catch (e) {
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(16);
+            pdf.text('INSTITUTO LIBERTAD', 105, 25, { align: 'center' });
+        }
 
         // Header Right (Last update)
+        const badgeCenter = 170;
+        const badgeY = 12;
+
         pdf.setDrawColor(16, 185, 129);
         pdf.setLineWidth(0.5);
-        pdf.roundedRect(145, 12, 50, 8, 4, 4, 'D');
-        pdf.setFillColor(16, 185, 129);
-        pdf.circle(148, 16, 1.5, 'F');
-        pdf.setTextColor(16, 185, 129);
+        pdf.roundedRect(145, badgeY, 50, 8, 4, 4, 'D');
+
         pdf.setFontSize(7);
-        pdf.text('Última actualización de datos', 152, 18);
+        const updateText = 'Última actualización de datos';
+        const textWidth = pdf.getTextWidth(updateText);
+        const circleSize = 1.5;
+        const gap = 2;
+        const totalContentWidth = (circleSize * 2) + gap + textWidth;
+        const startX = badgeCenter - (totalContentWidth / 2);
+
+        pdf.setFillColor(16, 185, 129);
+        pdf.circle(startX + circleSize, badgeY + 4, circleSize, 'F');
+
+        pdf.setTextColor(16, 185, 129);
+        pdf.text(updateText, startX + (circleSize * 2) + gap, badgeY + 6);
 
         pdf.setTextColor(156, 163, 175);
-        pdf.text(dateCap, 145, 26);
+        pdf.text(dateCap, badgeCenter, 26, { align: 'center' });
 
         // 3. Body
         const startY = 80;
