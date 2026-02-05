@@ -153,14 +153,14 @@
             riskColor = 'text-warning';
         }
 
-        // Update KPIs in DOM
-        document.getElementById('kpiCasos').textContent = totalCasos.toLocaleString();
-        document.getElementById('kpiCasosChange').innerHTML = `${varSemanal >= 0 ? '▲' : '▼'} ${Math.abs(varSemanal)}% vs Sem. Ant. <span style="color:#ef4444;font-weight:700;">(${totalCasosAnt.toLocaleString()})</span>`;
+        // Update KPIs in DOM - #21 Formato numérico chileno
+        document.getElementById('kpiCasos').textContent = ChartHelper.formatNumber(totalCasos);
+        document.getElementById('kpiCasosChange').innerHTML = `${varSemanal >= 0 ? '▲' : '▼'} ${Math.abs(varSemanal).toLocaleString('es-CL')}% vs Sem. Ant. <span style="color:#ef4444;font-weight:700;">(${ChartHelper.formatNumber(totalCasosAnt)})</span>`;
         document.getElementById('kpiCasosChange').className = `kpi-change ${varSemanal >= 0 ? 'kpi-change--negative' : 'kpi-change--positive'}`;
 
-        document.getElementById('kpiVarAnual').textContent = `${varAnual >= 0 ? '+' : ''}${varAnual}%`;
+        document.getElementById('kpiVarAnual').textContent = ChartHelper.formatPercent(parseFloat(varAnual));
         document.getElementById('kpiVarAnual').className = `kpi-value ${varAnual >= 0 ? 'text-danger' : 'text-success'}`;
-        document.getElementById('kpiVarAnualChange').innerHTML = `vs Año Anterior <span style="color:#ef4444;font-weight:700;">(${totalCasosYearAnt.toLocaleString()})</span>`;
+        document.getElementById('kpiVarAnualChange').innerHTML = `vs Año Anterior <span style="color:#ef4444;font-weight:700;">(${ChartHelper.formatNumber(totalCasosYearAnt)})</span>`;
 
         // Tasa x 100mil - using FACTOR_POBLACION
         const factorPoblacion = currentWeekData.length > 0 ? (currentWeekData[0][COLS.FACTOR_POBLACION] || 1) : 1;
@@ -215,14 +215,19 @@
         // Calculate total for percentages
         const totalCasosChart = chartData.reduce((a, b) => a + b, 0);
 
-        // Chart 1: Doughnut - Distribución
-        new Chart(document.getElementById('chartDistribucion'), {
+        // Chart 1: Doughnut - Distribución con #11 centro, #2 sombras, #6 Outfit
+        const doughnutCanvas = document.getElementById('chartDistribucion');
+        ChartHelper.applyShadow(doughnutCanvas); // #2 Sombra
+
+        new Chart(doughnutCanvas, {
             type: 'doughnut',
             data: {
                 labels: chartLabels,
                 datasets: [{
                     data: chartData,
-                    backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#64748b']
+                    backgroundColor: ChartHelper.colors.categorical.slice(0, chartData.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
             options: {
@@ -230,10 +235,17 @@
                 maintainAspectRatio: false,
                 cutout: '55%',
                 plugins: {
+                    // #11 Centro con total
+                    centerText: {
+                        value: ChartHelper.formatNumber(totalCasosChart),
+                        label: 'Total Casos',
+                        fontSize: 28,
+                        color: '#1e293b'
+                    },
                     legend: {
                         position: 'right',
                         labels: {
-                            font: { size: 10 },
+                            font: { family: 'Outfit, sans-serif', size: 10, weight: '500' },
                             boxWidth: 12,
                             generateLabels: function (chart) {
                                 const data = chart.data;
@@ -241,7 +253,7 @@
                                     const value = data.datasets[0].data[i];
                                     const pct = ((value / totalCasosChart) * 100).toFixed(1);
                                     return {
-                                        text: `${label}: ${value} (${pct}%)`,
+                                        text: `${label}: ${ChartHelper.formatNumber(value)} (${pct}%)`,
                                         fillStyle: data.datasets[0].backgroundColor[i],
                                         hidden: false,
                                         index: i
@@ -251,30 +263,31 @@
                         }
                     },
                     tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleFont: { family: 'Outfit, sans-serif', size: 13, weight: '600' },
+                        bodyFont: { family: 'Outfit, sans-serif', size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
                         callbacks: {
                             label: function (context) {
                                 const value = context.raw;
                                 const pct = ((value / totalCasosChart) * 100).toFixed(1);
-                                return `${context.label}: ${value} casos (${pct}%)`;
+                                return `${context.label}: ${ChartHelper.formatNumber(value)} casos (${pct}%)`;
                             }
                         }
                     },
                     datalabels: {
                         color: '#fff',
                         font: {
+                            family: 'Outfit, sans-serif',
                             weight: 'bold',
                             size: 11
                         },
                         formatter: function (value, context) {
                             const pct = ((value / totalCasosChart) * 100).toFixed(0);
-                            return `${value}\n(${pct}%)`;
+                            return pct > 5 ? `${ChartHelper.formatNumber(value)}\n(${pct}%)` : '';
                         },
-                        textAlign: 'center',
-                        display: function (context) {
-                            // Only show if segment is > 5%
-                            const pct = (context.dataset.data[context.dataIndex] / totalCasosChart) * 100;
-                            return pct > 5;
-                        }
+                        textAlign: 'center'
                     }
                 }
             },
@@ -308,38 +321,106 @@
             return `${semana % 100}/${Math.floor(semana / 100)}`;
         });
 
-        // Chart 2: Line - Evolución
-        new Chart(document.getElementById('chartEvolucion'), {
+        // #14 Calcular línea de tendencia
+        const trendlineData = ChartHelper.calculateTrendline(weeklyTotals);
+
+        // Chart 2: Line - Evolución con #1 gradiente, #2 sombra, #14 tendencia, #5 bordes
+        const lineCanvas = document.getElementById('chartEvolucion');
+        const lineCtx = lineCanvas.getContext('2d');
+        ChartHelper.applyShadow(lineCanvas); // #2 Sombra
+
+        // #1 Gradiente para área bajo curva
+        const areaGradient = lineCtx.createLinearGradient(0, 0, 0, 300);
+        areaGradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+        areaGradient.addColorStop(1, 'rgba(59, 130, 246, 0.02)');
+
+        new Chart(lineCtx, {
             type: 'line',
             data: {
                 labels: weekLabels,
-                datasets: [{
-                    label: 'Total Delitos',
-                    data: weeklyTotals,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6
-                }, {
-                    label: 'Promedio Histórico',
-                    data: weeklyAvgHist,
-                    borderColor: '#64748b',
-                    borderDash: [5, 5],
-                    backgroundColor: 'transparent',
-                    fill: false,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    borderWidth: 2
-                }]
+                datasets: [
+                    {
+                        label: 'Total Delitos',
+                        data: weeklyTotals,
+                        borderColor: '#3b82f6',
+                        backgroundColor: areaGradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#3b82f6',
+                        pointBorderWidth: 2,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'Promedio Histórico',
+                        data: weeklyAvgHist,
+                        borderColor: '#94a3b8',
+                        borderDash: [5, 5],
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    },
+                    // #14 Línea de tendencia
+                    {
+                        label: 'Tendencia',
+                        data: trendlineData,
+                        borderColor: '#ef4444',
+                        borderDash: [8, 4],
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        tension: 0,
+                        pointRadius: 0,
+                        borderWidth: 2
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: true, position: 'top' } },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { family: 'Outfit, sans-serif', size: 11, weight: '500' },
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleFont: { family: 'Outfit, sans-serif', size: 13, weight: '600' },
+                        bodyFont: { family: 'Outfit, sans-serif', size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.dataset.label}: ${ChartHelper.formatNumber(context.raw)}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: false }
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(226, 232, 240, 0.8)', drawBorder: false },
+                        ticks: {
+                            font: { family: 'Outfit, sans-serif', size: 10 },
+                            color: '#64748b',
+                            callback: function (value) { return ChartHelper.formatNumber(value); }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Outfit, sans-serif', size: 10 },
+                            color: '#64748b'
+                        }
+                    }
                 }
             }
         });

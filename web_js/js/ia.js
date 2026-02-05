@@ -27,8 +27,8 @@ const IAModule = {
     // API Configuration
     API_KEY: null,
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
-    //MODEL_NAME: "GLM-4.6V-Flash",
-    MODEL_NAME: "GLM-4.6V",
+    MODEL_NAME: "GLM-4.7V-Flash",
+    //MODEL_NAME: "GLM-4.6V",
 
     // State to store interpretations
     interpretations: {},
