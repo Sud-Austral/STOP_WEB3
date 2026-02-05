@@ -52,7 +52,7 @@ const PDFModule = {
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(79, 70, 229);
-        pdf.text('RID SIMULATOR', margins.left, 7);
+        pdf.text('MONITOR DELITO', margins.left, 7);
 
         // Center: Section title or document title
         pdf.setFont('helvetica', 'normal');
@@ -175,103 +175,168 @@ const PDFModule = {
     },
 
     /**
-     * #7 - Generate Back Cover Page
-     * @param {jsPDF} pdf - The jsPDF instance
+     * Generate professional back cover page
      */
     generateBackCover(pdf) {
         const { pageWidth, pageHeight } = this.config;
         const state = window.STATE_DATA || {};
         const comuna = state.comunaName ? (state.comunaName.charAt(0).toUpperCase() + state.comunaName.slice(1).toLowerCase()) : 'Comuna';
 
-        // Background
+        // Dark background
         pdf.setFillColor(15, 23, 42);
         pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-        // Decorative gradient bar at top
+        // Top gradient bar (purple to blue)
+        const barHeight = 8;
         pdf.setFillColor(79, 70, 229);
-        pdf.rect(0, 0, pageWidth, 5, 'F');
+        pdf.rect(0, 0, pageWidth / 2, barHeight, 'F');
+        pdf.setFillColor(59, 130, 246);
+        pdf.rect(pageWidth / 2, 0, pageWidth / 2, barHeight, 'F');
 
-        // Main content area
-        const centerY = pageHeight / 2 - 30;
+        // Logo section - centered prominently
+        const logoY = 50;
 
-        // Logo placeholder
+        // Logo background circle
         pdf.setFillColor(30, 41, 59);
-        pdf.roundedRect(75, centerY - 20, 60, 40, 5, 5, 'F');
+        pdf.circle(pageWidth / 2, logoY + 15, 25, 'F');
 
-        pdf.setFontSize(16);
+        // Logo border
+        pdf.setDrawColor(79, 70, 229);
+        pdf.setLineWidth(2);
+        pdf.circle(pageWidth / 2, logoY + 15, 25, 'S');
+
+        // Instituto Libertad text
+        pdf.setFontSize(18);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(255, 255, 255);
-        pdf.text('INSTITUTO', pageWidth / 2, centerY, { align: 'center' });
-        pdf.text('LIBERTAD', pageWidth / 2, centerY + 8, { align: 'center' });
+        pdf.text('INSTITUTO', pageWidth / 2, logoY + 12, { align: 'center' });
+        pdf.text('LIBERTAD', pageWidth / 2, logoY + 22, { align: 'center' });
+
+        // Tagline
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(156, 163, 175);
+        pdf.text('Inteligencia para la Seguridad Ciudadana', pageWidth / 2, logoY + 50, { align: 'center' });
+
+        // Decorative line
+        pdf.setDrawColor(79, 70, 229);
+        pdf.setLineWidth(0.5);
+        pdf.line(50, logoY + 60, pageWidth - 50, logoY + 60);
 
         // Contact Information Section
-        const infoY = centerY + 50;
+        const infoY = logoY + 80;
 
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(156, 163, 175);
-        pdf.text('INFORMACIÓN DE CONTACTO', pageWidth / 2, infoY, { align: 'center' });
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('INFORMACION DE CONTACTO', pageWidth / 2, infoY, { align: 'center' });
 
-        // Divider
+        // Contact section divider
         pdf.setDrawColor(55, 65, 81);
-        pdf.setLineWidth(0.5);
-        pdf.line(60, infoY + 5, 150, infoY + 5);
+        pdf.setLineWidth(0.3);
+        pdf.line(60, infoY + 5, pageWidth - 60, infoY + 5);
 
-        // Contact details
+        // Contact details with text icons (no emoji)
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(209, 213, 219);
 
-        const contacts = [
-            { icon: '🌐', text: 'www.institutolibertad.cl' },
-            { icon: '📧', text: 'contacto@institutolibertad.cl' },
-            { icon: '📍', text: 'Santiago, Chile' }
-        ];
+        const contactY = infoY + 18;
+        const iconX = 55;
+        const textX = 75;
 
-        contacts.forEach((contact, i) => {
-            pdf.text(`${contact.icon}  ${contact.text}`, pageWidth / 2, infoY + 15 + (i * 8), { align: 'center' });
-        });
-
-        // Disclaimer section
-        const disclaimerY = infoY + 60;
-        pdf.setFillColor(30, 41, 59);
-        pdf.roundedRect(25, disclaimerY - 5, 160, 35, 3, 3, 'F');
-
-        pdf.setFontSize(7);
+        // Web
         pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(249, 115, 22);
-        pdf.text('AVISO LEGAL', pageWidth / 2, disclaimerY + 3, { align: 'center' });
-
+        pdf.setTextColor(79, 70, 229);
+        pdf.text('WEB', iconX, contactY, { align: 'center' });
         pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(156, 163, 175);
-        pdf.setFontSize(6);
-        const disclaimer = 'Este documento contiene información confidencial elaborada con base en fuentes públicas oficiales. Los datos presentados corresponden a estadísticas oficiales del Sistema STOP y CEAD. La reproducción total o parcial de este documento requiere autorización expresa del Instituto Libertad.';
-        const lines = pdf.splitTextToSize(disclaimer, 150);
-        pdf.text(lines, pageWidth / 2, disclaimerY + 10, { align: 'center' });
+        pdf.setTextColor(209, 213, 219);
+        pdf.text('www.institutolibertad.cl', textX, contactY);
 
-        // Data Sources
-        const sourcesY = disclaimerY + 45;
+        // Email
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(79, 70, 229);
+        pdf.text('EMAIL', iconX, contactY + 10, { align: 'center' });
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(209, 213, 219);
+        pdf.text('contacto@institutolibertad.cl', textX, contactY + 10);
+
+        // Location
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(79, 70, 229);
+        pdf.text('SEDE', iconX, contactY + 20, { align: 'center' });
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(209, 213, 219);
+        pdf.text('Santiago, Chile', textX, contactY + 20);
+
+        // Legal Disclaimer Box
+        const disclaimerY = contactY + 50;
+
+        // Box background
+        pdf.setFillColor(30, 41, 59);
+        pdf.roundedRect(25, disclaimerY - 8, pageWidth - 50, 40, 4, 4, 'F');
+
+        // Box border
+        pdf.setDrawColor(249, 115, 22);
+        pdf.setLineWidth(0.5);
+        pdf.roundedRect(25, disclaimerY - 8, pageWidth - 50, 40, 4, 4, 'S');
+
+        // Disclaimer header
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(249, 115, 22);
+        pdf.text('AVISO LEGAL', pageWidth / 2, disclaimerY, { align: 'center' });
+
+        // Disclaimer text
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(156, 163, 175);
+        pdf.setFontSize(6.5);
+        const disclaimer = 'Este documento contiene informacion elaborada con base en fuentes publicas oficiales (STOP y CEAD). Los datos presentados corresponden a estadisticas oficiales del Sistema STOP y CEAD. La reproduccion total o parcial de este documento requiere autorizacion expresa del Instituto Libertad.';
+        const lines = pdf.splitTextToSize(disclaimer, pageWidth - 60);
+        pdf.text(lines, pageWidth / 2, disclaimerY + 8, { align: 'center' });
+
+        // Data Sources Section
+        const sourcesY = disclaimerY + 55;
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(107, 114, 128);
-        pdf.text('FUENTES DE DATOS', pageWidth / 2, sourcesY, { align: 'center' });
+        pdf.text('FUENTES DE DATOS OFICIALES', pageWidth / 2, sourcesY, { align: 'center' });
+
+        // Sources divider
+        pdf.setDrawColor(55, 65, 81);
+        pdf.setLineWidth(0.3);
+        pdf.line(50, sourcesY + 4, pageWidth - 50, sourcesY + 4);
 
         pdf.setFontSize(7);
         pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(156, 163, 175);
+
         const sources = [
-            '• STOP - Sistema Táctico de Operación Policial (Carabineros de Chile)',
-            '• CEAD - Centro de Análisis del Delito (Subsecretaría de Prevención del Delito)',
-            '• INE - Instituto Nacional de Estadísticas'
+            'STOP - Sistema Tactico de Operacion Policial (Carabineros de Chile)',
+            'CEAD - Centro de Analisis del Delito (Subsecretaria de Prevencion del Delito)',
+            'INE - Instituto Nacional de Estadisticas'
         ];
+
         sources.forEach((source, i) => {
-            pdf.text(source, pageWidth / 2, sourcesY + 8 + (i * 5), { align: 'center' });
+            // Bullet point
+            pdf.setFillColor(79, 70, 229);
+            pdf.circle(35, sourcesY + 11 + (i * 7), 1, 'F');
+            // Text
+            pdf.text(source, 40, sourcesY + 12 + (i * 7));
         });
 
-        // Footer with year
+        // Footer
         pdf.setFontSize(8);
         pdf.setTextColor(75, 85, 99);
         const year = new Date().getFullYear();
-        pdf.text(`© ${year} Instituto Libertad. Todos los derechos reservados.`, pageWidth / 2, pageHeight - 15, { align: 'center' });
+        pdf.text(`${year} Instituto Libertad. Todos los derechos reservados.`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+
+        // Bottom gradient bar
+        pdf.setFillColor(79, 70, 229);
+        pdf.rect(0, pageHeight - 8, pageWidth / 2, 8, 'F');
+        pdf.setFillColor(59, 130, 246);
+        pdf.rect(pageWidth / 2, pageHeight - 8, pageWidth / 2, 8, 'F');
     },
 
     /**

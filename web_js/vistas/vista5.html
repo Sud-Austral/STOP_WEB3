@@ -47,8 +47,11 @@
     </div>
 
     <!-- Chart -->
-    <div class="chart-wrapper chart-wrapper--xl">
-        <canvas id="chartPerfil"></canvas>
+    <div class="chart-card-premium chart-section">
+        <div class="chart-wrapper chart-wrapper--fixed-lg">
+            <canvas id="chartPerfil"></canvas>
+        </div>
+        <div id="chartSourceFooter"></div>
     </div>
 </div>
 
@@ -93,13 +96,12 @@
         const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
         const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
 
-        // Get top 5 delitos by cases
+        // Get top 6 delitos by cases
         const sortedDelitos = [...currentData].sort((a, b) => (b[COLS.CASOS_ACTUAL] || 0) - (a[COLS.CASOS_ACTUAL] || 0)).slice(0, 6);
 
-        const labels = sortedDelitos.map(r => {
-            const name = r[COLS.DELITO] || 'Sin nombre';
-            return name.length > 25 ? name.substring(0, 22) + '...' : name;
-        });
+        // #11 - Get full delito names for semantic colors
+        const fullLabels = sortedDelitos.map(r => r[COLS.DELITO] || 'Sin nombre');
+        const labels = fullLabels.map(name => name.length > 25 ? name.substring(0, 22) + '...' : name);
 
         const actual = sortedDelitos.map(r => r[COLS.CASOS_ACTUAL] || 0);
         const anterior = sortedDelitos.map(r => r[COLS.CASOS_ANT] || 0);
@@ -121,31 +123,163 @@
                 `Esto podría indicar percepción de inseguridad para la comunidad.`;
         }
 
+        // #10 - Add source footer
+        document.getElementById('chartSourceFooter').innerHTML = ChartHelper.getSourceFooterHtml('STOP');
+
         // Only create chart if we have data
         if (sortedDelitos.length === 0) {
             document.getElementById('chartPerfil').parentElement.innerHTML = '<p class="text-muted">No hay datos disponibles</p>';
             return;
         }
 
-        new Chart(document.getElementById('chartPerfil'), {
+        const canvas = document.getElementById('chartPerfil');
+        const ctx = canvas.getContext('2d');
+
+        // #1 - Create gradients
+        const gradientActual = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientActual.addColorStop(0, '#60a5fa');
+        gradientActual.addColorStop(1, '#2563eb');
+
+        const gradientAnterior = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientAnterior.addColorStop(0, '#94a3b8');
+        gradientAnterior.addColorStop(1, '#64748b');
+
+        const gradientHistorico = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientHistorico.addColorStop(0, '#fbbf24');
+        gradientHistorico.addColorStop(1, '#d97706');
+
+        // #15 - Find max value for highlight
+        const maxIdx = ChartHelper.findMaxIndex(actual);
+
+        // #16 - Calculate average for annotation line
+        const avgActual = actual.reduce((a, b) => a + b, 0) / actual.length;
+
+        new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Casos Actual', data: actual, backgroundColor: '#3b82f6', borderRadius: 4 },
-                    { label: 'Casos Anterior', data: anterior, backgroundColor: '#94a3b8', borderRadius: 4 },
-                    { label: 'Promedio Hist.', data: historico, backgroundColor: '#f59e0b', borderRadius: 4 }
+                    {
+                        label: 'Casos Actual',
+                        data: actual,
+                        backgroundColor: gradientActual,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    },
+                    {
+                        label: 'Casos Anterior',
+                        data: anterior,
+                        backgroundColor: gradientAnterior,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    },
+                    {
+                        label: 'Promedio Hist.',
+                        data: historico,
+                        backgroundColor: gradientHistorico,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: { family: 'Outfit, sans-serif', size: 11, weight: '500' },
+                            usePointStyle: true,
+                            pointStyle: 'rectRounded',
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleFont: { family: 'Outfit, sans-serif', size: 13, weight: '600' },
+                        bodyFont: { family: 'Outfit, sans-serif', size: 12 },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function (context) {
+                                const value = context.raw;
+                                const pct = totalActual > 0 ? ((value / totalActual) * 100).toFixed(1) : 0;
+                                return `${context.dataset.label}: ${ChartHelper.formatNumber(value)} (${pct}%)`;
+                            }
+                        }
+                    },
+                    // #31, #32 - Data labels with value and percentage
+                    datalabels: {
+                        display: function (context) {
+                            // Only show for first dataset (actual cases)
+                            return context.datasetIndex === 0;
+                        },
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 4,
+                        color: function (context) {
+                            // #15 - Highlight max
+                            return context.dataIndex === maxIdx ? '#d97706' : '#1e293b';
+                        },
+                        font: function (context) {
+                            return {
+                                family: 'Outfit, sans-serif',
+                                size: context.dataIndex === maxIdx ? 12 : 10,
+                                weight: context.dataIndex === maxIdx ? '800' : '600'
+                            };
+                        },
+                        formatter: function (value) {
+                            const pct = totalActual > 0 ? ((value / totalActual) * 100).toFixed(0) : 0;
+                            return `${ChartHelper.formatNumber(value)} (${pct}%)`;
+                        }
+                    },
+                    // #16 - Average line annotation
+                    annotation: {
+                        annotations: {
+                            avgLine: {
+                                type: 'line',
+                                borderColor: '#ef4444',
+                                borderWidth: 2,
+                                borderDash: [6, 4],
+                                label: {
+                                    display: true,
+                                    content: `Promedio: ${ChartHelper.formatNumber(avgActual, 1)}`,
+                                    position: 'end',
+                                    backgroundColor: '#ef4444',
+                                    color: '#fff',
+                                    font: { family: 'Outfit, sans-serif', size: 10, weight: '600' },
+                                    padding: 4
+                                },
+                                scaleID: 'y',
+                                value: avgActual
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: '#e2e8f0' } },
-                    x: { grid: { display: false } }
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(226, 232, 240, 0.8)', drawBorder: false },
+                        ticks: {
+                            font: { family: 'Outfit, sans-serif', size: 10 },
+                            color: '#64748b',
+                            callback: function (value) { return ChartHelper.formatNumber(value); }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Outfit, sans-serif', size: 9 },
+                            color: '#64748b',
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
     })();
 </script>

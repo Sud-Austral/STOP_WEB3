@@ -184,6 +184,17 @@ const App = {
             // Execute embedded scripts
             this.executeScripts(container);
 
+            // Apply chart enhancements after scripts execute
+            setTimeout(() => {
+                if (typeof ChartEnhancer !== 'undefined') {
+                    const source = ChartEnhancer.getSourceForView(viewName);
+                    ChartEnhancer.applyTableStyling();
+                    ChartEnhancer.addSourceFooters(source);
+                    ChartEnhancer.formatViewNumbers();
+                    ChartEnhancer.applyVariationColors();
+                }
+            }, 500);
+
         } catch (error) {
             console.error('Error loading view:', error);
             container.innerHTML = `

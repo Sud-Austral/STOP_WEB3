@@ -436,26 +436,77 @@ body {
 }
 
 /* Tables */
-.table {
+.table,
+.data-table {
     width: 100%;
     border-collapse: collapse;
+    font-family: 'Outfit', sans-serif;
 }
 
 .table th,
-.table td {
+.table td,
+.data-table th,
+.data-table td {
     padding: 0.75rem;
     text-align: left;
     border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
 }
 
-.table th {
-    background: var(--color-bg);
+.table th,
+.data-table th {
+    background: linear-gradient(180deg, #f8fafc, #f1f5f9);
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    border-bottom: 2px solid var(--color-primary);
 }
 
-.table tr:hover {
-    background: var(--color-bg);
+.table tr:hover,
+.data-table tr:hover {
+    background: #eff6ff;
+}
+
+/* Data table with enhanced borders */
+.data-table-bordered tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table-bordered tr:last-child {
+    border-bottom: 2px solid #cbd5e1;
+}
+
+/* Delito name with indicator bar */
+.delito-name {
+    font-weight: 600;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delito-name::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: var(--color-primary);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* Max row highlight */
+.row-max {
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), transparent) !important;
+}
+
+.row-max .delito-name::before {
+    background: #f59e0b;
+}
+
+.row-max td:first-child {
+    font-weight: 700;
 }
 
 /* Badges */
@@ -637,4 +688,335 @@ body {
 
 .source-badge-item--ine {
     color: #92400e;
+}
+
+/* ========================================
+   PDF-Optimized Chart Styles
+   Mejoras #1,2,3,4,10,14,15
+   ======================================== */
+
+/* #1 - Grid de gráficos 2x2 para PDF */
+.chart-grid-2x2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.chart-grid-2x2 .chart-card {
+    break-inside: avoid;
+}
+
+/* #2 - Espaciado uniforme entre cards */
+.chart-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.chart-section>.chart-card {
+    margin-bottom: var(--spacing-lg);
+}
+
+.chart-section:last-child {
+    margin-bottom: 0;
+}
+
+/* #3 - Tamaño fijo de canvas para PDF */
+.chart-wrapper--fixed {
+    width: 100%;
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+}
+
+.chart-wrapper--fixed-sm {
+    height: 220px;
+    min-height: 220px;
+    max-height: 220px;
+}
+
+.chart-wrapper--fixed-lg {
+    height: 380px;
+    min-height: 380px;
+    max-height: 380px;
+}
+
+/* #4 - Aspect Ratios para gráficos */
+.chart-aspect-16-9 {
+    aspect-ratio: 16 / 9;
+    height: auto !important;
+    min-height: unset !important;
+}
+
+.chart-aspect-4-3 {
+    aspect-ratio: 4 / 3;
+    height: auto !important;
+    min-height: unset !important;
+}
+
+.chart-aspect-1-1 {
+    aspect-ratio: 1 / 1;
+    height: auto !important;
+    min-height: unset !important;
+    max-width: 350px;
+    margin: 0 auto;
+}
+
+/* #10 - Footer de fuente en cada gráfico */
+.chart-source-footer {
+    text-align: right;
+    font-size: 0.65rem;
+    color: var(--color-text-light);
+    margin-top: var(--spacing-sm);
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border);
+    font-style: italic;
+}
+
+.chart-source-footer::before {
+    content: "📊 ";
+}
+
+/* #11 - Paleta semántica de delitos */
+.delito-robo-violencia {
+    color: #ef4444;
+}
+
+.delito-robo-lugar {
+    color: #f59e0b;
+}
+
+.delito-hurto {
+    color: #3b82f6;
+}
+
+.delito-lesiones {
+    color: #8b5cf6;
+}
+
+.delito-homicidio {
+    color: #dc2626;
+}
+
+.delito-drogas {
+    color: #10b981;
+}
+
+.delito-otros {
+    color: #64748b;
+}
+
+/* Backgrounds para badges de delitos */
+.badge-delito-robo-violencia {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.badge-delito-robo-lugar {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.badge-delito-hurto {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-delito-lesiones {
+    background: #f5f3ff;
+    color: #5b21b6;
+    border: 1px solid #ddd6fe;
+}
+
+.badge-delito-homicidio {
+    background: #fef2f2;
+    color: #7f1d1d;
+    border: 1px solid #fca5a5;
+}
+
+.badge-delito-drogas {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-delito-otros {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+/* #13 - Colores de variación consistentes */
+.var-positive,
+.var-increase {
+    color: #ef4444 !important;
+    /* Rojo para aumentos (malo) */
+}
+
+.var-negative,
+.var-decrease {
+    color: #10b981 !important;
+    /* Verde para disminuciones (bueno) */
+}
+
+.var-neutral {
+    color: #64748b !important;
+}
+
+/* Arrows */
+.var-arrow-up::before {
+    content: "▲ ";
+    color: #ef4444;
+}
+
+.var-arrow-down::before {
+    content: "▼ ";
+    color: #10b981;
+}
+
+.var-arrow-neutral::before {
+    content: "● ";
+    color: #64748b;
+}
+
+/* #14 - Fondo alternado en tablas */
+.table-striped tbody tr:nth-child(odd) {
+    background-color: #f8fafc;
+}
+
+.table-striped tbody tr:nth-child(even) {
+    background-color: #ffffff;
+}
+
+.table-striped tbody tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* #15 - Énfasis en valores máximos */
+.value-max {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    font-weight: 800;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+.value-max-bar {
+    position: relative;
+}
+
+.value-max-bar::after {
+    content: "MAX";
+    position: absolute;
+    top: -8px;
+    right: 0;
+    font-size: 0.6rem;
+    background: #f59e0b;
+    color: white;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+/* #16 - Línea de promedio (estilo para contenedor) */
+.chart-with-average-line {
+    position: relative;
+}
+
+/* KPI Comparativo mejorado */
+.kpi-comparativo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.kpi-comparativo .kpi-main {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.kpi-comparativo .kpi-ref {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+}
+
+.kpi-comparativo .kpi-delta {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.kpi-comparativo .kpi-delta.positive {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.kpi-comparativo .kpi-delta.negative {
+    background: #dcfce7;
+    color: #059669;
+}
+
+/* #31/32 - Labels de valor sobre barras */
+.chart-card--with-labels .chart-wrapper {
+    padding-top: 1.5rem;
+    /* Espacio para labels arriba */
+}
+
+/* Data labels estáticos embebidos */
+.data-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.data-label-value {
+    display: block;
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.data-label-percent {
+    display: block;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+/* Premium shadow for chart containers */
+.chart-card-premium {
+    background: var(--color-card);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border);
+}
+
+/* Inline variation indicator */
+.inline-variation {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.inline-variation.up {
+    color: #ef4444;
+}
+
+.inline-variation.down {
+    color: #10b981;
+}
+
+.inline-variation .arrow {
+    font-size: 0.7rem;
 }

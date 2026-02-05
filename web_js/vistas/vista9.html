@@ -33,7 +33,7 @@
         <!-- Correlation Matrix -->
         <div class="correlation-matrix">
             <h3 class="section-title mb-lg">Mapa de Calor (Correlaciones)</h3>
-            <table class="table correlation-table" id="correlationTable">
+            <table class="table table-striped correlation-table" id="correlationTable">
                 <thead>
                     <tr>
                         <th></th>
@@ -51,6 +51,7 @@
             <p class="chart-footnote text-muted">
                 * Correlación: valores 0.7 a 1.0 = Muy Alta; Sobre cero = Correlación positiva
             </p>
+            <div id="chartSourceFooter9"></div>
         </div>
 
         <!-- Interpretation -->
@@ -222,6 +223,9 @@
 
         const list = document.getElementById('interpretationList');
         list.innerHTML = interpretations.map(t => `<li>${t}</li>`).join('');
+
+        // #10 - Add source footer
+        document.getElementById('chartSourceFooter9').innerHTML = ChartHelper.getSourceFooterHtml('STOP');
 
         // Try AI interpretation
         if (typeof IAModule !== 'undefined') {

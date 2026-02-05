@@ -123,7 +123,158 @@ const ChartHelper = {
             { solid: '#10b981', gradient: ['#34d399', '#059669'] },
             { solid: '#8b5cf6', gradient: ['#a78bfa', '#7c3aed'] },
             { solid: '#64748b', gradient: ['#94a3b8', '#475569'] }
-        ]
+        ],
+
+        // #11 - Paleta semántica de delitos
+        delitos: {
+            'ROBO CON VIOLENCIA': '#ef4444',
+            'ROBO CON INTIMIDACION': '#ef4444',
+            'ROBO EN LUGAR HABITADO': '#f59e0b',
+            'ROBO EN LUGAR NO HABITADO': '#f59e0b',
+            'ROBO DE VEHICULO': '#dc2626',
+            'HURTO': '#3b82f6',
+            'HURTO SIMPLE': '#3b82f6',
+            'LESIONES': '#8b5cf6',
+            'LESIONES GRAVES': '#7c3aed',
+            'HOMICIDIO': '#991b1b',
+            'DROGAS': '#10b981',
+            'OTROS': '#64748b',
+            'default': '#94a3b8'
+        },
+
+        // #13 - Colores para variaciones
+        variation: {
+            increase: '#ef4444',   // Rojo = aumento = malo
+            decrease: '#10b981',   // Verde = disminución = bueno
+            neutral: '#64748b'
+        }
+    },
+
+    /**
+     * #11 - Get color for delito type
+     */
+    getDelitoColor(delitoName) {
+        if (!delitoName) return this.colors.delitos.default;
+        const normalizedName = delitoName.toUpperCase().trim();
+
+        // Find matching color
+        for (const [key, color] of Object.entries(this.colors.delitos)) {
+            if (normalizedName.includes(key) || key.includes(normalizedName)) {
+                return color;
+            }
+        }
+        return this.colors.delitos.default;
+    },
+
+    /**
+     * #11 - Get array of delito colors for datasets
+     */
+    getDelitoColors(delitoNames) {
+        return delitoNames.map(name => this.getDelitoColor(name));
+    },
+
+    /**
+     * #13 - Get variation color
+     */
+    getVariationColor(value) {
+        if (value > 0) return this.colors.variation.increase;
+        if (value < 0) return this.colors.variation.decrease;
+        return this.colors.variation.neutral;
+    },
+
+    /**
+     * #13 - Get variation class
+     */
+    getVariationClass(value) {
+        if (value > 0) return 'var-increase';
+        if (value < 0) return 'var-decrease';
+        return 'var-neutral';
+    },
+
+    /**
+     * #15 - Find max index in data array
+     */
+    findMaxIndex(data) {
+        if (!data || data.length === 0) return -1;
+        let maxIdx = 0;
+        let maxVal = data[0];
+        data.forEach((val, idx) => {
+            if (val > maxVal) {
+                maxVal = val;
+                maxIdx = idx;
+            }
+        });
+        return maxIdx;
+    },
+
+    /**
+     * #15 - Highlight max value in bar chart
+     */
+    getBarColorsWithMaxHighlight(data, baseColor = '#3b82f6', maxColor = '#f59e0b') {
+        const maxIdx = this.findMaxIndex(data);
+        return data.map((_, idx) => idx === maxIdx ? maxColor : baseColor);
+    },
+
+    /**
+     * #16 - Create average line annotation
+     */
+    getAverageLineAnnotation(data, label = 'Promedio', color = '#64748b') {
+        const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        return {
+            type: 'line',
+            borderColor: color,
+            borderWidth: 2,
+            borderDash: [6, 4],
+            label: {
+                display: true,
+                content: `${label}: ${this.formatNumber(avg, 1)}`,
+                position: 'end',
+                backgroundColor: color,
+                font: { family: 'Outfit, sans-serif', size: 10, weight: '600' },
+                padding: 4
+            },
+            scaleID: 'y',
+            value: avg
+        };
+    },
+
+    /**
+     * #31, #32 - Data labels configuration for bars
+     */
+    getBarDataLabelsConfig(data, total = null, showPercent = true) {
+        const dataTotal = total || data.reduce((a, b) => a + b, 0);
+        return {
+            display: true,
+            anchor: 'end',
+            align: 'top',
+            offset: 4,
+            color: '#1e293b',
+            font: {
+                family: 'Outfit, sans-serif',
+                size: 11,
+                weight: '700'
+            },
+            formatter: (value) => {
+                if (showPercent && dataTotal > 0) {
+                    const pct = ((value / dataTotal) * 100).toFixed(1);
+                    return `${this.formatNumber(value)} (${pct}%)`;
+                }
+                return this.formatNumber(value);
+            }
+        };
+    },
+
+    /**
+     * #10 - Generate source footer HTML
+     */
+    getSourceFooterHtml(source = 'STOP') {
+        const sourceMap = {
+            'STOP': 'Fuente: Sistema Táctico de Operación Policial (STOP)',
+            'CEAD': 'Fuente: Centro de Análisis del Delito (CEAD)',
+            'INE': 'Fuente: Instituto Nacional de Estadísticas (INE)',
+            'MIXED': 'Fuente: STOP + CEAD'
+        };
+        return `<div class="chart-source-footer">${sourceMap[source] || source}</div>`;
     },
 
     /**

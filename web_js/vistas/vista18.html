@@ -1,13 +1,14 @@
 ﻿<!-- Vista 18: Tablero Táctico y Rachas -->
 <style>
+    /* Vista compacta para PDF */
     .badge-pill {
-        padding: 4px 10px;
+        padding: 2px 6px;
         border-radius: 99px;
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         font-weight: 600;
         display: inline-block;
         text-align: center;
-        min-width: 60px;
+        min-width: 50px;
     }
 
     .bg-soft-danger {
@@ -30,94 +31,154 @@
         color: #4b5563;
     }
 
-    .text-danger-bold {
-        color: #dc2626;
-        font-weight: 700;
+    .kpi-sub {
+        font-size: 0.65rem;
+        color: var(--color-text-muted);
+        margin-top: 2px;
     }
 
-    .text-success-bold {
-        color: #16a34a;
-        font-weight: 700;
+    /* Tabla compacta */
+    .data-table-compact th {
+        padding: 0.35rem 0.4rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        background: linear-gradient(180deg, #f8fafc, #f1f5f9);
+        border-bottom: 2px solid #3b82f6;
     }
 
-    .text-muted-sm {
-        color: #9ca3af;
-        font-size: 0.85rem;
+    .data-table-compact td {
+        padding: 0.3rem 0.4rem;
+        font-size: 0.75rem;
+        line-height: 1.2;
     }
 
-    .t-row:hover {
-        background-color: #f8fafc;
-    }
-
-    .data-table tr {
+    .data-table-compact tr {
         border-bottom: 1px solid #e2e8f0;
     }
 
-    .data-table th {
-        border-bottom: 2px solid #cbd5e1;
+    .data-table-compact tbody tr:nth-child(odd) {
+        background-color: #f8fafc;
+    }
+
+    .data-table-compact tbody tr:nth-child(even) {
+        background-color: #fff;
+    }
+
+    /* Delito name compacto */
+    .delito-name {
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .delito-name::before {
+        content: '';
+        width: 3px;
+        height: 12px;
+        background: #3b82f6;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .row-max .delito-name::before {
+        background: #f59e0b;
+    }
+
+    /* KPIs compactos */
+    .kpi-grid-compact {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .kpi-card-compact {
+        background: var(--color-bg);
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        text-align: center;
+        border: 1px solid var(--color-border);
+    }
+
+    .kpi-card-compact .kpi-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        margin-bottom: 2px;
+    }
+
+    .kpi-card-compact .kpi-value {
+        font-size: 1.25rem;
+        font-weight: 800;
     }
 </style>
 
-<div class="card">
-    <!-- Location/Week and Source Row -->
-    <div class="location-source-row"
-        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+<div class="card" style="padding: 0.75rem;">
+    <!-- Location/Week Row - Compacto -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <div style="font-size: 0.7rem; color: var(--color-primary); font-weight: 600;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span style="margin: 0 4px; color: #cbd5e1;">/</span>
             <span class="semana-fill">--</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section"
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
-        <h2
-            style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+    <!-- Header compacto -->
+    <div
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 3px solid var(--color-primary); padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border-radius: 0 6px 6px 0;">
+        <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             Análisis Táctico y Rachas</h2>
-        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Identificación de patrones de
+        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.75rem;">Identificación de patrones de
             repetición y tendencias a corto plazo</p>
     </div>
 
-    <!-- Tactical KPIs -->
-    <div class="kpi-grid mb-xl">
-        <div class="kpi-card">
+    <!-- KPIs Compactos -->
+    <div class="kpi-grid-compact">
+        <div class="kpi-card-compact">
             <div class="kpi-label">Rachas Activas (>2 sem)</div>
-            <div class="kpi-value text-danger-bold" id="v18_rachas">--</div>
+            <div class="kpi-value text-danger" id="v18_rachas">--</div>
             <div class="kpi-sub">Focos persistentes</div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card-compact">
             <div class="kpi-label">Tendencia Predominante</div>
             <div class="kpi-value" id="v18_tendencia">--</div>
             <div class="kpi-sub">Corto Plazo</div>
         </div>
-        <div class="kpi-card">
+        <div class="kpi-card-compact">
             <div class="kpi-label">Delta Neto Semanal</div>
             <div class="kpi-value" id="v18_delta">--</div>
-            <div class="kpi-sub">Variación agregada de casos</div>
+            <div class="kpi-sub">Variación agregada</div>
         </div>
     </div>
 
-    <!-- Active Streaks Table -->
-    <h3 class="section-title mb-lg">Detalle Operativo por Delito</h3>
-    <div class="table-container mb-xl">
-        <table class="data-table">
+    <!-- Tabla compacta -->
+    <h4 style="font-size: 0.8rem; font-weight: 700; margin: 0.5rem 0 0.35rem 0; color: var(--color-text);">Detalle
+        Operativo por Delito</h4>
+    <div style="overflow-x: auto;">
+        <table class="data-table data-table-compact table-striped" style="width: 100%;">
             <thead>
                 <tr>
-                    <th style="width: 30%;">Delito</th>
-                    <th style="text-align:center;">Racha (Sem)</th>
-                    <th style="text-align:center;">Tendencia</th>
-                    <th style="text-align:center;">Delta</th>
-                    <th style="text-align:center;">Estado</th>
+                    <th style="width: 38%; text-align: left;">Delito</th>
+                    <th style="text-align:center; width: 12%;">Racha (Sem)</th>
+                    <th style="text-align:center; width: 14%;">Tendencia</th>
+                    <th style="text-align:center; width: 10%;">Delta</th>
+                    <th style="text-align:center; width: 12%;">Estado</th>
                 </tr>
             </thead>
             <tbody id="v18_t_body">
                 <tr>
-                    <td colspan="5" class="text-center p-3 text-muted">Cargando datos...</td>
+                    <td colspan="5" class="text-center text-muted">Cargando...</td>
                 </tr>
             </tbody>
         </table>
     </div>
+    <div id="chartSourceFooter18" style="margin-top: 0.25rem;"></div>
 </div>
 
 <script>
@@ -142,6 +203,9 @@
         const rows = currentData
             .sort((a, b) => b[COLS.CASOS_ACTUAL] - a[COLS.CASOS_ACTUAL]);
 
+        // #15 - Find max cases for highlight
+        const maxCases = Math.max(...rows.map(r => r[COLS.CASOS_ACTUAL] || 0));
+
         const tbody = document.getElementById('v18_t_body');
         tbody.innerHTML = '';
 
@@ -149,6 +213,7 @@
             const racha = (typeof r[COLS.RACHA] === 'number') ? r[COLS.RACHA] : 0;
             const delta = parseFloat(r[COLS.DELTA]) || 0;
             const tendencia = r[COLS.TENDENCIA] || 'Estable';
+            const casos = r[COLS.CASOS_ACTUAL] || 0;
 
             totalDelta += delta;
 
@@ -156,44 +221,48 @@
             else if (tendencia.toUpperCase().includes('BAJA') || delta < 0) trendMap['BAJA']++;
             else trendMap['ESTABLE']++;
 
-            let rachaClass = 'text-muted-sm';
+            // #13 - Variation colors
+            let rachaClass = 'var-neutral';
             if (racha > 2) {
                 rachaCount++;
-                rachaClass = 'text-danger-bold';
+                rachaClass = 'var-increase';
             }
 
-            // Badges
+            // Badges with semantic colors
             let trendBadge = 'badge-pill bg-soft-gray';
             if (tendencia.toUpperCase().includes('ALZA')) trendBadge = 'badge-pill bg-soft-danger';
             if (tendencia.toUpperCase().includes('BAJA')) trendBadge = 'badge-pill bg-soft-success';
 
-            // Status logic
+            // Status logic with consistent colors
             let status = 'Normal';
-            let statusColor = 'text-muted-sm';
-            if (racha > 3 || delta > 5) { status = 'Crítico'; statusColor = 'text-danger-bold'; }
-            else if (racha > 1 || delta > 0) { status = 'Atención'; statusColor = 'text-danger-bold'; } // Warning?
-            else if (delta < 0) { status = 'Mejora'; statusColor = 'text-success-bold'; }
+            let statusClass = 'var-neutral';
+            if (racha > 3 || delta > 5) { status = 'Crítico'; statusClass = 'var-increase'; }
+            else if (racha > 1 || delta > 0) { status = 'Atención'; statusClass = 'var-increase'; }
+            else if (delta < 0) { status = 'Mejora'; statusClass = 'var-decrease'; }
+
+            // #15 - Check if max row
+            const isMax = casos === maxCases;
 
             const tr = document.createElement('tr');
-            tr.className = 't-row';
+            tr.className = isMax ? 'row-max' : '';
             tr.innerHTML = `
-                <td class="font-bold">${r[COLS.DELITO]}</td>
+                <td><span class="delito-name">${r[COLS.DELITO]}</span></td>
                 <td style="text-align:center;" class="${rachaClass}">${racha > 0 ? racha + ' sem' : '-'}</td>
                 <td style="text-align:center;">
                     <span class="${trendBadge}">
                         ${tendencia}
                     </span>
                 </td>
-                <td style="text-align:center;" class="${delta > 0 ? 'text-danger-bold' : (delta < 0 ? 'text-success-bold' : 'text-muted')}">
-                    ${delta > 0 ? '+' : ''}${delta}
+                <td style="text-align:center;" class="${delta >= 0 ? 'var-increase' : 'var-decrease'}">
+                    ${delta > 0 ? '+' : ''}${ChartHelper.formatNumber(delta)}
                 </td>
-                <td style="text-align:center;" class="${statusColor}">${status}</td>
+                <td style="text-align:center;" class="${statusClass}" style="font-weight: 600;">${status}</td>
             `;
             tbody.appendChild(tr);
         });
 
-        // KPIs
-        document.getElementById('v18_rachas').textContent = rachaCount;
+        // KPIs with #21 Chilean format
+        document.getElementById('v18_rachas').textContent = ChartHelper.formatNumber(rachaCount);
 
         const mainTrend = Object.keys(trendMap).reduce((a, b) => trendMap[a] >= trendMap[b] ? a : b);
         const trendEl = document.getElementById('v18_tendencia');
@@ -201,8 +270,11 @@
         trendEl.className = `kpi-value ${mainTrend === 'ALZA' ? 'text-danger' : 'text-success'}`;
 
         const deltaEl = document.getElementById('v18_delta');
-        deltaEl.textContent = (totalDelta > 0 ? '+' : '') + totalDelta;
+        deltaEl.textContent = ChartHelper.formatPercent(totalDelta);
         deltaEl.className = `kpi-value ${totalDelta > 0 ? 'text-danger' : 'text-success'}`;
+
+        // #10 - Add source footer
+        document.getElementById('chartSourceFooter18').innerHTML = ChartHelper.getSourceFooterHtml('STOP');
 
     })();
 </script>
