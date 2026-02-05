@@ -296,7 +296,7 @@ const PDFModule = {
         pdf.text(lines, pageWidth / 2, disclaimerY + 8, { align: 'center' });
 
         // Data Sources Section
-        const sourcesY = disclaimerY + 55;
+        const sourcesY = disclaimerY + 50;
 
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'bold');
@@ -321,22 +321,22 @@ const PDFModule = {
         sources.forEach((source, i) => {
             // Bullet point
             pdf.setFillColor(79, 70, 229);
-            pdf.circle(35, sourcesY + 11 + (i * 7), 1, 'F');
+            pdf.circle(35, sourcesY + 10 + (i * 6), 1, 'F');
             // Text
-            pdf.text(source, 40, sourcesY + 12 + (i * 7));
+            pdf.text(source, 40, sourcesY + 11 + (i * 6));
         });
 
-        // Footer
-        pdf.setFontSize(8);
-        pdf.setTextColor(75, 85, 99);
+        // Footer - positioned above the bottom bar
+        pdf.setFontSize(7);
+        pdf.setTextColor(156, 163, 175);
         const year = new Date().getFullYear();
-        pdf.text(`${year} Instituto Libertad. Todos los derechos reservados.`, pageWidth / 2, pageHeight - 20, { align: 'center' });
+        pdf.text(`${year} Instituto Libertad. Todos los derechos reservados.`, pageWidth / 2, pageHeight - 12, { align: 'center' });
 
         // Bottom gradient bar
         pdf.setFillColor(79, 70, 229);
-        pdf.rect(0, pageHeight - 8, pageWidth / 2, 8, 'F');
+        pdf.rect(0, pageHeight - 6, pageWidth / 2, 6, 'F');
         pdf.setFillColor(59, 130, 246);
-        pdf.rect(pageWidth / 2, pageHeight - 8, pageWidth / 2, 8, 'F');
+        pdf.rect(pageWidth / 2, pageHeight - 6, pageWidth / 2, 6, 'F');
     },
 
     /**
