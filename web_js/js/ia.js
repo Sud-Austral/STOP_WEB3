@@ -28,7 +28,7 @@ const IAModule = {
     API_KEY: null,
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
     // Probando: glm-4-air (versión ligera estándar)
-    MODEL_NAME: "glm-4-air",
+    MODEL_NAME: "GLM-4.7-Flash",
 
     // State to store interpretations
     interpretations: {},

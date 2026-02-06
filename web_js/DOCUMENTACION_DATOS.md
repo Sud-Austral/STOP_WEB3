@@ -34,10 +34,10 @@
 
 | Indicador | ¿Qué significa? | ¿Para qué sirve? |
 |:---|:---|:---|
-| **Promedio Histórico** | Cantidad típica de casos por semana en esta comuna | Saber cuál es lo "normal" para la zona |
+| **Promedio Histórico** | Cantidad típica de casos por semana desde el inicio de los datos | Saber cuál es lo "normal" para la zona |
 | **Media Móvil (4 semanas)** | Promedio de las últimas 4 semanas | Suavizar fluctuaciones y ver tendencia real |
 | **Tendencia Corto Plazo** | Indica si hay "Alza", "Baja" o está "Estable" | Identificar rápidamente la dirección |
-| **Racha** | Semanas consecutivas subiendo o bajando | Detectar patrones sostenidos |
+| **Racha** | Semanas consecutivas subiendo | Detectar patrones sostenidos de aumento |
 
 ---
 
@@ -63,8 +63,11 @@
 | **Ranking por Clúster** | Posición entre comunas de población similar | Comparar con pares (ej: solo comunas rurales) |
 | **Variación de Ranking** | Si subimos o bajamos posiciones | Detectar mejoras o empeoramientos relativos |
 
-> **Mejorar en el ranking** = Bajar de posición (ej: de 5° a 3°)  
-> **Empeorar en el ranking** = Subir de posición (ej: de 3° a 8°)
+> **Rank 1 = Más delitos = Peor posición**  
+> **Rank alto = Menos delitos = Mejor posición**
+>
+> **Mejorar en el ranking** = Subir número (ej: de 4° a 5°) → menos delitos relativos  
+> **Empeorar en el ranking** = Bajar número (ej: de 6° a 1°) → más delitos relativos
 
 ---
 
@@ -154,8 +157,8 @@
 | `codcom` | Código único de la comuna (numérico) | `13101` |
 | `delito` | Nombre estandarizado del delito o "Total" | `ROBO CON VIOLENCIA` |
 | `id_semana` | ID correlativo único de la semana | `152` |
-| `semana_detalle` | Texto descriptivo de la semana | `Semana 03 2026` |
-| `fecha` | Fecha de corte de la semana (ISO 8601) | `2026-01-15` |
+| `semana_detalle` | Texto descriptivo de la semana | `SEMANA 03/2026 (del 13/01/2026 al 19/01/2026)` |
+| `fecha` | Fecha de inicio de la semana (ISO 8601) | `2026-01-13` |
 | `año` | Año calendario | `2026` |
 | `mes` | Mes del año (1-12) | `1` |
 | `semana_numero` | Número de semana del año (1-53) | `3` |
@@ -168,10 +171,10 @@
 |:---|:---|:---|
 | `frecuencia` | Conteo de casos en la semana | Columna original del CSV |
 | `casos_semana_actual` | Alias de frecuencia | `= frecuencia` |
-| `casos_semana_anterior` | Casos semana anterior | `shift(1) sobre (delito, codcom)` |
+| `casos_semana_anterior` | Casos semana anterior | `groupby(['delito','codcom']).shift(1)` |
 | `delta` | Variación absoluta | `= casos_actual - casos_anterior` |
 | `var_pct_vs_semana_anterior` | Variación porcentual | `= (delta / casos_anterior) * 100` |
-| `tendencia_corto_plazo` | Texto descriptivo | `"Alza"`, `"Baja"`, `"Estable"` |
+| `tendencia_corto_plazo` | Texto descriptivo | `"Alza"` / `"Baja"` / `"Estable"` |
 
 ---
 
@@ -179,104 +182,148 @@
 
 | Columna | Descripción | Fórmula |
 |:---|:---|:---|
-| `acumulado_anual` | Suma de casos año actual a la fecha | `cumsum() agrupado por año, codcom, delito` |
-| `acumulado_total` | Suma histórica total | `cumsum() agrupado por codcom, delito` |
-| `acumulado_anual_anterior` | Acumulado año anterior misma semana | Merge con año anterior |
-| `casos_misma_semana_año_anterior` | Casos semana equivalente año previo | Merge con año anterior |
+| `acumulado_anual` | Suma de casos año actual a la fecha | `groupby(['delito','codcom','año']).cumsum()` |
+| `acumulado_total` | Suma histórica total | `groupby(['delito','codcom']).cumsum()` |
+| `acumulado_anual_anterior` | Acumulado año anterior misma semana | Merge con año+1 |
+| `casos_misma_semana_año_anterior` | Casos semana equivalente año previo | Merge con año+1 |
 
 ---
 
-## 4. Proyecciones y Tasas
+## 4. Estadísticas Históricas (Expanding)
+
+| Columna | Descripción | Fórmula |
+|:---|:---|:---|
+| `promedio_hist` | Promedio histórico progresivo | `groupby().transform(lambda x: x.expanding().mean())` |
+| `std_hist` | Desviación estándar histórica | `groupby().transform(lambda x: x.expanding().std())` |
+| `max_hist` | Máximo histórico progresivo | `groupby().transform(lambda x: x.expanding().max())` |
+| `promedio_diario_historico` | Promedio diario histórico | `= promedio_hist / 7` |
+
+> **Nota**: Se usa `transform()` para asegurar alineamiento correcto de índices.
+
+---
+
+## 5. Medias Móviles (Rolling)
+
+| Columna | Descripción | Fórmula |
+|:---|:---|:---|
+| `media_movil_4s` | Media móvil 4 semanas | `groupby().transform(lambda x: x.rolling(4, min_periods=1).mean())` |
+| `media_movil_8s` | Media móvil 8 semanas | `groupby().transform(lambda x: x.rolling(8, min_periods=1).mean())` |
+| `proyeccion_mes_actual` | Estimación cierre mes | `= media_movil_4s * 4.33` |
+| `promedio_diario_semanal` | Promedio diario actual | `= frecuencia / 7` |
+
+---
+
+## 6. Proyecciones y Tasas
 
 | Columna | Descripción | Fórmula |
 |:---|:---|:---|
 | `proyeccion_anual` | Estimación cierre anual | `= (acumulado_anual / semana_numero) * 52` |
 | `tasa_semanal` | Tasa x100k hab semanal | `= (frecuencia / poblacion) * 100000` |
 | `tasa_proyectada_anual` | Tasa proyectada cierre año | `= (proyeccion_anual / poblacion) * 100000` |
-| `tasa_proyectada_nacional` | Tasa Nacional proyectada | `Sum(proy_pais) / Sum(pob_pais) * 100000` |
-| `tasa_proyectada_regional` | Tasa Regional proyectada | `Sum(proy_region) / Sum(pob_region) * 100000` |
-| `tasa_semanal_nacional` | Tasa Nacional actual | `Sum(frec_pais) / Sum(pob_pais) * 100000` |
-| `tasa_semanal_regional` | Tasa Regional actual | `Sum(frec_region) / Sum(pob_region) * 100000` |
+| `tasa_proyectada_nacional` | Tasa Nacional proyectada | `= Sum(proy_pais) / Sum(pob_pais) * 100000` |
+| `tasa_semanal_nacional` | Tasa Nacional actual | `= Sum(frec_pais) / Sum(pob_pais) * 100000` |
+| `tasa_proyectada_regional` | Tasa Regional proyectada | `= Sum(proy_region) / Sum(pob_region) * 100000` |
+| `tasa_semanal_regional` | Tasa Regional actual | `= Sum(frec_region) / Sum(pob_region) * 100000` |
 | `aporte_pct_region` | % comunal de la región | `= (frecuencia / Sum(frec_region)) * 100` |
 
 ---
 
-## 5. Estadísticas Históricas
+## 7. Comparativas Año Anterior
 
 | Columna | Descripción | Fórmula |
 |:---|:---|:---|
-| `promedio_hist` | Promedio histórico progresivo | `expanding().mean()` |
-| `std_hist` | Desviación estándar histórica | `expanding().std()` |
-| `max_hist` | Máximo histórico progresivo | `expanding().max()` |
-| `media_movil_4s` | Media móvil 4 semanas | `rolling(4).mean()` |
-| `media_movil_8s` | Media móvil 8 semanas | `rolling(8).mean()` |
-| `z_score` | Puntaje Z (desviación estándar) | `= (frecuencia - promedio_hist) / std_hist` |
-| `conclusion_z` | Clasificación | `"Bajo"`, `"Normal"`, `"Alto"` |
-| `promedio_diario_semanal` | Promedio diario actual | `= frecuencia / 7` |
-| `promedio_diario_historico` | Promedio diario histórico | `= promedio_hist / 7` |
-| `proyeccion_mes_actual` | Estimación cierre mes | `= media_movil_4s * 4.33` |
-
----
-
-## 6. Comparativas Año Anterior
-
-| Columna | Descripción | Fórmula |
-|:---|:---|:---|
-| `promedio_hist_anual` | Promedio histórico año anterior | `expanding().mean() año (A-1)` |
-| `std_hist_anual` | Desviación estándar año anterior | `expanding().std() año (A-1)` |
-| `max_hist_anual` | Máximo histórico año anterior | `expanding().max() año (A-1)` |
+| `promedio_hist_anual` | Promedio histórico del año anterior | Merge con año+1 de stats anuales |
+| `std_hist_anual` | Desviación estándar año anterior | Merge con año+1 |
+| `max_hist_anual` | Máximo histórico año anterior | Merge con año+1 |
 | `z_score_vs_año_anterior` | Z-Score vs año pasado | `= (frecuencia - prom_hist_anual) / std_hist_anual` |
 
 ---
 
-## 7. Rankings
+## 8. Z-Score y Alertas
+
+| Columna | Descripción | Fórmula |
+|:---|:---|:---|
+| `z_score` | Puntaje Z (desviación estándar) | `= (frecuencia - promedio_hist) / std_hist` |
+| `conclusion_z` | Clasificación | `pd.cut(z_score, [-inf, -2, 2, inf], ['Bajo', 'Normal', 'Alto'])` |
+| `racha` | Semanas consecutivas en alza | Cuenta delta > 0 consecutivos |
+| `alerta_aumento_critico` | Alerta de aumento explosivo | `(z_score > 2) & (var_pct > 30)` |
+| `alerta_vs_año_anterior` | Alerta vs año pasado | `(z_score_ant > 2) & (frec > max_hist_anual)` |
+| `id_semana_max_hist` | ID de semana con máximo | Semana donde ocurrió el récord |
+
+---
+
+## 9. Rankings
 
 | Columna | Descripción | Agrupación |
 |:---|:---|:---|
 | `ranking_comunal_regional` | Posición regional (casos) | `(Codreg, delito, id_semana)` |
 | `ranking_comunal_regional_semana_anterior` | Posición semana pasada | `shift(1)` |
-| `ranking_regional_proy_anual` | Posición regional (proyección) | `(Codreg, delito)` |
+| `ranking_regional_proy_anual` | Posición regional (proyección) | `(Codreg, delito, id_semana)` |
 | `ranking_nacional_semanal` | Posición nacional (casos) | `(delito, id_semana)` |
-| `ranking_nacional_proy_anual` | Posición nacional (proyección) | `(delito)` |
-| `ranking_cluster_semanal` | Posición en clúster (casos) | `(clase_poblacion, delito)` |
-| `ranking_cluster_proy_anual` | Posición en clúster (proyección) | `(clase_poblacion)` |
+| `ranking_nacional_proy_anual` | Posición nacional (proyección) | `(delito, id_semana)` |
+| `ranking_cluster_semanal` | Posición en clúster (casos) | `(clase_poblacion, delito, id_semana)` |
+| `ranking_cluster_proy_anual` | Posición en clúster (proyección) | `(clase_poblacion, delito, id_semana)` |
 
 ---
 
-## 8. Datos Geográficos y Demográficos
+## 10. Datos Geográficos y Demográficos
 
 | Columna | Descripción | Origen |
 |:---|:---|:---|
 | `Comuna` | Nombre de la comuna | Excel: Localiza Chile |
+| `Provincia` | Nombre de la provincia | Excel: Localiza Chile |
 | `Región` | Nombre de la región | Excel: Localiza Chile |
 | `Codreg` | Código de región | Excel: Localiza Chile |
 | `poblacion` | Habitantes de la comuna | Excel: Factores Población |
 | `clase_poblacion` | Segmento poblacional | Excel: Factores Población |
+| `facor_poblacion` | Factor de ajuste poblacional | Excel: Factores Población |
 
 ---
 
-## 9. Alertas
+## 11. Concentración Delictual
 
 | Columna | Descripción | Fórmula |
 |:---|:---|:---|
-| `racha` | Semanas consecutivas en alza | `cumsum() sobre delta > 0` |
-| `alerta_aumento_critico` | Alerta de aumento explosivo | `(z_score > 2) & (var_pct > 30)` |
-| `alerta_vs_año_anterior` | Alerta vs año pasado | `(z_score_ant > 2) & (frec > max_hist_anual)` |
-| `share_delito_semanal` | Concentración delito (Pareto) | `= (frecuencia / Sum(frec_comuna)) * 100` |
+| `share_delito_semanal` | % del delito sobre total comunal | `= (frecuencia / Sum(frec_comuna)) * 100` |
+| `casos_semana_regional` | Total casos de la región | `groupby(Codreg, delito, id_semana).sum()` |
 
 ---
 
-## 10. Información del Archivo
+## 12. Información del Archivo
 
 | Atributo | Valor |
 |:---|:---|
-| **Archivo** | `data3.json.gz` |
+| **Archivo Global** | `data/data3.json.gz` |
+| **Archivos por Comuna** | `data/stop/{codcom}` |
 | **Formato** | JSON Records comprimido (GZIP) |
-| **Generado por** | `Intento_ia.ipynb` |
+| **Generado por** | `notebook/Intento_ia.ipynb` |
 | **Total columnas** | 64 |
 | **Frecuencia actualización** | Semanal |
 
 ---
 
+## 13. Cambios Técnicos Importantes
+
+### Corrección de Cálculos de Ventana (v2.0)
+
+Se corrigió el cálculo de columnas `rolling()` y `expanding()` usando `transform()` en lugar de asignación directa con `reset_index()`.
+
+**Antes (problemático):**
+```python
+g = df.groupby(['delito', 'codcom'])
+df['promedio_hist'] = g['frecuencia'].expanding().mean().reset_index(level=[0,1], drop=True)
+```
+
+**Después (correcto):**
+```python
+df['promedio_hist'] = df.groupby(['delito', 'codcom'])['frecuencia'].transform(
+    lambda x: x.expanding().mean()
+)
+```
+
+**Razón:** El método `reset_index()` puede desalinear los índices cuando el DataFrame no está ordenado consecutivamente, causando que los valores se asignen a filas incorrectas.
+
+---
+
 *Documento generado para STOP WEB3 - Dashboard de Seguridad Comunal*  
-*Fecha de generación: Febrero 2026*
+*Fecha de actualización: Febrero 2026*

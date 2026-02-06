@@ -764,9 +764,13 @@
             return { text: 'Estable', cls: 'conclusion-estable' };
         };
 
+        // Ranking logic: Rank 1 = más delitos = peor posición
+        // diff = anterior - actual
+        // diff > 0: bajó de número (ej: 5→2) = EMPEORÓ (más delitos relativos)
+        // diff < 0: subió de número (ej: 2→5) = MEJORÓ (menos delitos relativos)
         const getRankConclusion = (diff) => {
-            if (diff > 0) return { text: `Mejora ${Math.abs(diff)} pos.`, cls: 'conclusion-disminucion' };
-            if (diff < 0) return { text: `Empeora ${Math.abs(diff)} pos.`, cls: 'conclusion-aumento' };
+            if (diff < 0) return { text: `Mejora ${Math.abs(diff)} pos.`, cls: 'conclusion-disminucion' };
+            if (diff > 0) return { text: `Empeora ${Math.abs(diff)} pos.`, cls: 'conclusion-aumento' };
             return { text: 'Sin Variación', cls: 'conclusion-estable' };
         };
 
@@ -947,11 +951,11 @@
         // =====================
         const t13_actual = d[COLS.RANKING] || 0;
         const t13_anterior = d[COLS.RANKING_ANT] || 0;
-        const t13_diff = t13_anterior - t13_actual; // Positivo = mejora
+        const t13_diff = t13_anterior - t13_actual; // Negativo = mejora (subió de número)
 
         setEl('v0_t13_actual', 'Pos. ' + fR(t13_actual));
         setEl('v0_t13_anterior', 'Pos. ' + fR(t13_anterior));
-        setEl('v0_t13_var', t13_diff !== 0 ? (t13_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t13_diff) : '–');
+        setEl('v0_t13_var', t13_diff !== 0 ? (t13_diff < 0 ? '▲ ' : '▼ ') + Math.abs(t13_diff) : '–');
         setConc('v0_t13_concl', getRankConclusion(t13_diff));
 
         // =====================
@@ -963,7 +967,7 @@
 
         setEl('v0_t14_actual', 'Pos. ' + fR(t14_actual));
         setEl('v0_t14_anterior', 'Pos. ' + fR(t14_anterior));
-        setEl('v0_t14_var', t14_diff !== 0 ? (t14_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t14_diff) : '–');
+        setEl('v0_t14_var', t14_diff !== 0 ? (t14_diff < 0 ? '▲ ' : '▼ ') + Math.abs(t14_diff) : '–');
         setConc('v0_t14_concl', getRankConclusion(t14_diff));
 
         // =====================
@@ -975,7 +979,7 @@
 
         setEl('v0_t15_actual', 'Pos. ' + fR(t15_actual));
         setEl('v0_t15_anterior', 'Pos. ' + fR(t15_anterior));
-        setEl('v0_t15_var', t15_diff !== 0 ? (t15_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t15_diff) : '–');
+        setEl('v0_t15_var', t15_diff !== 0 ? (t15_diff < 0 ? '▲ ' : '▼ ') + Math.abs(t15_diff) : '–');
         setConc('v0_t15_concl', getRankConclusion(t15_diff));
 
         // =====================
@@ -987,7 +991,7 @@
 
         setEl('v0_t16_actual', 'Pos. ' + fR(t16_actual));
         setEl('v0_t16_anterior', 'Pos. ' + fR(t16_anterior));
-        setEl('v0_t16_var', t16_diff !== 0 ? (t16_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t16_diff) : '–');
+        setEl('v0_t16_var', t16_diff !== 0 ? (t16_diff < 0 ? '▲ ' : '▼ ') + Math.abs(t16_diff) : '–');
         setConc('v0_t16_concl', getRankConclusion(t16_diff));
 
         // =====================
@@ -999,7 +1003,7 @@
 
         setEl('v0_t17_actual', 'Pos. ' + fR(t17_actual));
         setEl('v0_t17_anterior', 'Pos. ' + fR(t17_anterior));
-        setEl('v0_t17_var', t17_diff !== 0 ? (t17_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t17_diff) : '–');
+        setEl('v0_t17_var', t17_diff !== 0 ? (t17_diff < 0 ? '▲ ' : '▼ ') + Math.abs(t17_diff) : '–');
         setEl('v0_t17_cluster', d[COLS.CLASE_POBLACION] || 'N/D');
         setConc('v0_t17_concl', getRankConclusion(t17_diff));
 
