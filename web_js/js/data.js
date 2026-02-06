@@ -66,11 +66,13 @@ window.COLS = {
 
     // Máximos y Alertas
     SEMANA_MAX_HIST: 'id_semana_max_hist',
+    SEMANA_DETALLE_MAX_HIST: 'semana_detalle_max_hist',
     ALERTA: 'alerta_aumento_critico',
     ALERTA_YEAR_ANT: 'alerta_vs_año_anterior',
 
     // Comparativa Interanual - Tarjeta 2
     CASOS_YEAR_ANT: 'casos_misma_semana_año_anterior',
+    CASOS_MES_YEAR_ANT: 'casos_mismo_mes_año_anterior',
 
     // Geografía
     PROVINCIA: 'Provincia',
@@ -118,7 +120,36 @@ window.COLS = {
     PROY_MES: 'proyeccion_mes_actual',
     PROM_DIARIO_SEM: 'promedio_diario_semanal',
     PROM_DIARIO_HIST: 'promedio_diario_historico',
-    SHARE_DELITO: 'share_delito_semanal'
+    SHARE_DELITO_SEM: 'share_delito_semanal',
+
+    // Diagnósticos Críticos (T19, T20)
+    T19_DELITO: 't19_delito_sem',
+    T19_RANK: 't19_rank_sem',
+    T19_DELITO_ANT: 't19_delito_ant',
+    T19_RANK_ANT: 't19_rank_ant',
+    T20_DELITO: 't20_delito_sem',
+    T20_RANK: 't20_rank_sem',
+    T20_DELITO_ANT: 't20_delito_ant',
+    T20_RANK_ANT: 't20_rank_ant',
+
+    // Concentración (T21)
+    T21_DELITO_1: 't21_delito_1',
+    T21_VAL_1: 't21_val_1',
+    T21_DELITO_2: 't21_delito_2',
+    T21_VAL_2: 't21_val_2',
+    T21_DELITO_3: 't21_delito_3',
+    T21_VAL_3: 't21_val_3',
+
+    // Correlación (T23)
+    T23_D1: 't23_d1',
+    T23_D2: 't23_d2',
+    T23_VAL: 't23_val',
+
+    // Aportes (T25)
+    APORTE_PCT: 'aporte_pct_region',
+    APORTE_PCT_ANT: 'aporte_pct_region_ant',
+    CASOS_SEM_REG: 'casos_semana_regional',
+    CASOS_SEM_REG_ANT: 'casos_semana_regional_ant'
 };
 
 // Parse URL parameters

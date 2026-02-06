@@ -679,29 +679,57 @@
         </table>
     </div>
 
-    <!-- Tarjeta 25: Aporte Regional -->
+    <!-- Tarjeta 19: Diagnóstico Crítico Regional -->
     <div class="card indicator-card">
         <div class="card-header">
-            <h2>25. Aporte Comunal a Región</h2>
+            <h2>19. Tipología Crítica Regional</h2>
         </div>
-        <div class="description-box">Peso porcentual de la comuna en el <strong>total regional</strong>.</div>
+        <div class="description-box">Delito con <strong>peor ranking regional</strong> (el más bajo).</div>
         <table class="performance-table">
             <tbody>
                 <tr>
-                    <td>Casos Semana (Comuna)</td>
-                    <td id="v0_t25_casos_comuna">--</td>
+                    <td>Peor Ranking Sem. Actual</td>
+                    <td id="v0_t19_delito_act">--</td>
                 </tr>
                 <tr>
-                    <td>Casos Semana (Región)</td>
-                    <td id="v0_t25_casos_region">--</td>
+                    <td>Posición Ranking</td>
+                    <td id="v0_t19_rank_act">--</td>
                 </tr>
-                <tr class="row-highlight-yellow">
-                    <td>Aporte % Actual</td>
-                    <td id="v0_t25_aporte_actual">--</td>
+                <tr>
+                    <td>Peor Ranking Sem. Ant.</td>
+                    <td id="v0_t19_delito_ant">--</td>
                 </tr>
-                <tr class="conclusion-row">
-                    <td>Conclusión</td>
-                    <td id="v0_t25_concl" class="conclusion-estable">--</td>
+                <tr>
+                    <td>Posición Ranking Ant.</td>
+                    <td id="v0_t19_rank_ant">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 20: Diagnóstico Crítico Nacional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>20. Tipología Crítica Nacional</h2>
+        </div>
+        <div class="description-box">Delito con <strong>peor ranking nacional</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Peor Ranking Sem. Actual</td>
+                    <td id="v0_t20_delito_act">--</td>
+                </tr>
+                <tr>
+                    <td>Posición Ranking</td>
+                    <td id="v0_t20_rank_act">--</td>
+                </tr>
+                <tr>
+                    <td>Peor Ranking Sem. Ant.</td>
+                    <td id="v0_t20_delito_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Posición Ranking Ant.</td>
+                    <td id="v0_t20_rank_ant">--</td>
                 </tr>
             </tbody>
         </table>
@@ -710,18 +738,94 @@
     <!-- Tarjeta 21: Concentración Delictual (Pareto) -->
     <div class="card indicator-card">
         <div class="card-header">
-            <h2>21. Concentración Delictual</h2>
+            <h2>21. Concentración Delictual (Pareto)</h2>
         </div>
-        <div class="description-box">Peso de principales delitos. <strong>Análisis Pareto</strong>.</div>
+        <div class="description-box">Peso de <strong>Top 3 Delitos</strong> sobre el total.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr class="row-highlight-yellow">
+                    <td>Índice Concentración</td>
+                    <td id="v0_t21_total">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t21_d1_name">Delito 1</td>
+                    <td id="v0_t21_d1_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t21_d2_name">Delito 2</td>
+                    <td id="v0_t21_d2_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t21_d3_name">Delito 3</td>
+                    <td id="v0_t21_d3_val">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 23: Correlación Corto Plazo -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>23. Correlación (Corto Plazo)</h2>
+        </div>
+        <div class="description-box">Mayor correlación estadística (últimas 53 semanas).</div>
         <table class="performance-table">
             <tbody>
                 <tr>
-                    <td>Share del Delito Principal</td>
-                    <td id="v0_t21_share">--</td>
+                    <td>Delito A</td>
+                    <td id="v0_t23_d1" style="font-weight: 600;">--</td>
+                </tr>
+                <tr>
+                    <td>Delito B</td>
+                    <td id="v0_t23_d2" style="font-weight: 600;">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Fuerza Correlación</td>
+                    <td id="v0_t23_val">--</td>
                 </tr>
                 <tr class="conclusion-row">
-                    <td>Concentración</td>
-                    <td id="v0_t21_concl" class="conclusion-estable">--</td>
+                    <td>Interpretación</td>
+                    <td id="v0_t23_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 25: Aporte Regional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>25. Aporte Comunal a Región</h2>
+        </div>
+        <div class="description-box">Peso porcentual en el <strong>total regional</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana Actual</td>
+                    <td id="v0_t25_casos_comuna">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Misma Sem. Región</td>
+                    <td id="v0_t25_casos_region">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Aporte % Actual</td>
+                    <td id="v0_t25_aporte_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Sem. Anterior</td>
+                    <td id="v0_t25_casos_comuna_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Sem. Ant. Región</td>
+                    <td id="v0_t25_casos_region_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Aporte % Anterior</td>
+                    <td id="v0_t25_aporte_ant">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t25_concl" class="conclusion-estable">--</td>
                 </tr>
             </tbody>
         </table>
@@ -854,8 +958,8 @@
         // TARJETA 6: Proyección Mensual
         // =====================
         const t6_proy = d[COLS.PROY_MES] || 0;
-        // Mismo mes año anterior (simplificado: no hay columna directa, se puede calcular offline)
-        const t6_ant = 0; // Placeholder - requiere datos adicionales
+        // Mismo mes año anterior
+        const t6_ant = d[COLS.CASOS_MES_YEAR_ANT] || 0;
         const t6_delta = t6_proy - t6_ant;
         const t6_varPct = t6_ant > 0 ? (t6_delta / t6_ant * 100) : 0;
 
@@ -887,7 +991,7 @@
         setEl('v0_t8_prom_diario_hist', fD(d[COLS.PROM_DIARIO_HIST] || 0));
         setEl('v0_t8_prom_sem', fD(d[COLS.PROMEDIO_HIST] || 0));
         setEl('v0_t8_max', fN(d[COLS.MAX_HIST] || 0));
-        setEl('v0_t8_semana_max', 'Sem. ' + fR(d[COLS.SEMANA_MAX_HIST]));
+        setEl('v0_t8_semana_max', d[COLS.SEMANA_DETALLE_MAX_HIST] || ('Sem. ' + fR(d[COLS.SEMANA_MAX_HIST])));
 
         // =====================
         // TARJETA 9: Tasa Proyectada x100k
@@ -1020,27 +1124,74 @@
         setConc('v0_t18_concl', getRankConclusion(t18_diff));
 
         // =====================
+        // TARJETA 19: Tipología Crítica Regional
+        // =====================
+        setEl('v0_t19_delito_act', d[COLS.T19_DELITO] || '-');
+        setEl('v0_t19_rank_act', d[COLS.T19_RANK] ? 'Pos. ' + fR(d[COLS.T19_RANK]) : '--');
+        setEl('v0_t19_delito_ant', d[COLS.T19_DELITO_ANT] || '-');
+        setEl('v0_t19_rank_ant', d[COLS.T19_RANK_ANT] ? 'Pos. ' + fR(d[COLS.T19_RANK_ANT]) : '--');
+
+        // =====================
+        // TARJETA 20: Tipología Crítica Nacional
+        // =====================
+        setEl('v0_t20_delito_act', d[COLS.T20_DELITO] || '-');
+        setEl('v0_t20_rank_act', d[COLS.T20_RANK] ? 'Pos. ' + fR(d[COLS.T20_RANK]) : '--');
+        setEl('v0_t20_delito_ant', d[COLS.T20_DELITO_ANT] || '-');
+        setEl('v0_t20_rank_ant', d[COLS.T20_RANK_ANT] ? 'Pos. ' + fR(d[COLS.T20_RANK_ANT]) : '--');
+
+        // =====================
+        // TARJETA 21: Concentración (Pareto)
+        // =====================
+        const t21_v1 = d[COLS.T21_VAL_1] || 0;
+        const t21_v2 = d[COLS.T21_VAL_2] || 0;
+        const t21_v3 = d[COLS.T21_VAL_3] || 0;
+        const t21_total = t21_v1 + t21_v2 + t21_v3;
+
+        setEl('v0_t21_total', fD(t21_total) + '%');
+        setEl('v0_t21_d1_name', d[COLS.T21_DELITO_1] || '-');
+        setEl('v0_t21_d1_val', fD(t21_v1) + '%');
+        setEl('v0_t21_d2_name', d[COLS.T21_DELITO_2] || '-');
+        setEl('v0_t21_d2_val', fD(t21_v2) + '%');
+        setEl('v0_t21_d3_name', d[COLS.T21_DELITO_3] || '-');
+        setEl('v0_t21_d3_val', fD(t21_v3) + '%');
+
+        // =====================
+        // TARJETA 23: Correlación Corto Plazo
+        // =====================
+        const t23_val = d[COLS.T23_VAL] || 0;
+        setEl('v0_t23_d1', d[COLS.T23_D1] || '-');
+        setEl('v0_t23_d2', d[COLS.T23_D2] || '-');
+        setEl('v0_t23_val', t23_val > 0 ? fD(t23_val) : 'N/D');
+
+        setConc('v0_t23_concl', t23_val > 0.7 ? { text: 'Muy Fuerte', cls: 'conclusion-aumento' } :
+            t23_val > 0.5 ? { text: 'Fuerte', cls: 'conclusion-disminucion' } :
+                t23_val > 0.3 ? { text: 'Moderada', cls: 'conclusion-estable' } :
+                    { text: 'Debil/Nula', cls: 'conclusion-estable' });
+
+        // =====================
         // TARJETA 25: Aporte Comunal a Región
         // =====================
         const t25_casos_comuna = t1_actual;
-        const t25_casos_region = d[COLS.CASOS_SEM_REGIONAL] || 0;
-        const t25_aporte = d[COLS.APORTE_PCT_REGION] || 0;
+        const t25_casos_region = d[COLS.CASOS_SEM_REG] || 0; // Updated to use correct mapping key from `data.js`
+        const t25_aporte = d[COLS.APORTE_PCT] || 0;
+
+        const t25_casos_comuna_ant = t1_ant; // Correctly referencing t1_ant defined above
+        const t25_casos_region_ant = d[COLS.CASOS_SEM_REG_ANT] || 0;
+        const t25_aporte_ant = d[COLS.APORTE_PCT_ANT] || 0;
+
+        const t25_diff = t25_aporte - t25_aporte_ant;
 
         setEl('v0_t25_casos_comuna', fN(t25_casos_comuna));
         setEl('v0_t25_casos_region', fN(t25_casos_region));
         setEl('v0_t25_aporte_actual', fD(t25_aporte) + '%');
-        setConc('v0_t25_concl', t25_aporte > 15 ? { text: 'Alto Aporte', cls: 'conclusion-aumento' } :
-            t25_aporte < 5 ? { text: 'Bajo Aporte', cls: 'conclusion-disminucion' } :
-                { text: 'Aporte Normal', cls: 'conclusion-estable' });
 
-        // =====================
-        // TARJETA 21: Concentración Delictual (Share)
-        // =====================
-        const t21_share = d[COLS.SHARE_DELITO] || 0;
-        setEl('v0_t21_share', fD(t21_share) + '%');
-        setConc('v0_t21_concl', t21_share > 30 ? { text: 'Alta Concentración', cls: 'conclusion-aumento' } :
-            t21_share < 10 ? { text: 'Baja Concentración', cls: 'conclusion-disminucion' } :
-                { text: 'Normal', cls: 'conclusion-estable' });
+        setEl('v0_t25_casos_comuna_ant', fN(t25_casos_comuna_ant));
+        setEl('v0_t25_casos_region_ant', fN(t25_casos_region_ant));
+        setEl('v0_t25_aporte_ant', fD(t25_aporte_ant) + '%');
+
+        setConc('v0_t25_concl', t25_diff > 0 ? { text: 'Aumenta Aporte', cls: 'conclusion-disminucion' } :
+            t25_diff < 0 ? { text: 'Disminuye Aporte', cls: 'conclusion-aumento' } :
+                { text: 'Estable', cls: 'conclusion-estable' });
 
         // Add source footer
         if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {

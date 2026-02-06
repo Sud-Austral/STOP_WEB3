@@ -297,7 +297,7 @@
 | **Archivos por Comuna** | `data/stop/{codcom}` |
 | **Formato** | JSON Records comprimido (GZIP) |
 | **Generado por** | `notebook/Intento_ia.ipynb` |
-| **Total columnas** | 64 |
+| **Total columnas** | 86 |
 | **Frecuencia actualización** | Semanal |
 
 ---
@@ -323,7 +323,45 @@ df['promedio_hist'] = df.groupby(['delito', 'codcom'])['frecuencia'].transform(
 
 **Razón:** El método `reset_index()` puede desalinear los índices cuando el DataFrame no está ordenado consecutivamente, causando que los valores se asignen a filas incorrectas.
 
+### Nuevas Métricas Avanzadas y Diagnósticos (v3.0)
+Se han integrado las tarjetas complejas (T19 a T25) que agregan las siguientes columnas:
+
+#### Diagnósticos Críticos (T19, T20)
+| Columna | Descripción | Fórmula |
+|:---|:---|:---|
+| `t19_delito_sem` | Delito con peor ranking regional | `idxmin(ranking_comunal_regional)` |
+| `t19_rank_sem` | Posición del peor ranking | Valor del ranking mínimo |
+| `t19_delito_ant` | Peor delito semana anterior | `shift(1)` |
+| `t19_rank_ant` | Posición semana anterior | `shift(1)` |
+| `t20_delito_sem` | Delito con peor ranking nacional | `idxmin(ranking_nacional_semanal)` |
+| `t20_rank_sem` | Posición del peor ranking nacional | Valor del ranking |
+
+#### Concentración de Pareto (T21)
+| Columna | Descripción |
+|:---|:---|
+| `t21_delito_1` | Delito #1 con más casos |
+| `t21_val_1` | % del total que representa el delito 1 |
+| `t21_delito_2` | Delito #2 |
+| `t21_val_2` | % delito 2 |
+| `t21_delito_3` | Delito #3 |
+| `t21_val_3` | % delito 3 |
+
+#### Correlación (T23)
+| Columna | Descripción | Detalles |
+|:---|:---|:---|
+| `t23_d1` | Primer delito del par | Del par con mayor correlación (Pearson) |
+| `t23_d2` | Segundo delito del par | Calculado sobre las últimas 53 semanas |
+| `t23_val` | Coeficiente de Correlación | Valor entre 0 y 1 (absoluto) |
+
+#### Aporte Regional (T25)
+| Columna | Descripción | Fórmula |
+|:---|:---|:---|
+| `casos_semana_regional` | Total casos en la región | Suma por Codreg |
+| `aporte_pct_region` | % Aporte Comunal | `(casos_comuna / casos_regional) * 100` |
+| `aporte_pct_region_ant` | % Aporte semana anterior | `shift(1)` |
+| `casos_semana_regional_ant` | Total regional semana anterior | `shift(1)` |
+
 ---
 
-*Documento generado para STOP WEB3 - Dashboard de Seguridad Comunal*  
+*Documento generado para STOP WEB3 - Dashboard de Seguridad Comunal*
 *Fecha de actualización: Febrero 2026*
