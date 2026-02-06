@@ -1,0 +1,410 @@
+<!-- Vista 0: Desempeño Semanal Inmediato -->
+<style>
+    /* Estilos compactos para PDF */
+    .performance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .performance-table tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .performance-table td {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .performance-table td:first-child {
+        font-weight: 600;
+        color: #1e293b;
+        background: #f8fafc;
+        width: 65%;
+    }
+
+    .performance-table td:last-child {
+        text-align: right;
+        font-weight: 700;
+        width: 35%;
+    }
+
+    .row-highlight-yellow td {
+        background: #fef3c7 !important;
+        color: #92400e;
+    }
+
+    .row-highlight-yellow td:first-child {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    .conclusion-row td {
+        background: linear-gradient(90deg, #fef3c7, #fde68a) !important;
+    }
+
+    .conclusion-row td:last-child {
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .conclusion-aumento {
+        color: #dc2626 !important;
+    }
+
+    .conclusion-disminucion {
+        color: #16a34a !important;
+    }
+
+    .conclusion-estable {
+        color: #64748b !important;
+    }
+
+    .description-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.8rem;
+        color: #475569;
+        line-height: 1.5;
+    }
+
+    .description-box strong {
+        color: #dc2626;
+    }
+</style>
+
+<div class="card" style="padding: 1rem;">
+    <!-- Location/Week Row -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+        <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 6px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <!-- Header -->
+    <div
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 0.6rem 1rem; margin-bottom: 0.75rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            1. Desempeño Semanal Inmediato</h2>
+    </div>
+
+    <!-- Description Box -->
+    <div class="description-box">
+        Este bloque compara la actividad delictual de la semana en curso frente a la semana justo anterior.
+        Sirve para detectar <strong>quiebres de tendencia repentinos</strong> o fluctuaciones operativas de corto plazo.
+    </div>
+
+    <!-- Performance Table -->
+    <table class="performance-table">
+        <tbody>
+            <tr>
+                <td>Casos Semana Actual</td>
+                <td id="v0_casos_actual">--</td>
+            </tr>
+            <tr>
+                <td>Casos Semana Anterior</td>
+                <td id="v0_casos_anterior">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Var. Abs vs Semana Anterior</td>
+                <td id="v0_var_abs">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Var. % vs Semana Anterior</td>
+                <td id="v0_var_pct">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td style="color: #dc2626; font-weight: 700;">Conclusión</td>
+                <td id="v0_conclusion" class="conclusion-aumento">--</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="chartSourceFooter0" style="margin-top: 0.5rem;"></div>
+</div>
+
+<!-- Tarjeta 5: Desviación del Promedio Histórico -->
+<div class="card" style="padding: 1rem; margin-top: 1rem;">
+    <!-- Header -->
+    <div
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 0.6rem 1rem; margin-bottom: 0.75rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            5. Desviación del Promedio Histórico</h2>
+    </div>
+
+    <!-- Description Box -->
+    <div class="description-box">
+        Contrasta los casos actuales contra la media histórica de la comuna.
+        Determina si la cifra de casos es una anomalía estadística o si se mantiene dentro de los <strong>parámetros
+            habituales de la zona</strong>.
+    </div>
+
+    <!-- Performance Table -->
+    <table class="performance-table">
+        <tbody>
+            <tr>
+                <td>Casos Semana Actual</td>
+                <td id="v0_hist_casos_actual">--</td>
+            </tr>
+            <tr>
+                <td>Promedio Semanal Histórico</td>
+                <td id="v0_promedio_hist">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Var. Abs vs Promedio Semanal Histórico</td>
+                <td id="v0_hist_var_abs">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Var. % vs Promedio Semanal Histórico</td>
+                <td id="v0_hist_var_pct">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td style="color: #dc2626; font-weight: 700;">Conclusión</td>
+                <td id="v0_hist_conclusion" class="conclusion-estable">--</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Tarjeta 9: Proyección de Tasa Anual -->
+<div class="card" style="padding: 1rem; margin-top: 1rem;">
+    <!-- Header -->
+    <div
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 0.6rem 1rem; margin-bottom: 0.75rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            9. Proyección de Tasa Anual</h2>
+    </div>
+
+    <!-- Description Box -->
+    <div class="description-box">
+        Proyección de la tasa de casos por 100.000 habitantes para el cierre del año en curso.
+        Permite anticipar si la <strong>carga delictual relativa</strong> aumentará o disminuirá respecto al periodo
+        anterior ajustado por población.
+    </div>
+
+    <!-- Performance Table -->
+    <table class="performance-table">
+        <tbody>
+            <tr>
+                <td>Tasa/100 mil hab Proyectada Año Actual</td>
+                <td id="v0_tasa_proy">--</td>
+            </tr>
+            <tr>
+                <td>Tasa/100 mil hab Año Anterior (Estimada)</td>
+                <td id="v0_tasa_ant">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Var. Abs. Tasa Anual vs Tasa Año Anterior</td>
+                <td id="v0_tasa_var_abs">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Var. % Tasa Anual vs Tasa Año Anterior</td>
+                <td id="v0_tasa_var_pct">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td style="color: #dc2626; font-weight: 700;">Conclusión</td>
+                <td id="v0_tasa_conclusion" class="conclusion-estable">--</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    (async function initVista0() {
+        const waitForData = () => new Promise(resolve => {
+            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.isLoaded && STATE_DATA.allDataHistory_total?.length > 0) ? resolve() : setTimeout(check, 100);
+            check();
+        });
+        await waitForData();
+
+        // Fill location info
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+
+        // Get total data for current week
+        const totalData = STATE_DATA.allDataHistory_total;
+        const maxWeek = Math.max(...totalData.map(r => r[COLS.ID_SEMANA]));
+        const currentWeekData = totalData.find(r => r[COLS.ID_SEMANA] === maxWeek);
+
+        if (!currentWeekData) {
+            console.error('No se encontraron datos totales para la semana actual');
+            return;
+        }
+
+        // Format numbers using ChartHelper if available
+        const formatNum = (val) => {
+            if (typeof ChartHelper !== 'undefined' && ChartHelper.formatNumber) {
+                return ChartHelper.formatNumber(val);
+            }
+            return Math.round(val).toLocaleString('es-CL');
+        };
+
+        const formatDec = (val) => {
+            if (typeof ChartHelper !== 'undefined' && ChartHelper.formatNumber) {
+                return ChartHelper.formatNumber(val, 1);
+            }
+            return val.toFixed(1).replace('.', ',');
+        }
+
+        const formatPct = (val) => {
+            if (typeof ChartHelper !== 'undefined' && ChartHelper.formatPercent) {
+                return ChartHelper.formatPercent(val);
+            }
+            return val.toFixed(1) + '%';
+        };
+
+        // =====================
+        // TARJETA 1: Desempeño Semanal Inmediato
+        // =====================
+        const casosActual = currentWeekData[COLS.CASOS_ACTUAL] || 0;
+        const casosAnterior = currentWeekData[COLS.CASOS_ANT] || 0;
+        const delta = currentWeekData[COLS.DELTA] || (casosActual - casosAnterior);
+        const varPct = currentWeekData[COLS.VAR_PCT_SEM] || (casosAnterior > 0 ? ((casosActual - casosAnterior) / casosAnterior * 100) : 0);
+
+        // Determine conclusion
+        let conclusion = 'Estable';
+        let conclusionClass = 'conclusion-estable';
+        if (delta > 0) {
+            conclusion = 'Aumento';
+            conclusionClass = 'conclusion-aumento';
+        } else if (delta < 0) {
+            conclusion = 'Disminución';
+            conclusionClass = 'conclusion-disminucion';
+        }
+
+        // Update table 1
+        document.getElementById('v0_casos_actual').textContent = formatNum(casosActual);
+        document.getElementById('v0_casos_anterior').textContent = formatNum(casosAnterior);
+        document.getElementById('v0_var_abs').textContent = (delta > 0 ? '+' : '') + formatNum(delta);
+        document.getElementById('v0_var_pct').textContent = (varPct > 0 ? '+' : '') + formatPct(varPct);
+
+        const conclusionEl = document.getElementById('v0_conclusion');
+        conclusionEl.textContent = conclusion;
+        conclusionEl.className = conclusionClass;
+
+        // =====================
+        // TARJETA 5: Desviación del Promedio Histórico
+        // =====================
+        const promedioHist = currentWeekData[COLS.PROMEDIO_HIST] || 0;
+        const deltaHist = casosActual - promedioHist;
+        const varPctHist = promedioHist > 0 ? ((casosActual - promedioHist) / promedioHist * 100) : 0;
+
+        // Determine historical conclusion
+        let conclusionHist = 'Normal';
+        let conclusionHistClass = 'conclusion-estable';
+        const zScore = currentWeekData[COLS.Z_SCORE] || 0;
+
+        if (zScore > 1.5 || varPctHist > 20) {
+            conclusionHist = 'Sobre Promedio';
+            conclusionHistClass = 'conclusion-aumento';
+        } else if (zScore < -1.5 || varPctHist < -20) {
+            conclusionHist = 'Bajo Promedio';
+            conclusionHistClass = 'conclusion-disminucion';
+        }
+
+        // Update table 5
+        document.getElementById('v0_hist_casos_actual').textContent = formatNum(casosActual);
+        document.getElementById('v0_promedio_hist').textContent = formatNum(promedioHist);
+        document.getElementById('v0_hist_var_abs').textContent = (deltaHist > 0 ? '+' : '') + formatNum(deltaHist);
+        document.getElementById('v0_hist_var_pct').textContent = (varPctHist > 0 ? '+' : '') + formatPct(varPctHist);
+
+        const conclusionHistEl = document.getElementById('v0_hist_conclusion');
+        conclusionHistEl.textContent = conclusionHist;
+        conclusionHistEl.className = conclusionHistClass;
+
+        // =====================
+        // TARJETA 9: Proyección de Tasa
+        // =====================
+        // Lógica Robusta: Recalcular Acumulado y Semana basado en historial del año
+        // Esto corrige errores si la columna ACUM_ANUAL o SEMANA traen datos incorrectos (ej. Acum=CasosSemana o Semana=15 en vez de 3)
+
+        const anioActual = currentWeekData[COLS.ANIO];
+        const filasAnioActual = totalData.filter(r => r[COLS.ANIO] === anioActual);
+
+        // Recalcular semana y acumulado real
+        const semanaReal = filasAnioActual.length || currentWeekData[COLS.SEMANA] || 1;
+        const acumuladoReal = filasAnioActual.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+
+        const poblacion = currentWeekData[COLS.POBLACION] || 100000;
+
+        // Para año anterior, hacemos lo mismo para ser consistentes
+        // Asumimos que queremos comparar con el año completo cerrado o la proyección equivalente
+        // Si hay datos del año anterior, usamos su total real
+        const anioAnt = anioActual - 1;
+        const filasAnioAnt = totalData.filter(r => r[COLS.ANIO] === anioAnt);
+        let acumuladoAnt = 0;
+
+        if (filasAnioAnt.length > 0) {
+            // Si tenemos el año anterior completo (o parcial), sumamos todo lo que hay
+            acumuladoAnt = filasAnioAnt.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+
+            // Si el año anterior está incompleto en data (ej. dataset empieza a mitad de año), habría que proyectar.
+            // Pero asumiremos que si existe el año anterior, usamos su total.
+            // Sutil: Si queremos "Tasa Año Anterior" para comparar, debe ser la Tasa Anual Final.
+        } else {
+            // Fallback a columna si no hay filas históricas
+            acumuladoAnt = currentWeekData[COLS.ACUM_TOTAL] || currentWeekData[COLS.CASOS_YEAR_ANT] * 52 || 0;
+        }
+
+        // Proyección lineal simple corregida
+        const factorProyeccion = semanaReal > 0 ? (52 / semanaReal) : 1;
+        const casosProyectados = acumuladoReal * factorProyeccion;
+
+        // Año anterior: Si usamos filasAnioAnt, ya es el total anual (no proyectamos de nuevo si ya son 52 semanas)
+        // Pero si estamos comparando "Trayectoria vs Trayectoria", la Tasa del Año Anterior debe ser la Tasa Final Real.
+        const casosAntFinal = filasAnioAnt.length >= 50 ? acumuladoAnt : (acumuladoAnt * (filasAnioAnt.length > 0 ? 52 / filasAnioAnt.length : 1));
+
+        const tasaProy = (casosProyectados / poblacion) * 100000;
+        const tasaAnt = (casosAntFinal / poblacion) * 100000;
+
+        const varAbsTasa = tasaProy - tasaAnt;
+        const varPctTasa = tasaAnt > 0 ? ((tasaProy - tasaAnt) / tasaAnt * 100) : 0;
+
+        // DEBUG: Valores Tarjeta 9 (Recalculados)
+        console.group("🔍 Debug Tarjeta 9: Proyección Tasa (Robust)");
+        console.log("Datos Recalculados:", {
+            anioActual,
+            semanaReal_Count: semanaReal,
+            acumuladoReal_Sum: acumuladoReal,
+            poblacion
+        });
+        console.log("Año Anterior:", {
+            anioAnt,
+            filasFound: filasAnioAnt.length,
+            acumuladoAnt_Sum: acumuladoAnt,
+            casosAntFinal_Used: casosAntFinal
+        });
+        console.log("Proyección:", {
+            factor: factorProyeccion.toFixed(4),
+            casosProy: casosProyectados.toFixed(2),
+            tasaProy: tasaProy.toFixed(2)
+        });
+        console.groupEnd();
+
+        let conclusionTasa = 'Estable';
+        let conclusionTasaClass = 'conclusion-estable';
+        if (varPctTasa > 5) { conclusionTasa = 'Aumento'; conclusionTasaClass = 'conclusion-aumento'; }
+        else if (varPctTasa < -5) { conclusionTasa = 'Disminución'; conclusionTasaClass = 'conclusion-disminucion'; }
+
+        document.getElementById('v0_tasa_proy').textContent = formatDec(tasaProy);
+        document.getElementById('v0_tasa_ant').textContent = formatDec(tasaAnt);
+        document.getElementById('v0_tasa_var_abs').textContent = (varAbsTasa > 0 ? '+' : '') + formatDec(varAbsTasa);
+        document.getElementById('v0_tasa_var_pct').textContent = (varPctTasa > 0 ? '+' : '') + formatPct(varPctTasa);
+
+        const conclusionTasaEl = document.getElementById('v0_tasa_conclusion');
+        conclusionTasaEl.textContent = conclusionTasa;
+        conclusionTasaEl.className = conclusionTasaClass;
+
+        // Add source footer
+        if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {
+            document.getElementById('chartSourceFooter0').innerHTML = ChartHelper.getSourceFooterHtml('STOP');
+        }
+
+    })();
+</script>

@@ -95,7 +95,7 @@ const dataLoader = {
             // Assuming 'Total' or 'TOTAL' as the identifier
             STATE_DATA.allDataHistory = comunaData.filter(row => row[COLS.DELITO] !== 'Total' && row[COLS.DELITO] !== 'TOTAL');
             STATE_DATA.allDataHistory_total = comunaData.filter(row => row[COLS.DELITO] === 'Total' || row[COLS.DELITO] === 'TOTAL');
-
+            console.log("Datos totales", STATE_DATA.allDataHistory_total)
             // Main allData currently points to history of individual crimes
             STATE_DATA.allData = STATE_DATA.allDataHistory;
 

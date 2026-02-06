@@ -24,11 +24,11 @@ const IAModule = {
         return this.bytesToStr(out);
     },
 
-    // API Configuration
+    // API Configuration (initialized in init())
     API_KEY: null,
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
-    MODEL_NAME: "GLM-4.7V-Flash",
-    //MODEL_NAME: "GLM-4.6V",
+    // Probando: glm-4-air (versión ligera estándar)
+    MODEL_NAME: "glm-4-air",
 
     // State to store interpretations
     interpretations: {},
@@ -197,7 +197,9 @@ const IAModule = {
             });
 
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                const errBody = await response.text();
+                console.error('API Error:', errBody);
+                throw new Error(`API Error: ${response.status} - ${errBody}`);
             }
 
             const result = await response.json();
