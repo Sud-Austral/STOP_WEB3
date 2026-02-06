@@ -18,93 +18,166 @@ window.STATE_DATA = {
     warning: "",
     isLoaded: false
 };
-// Column Indices
+// Column Keys - Mapeado a data3.json (orient='records')
+// Ahora usa nombres de columna en lugar de índices numéricos
 window.COLS = {
-    DELITO: 0,
-    FRECUENCIA: 1,
-    CODCOM: 2,
-    ID_SEMANA: 3,
-    SEMANA_DETALLE: 4,
-    FECHA: 5,
-    ANIO: 6,
-    MES: 7,
-    SEMANA: 8,
-    CASOS_ACTUAL: 9,
-    CASOS_ANT: 10,
-    DELTA: 11,
-    ACUM_ANUAL: 12,
-    ACUM_TOTAL: 13,
-    MEDIA_MOVIL_4S: 14,
-    MEDIA_MOVIL_8S: 15,
-    PROMEDIO_HIST: 16,
-    STD_HIST: 17,
-    MAX_HIST: 18,
-    PROMEDIO_HIST_ANUAL: 19,
-    STD_HIST_ANUAL: 20,
-    MAX_HIST_ANUAL: 21,
-    VAR_PCT_SEM: 22,
-    Z_SCORE: 23,
-    Z_SCORE_YEAR_ANT: 24,
-    Z_CONCL: 25,
-    TENDENCIA: 26,
-    RACHA: 27,
-    SEMANA_MAX_HIST: 28,
-    ALERTA: 29,
-    ALERTA_YEAR_ANT: 30,
-    CASOS_YEAR_ANT: 31,
-    PROVINCIA: 32,
-    COMUNA: 33,
-    REGION: 34,
-    CODREG: 35,
-    RANKING: 36,
-    RANKING_ANT: 37,
-    POBLACION_CLASE: 38,
-    CLASE_POBLACION: 39,
-    POBLACION: 40,
-    FACTOR_POBLACION: 41
+    // Identificadores Base
+    DELITO: 'delito',
+    FRECUENCIA: 'frecuencia',
+    CODCOM: 'codcom',
+    ID_SEMANA: 'id_semana',
+    SEMANA_DETALLE: 'semana_detalle',
+    FECHA: 'fecha',
+    ANIO: 'año',
+    MES: 'mes',
+    SEMANA: 'semana_numero',
+
+    // Métricas Base Tarjeta 1
+    CASOS_ACTUAL: 'casos_semana_actual',
+    CASOS_ANT: 'casos_semana_anterior',
+    DELTA: 'delta',
+    ACUM_ANUAL: 'acumulado_anual',
+    ACUM_TOTAL: 'acumulado_total',
+
+    // Acumulado Año Anterior - Tarjeta 3
+    ACUM_ANUAL_ANT: 'acumulado_anual_anterior',
+
+    // Medias Móviles - Tarjeta 7
+    MEDIA_MOVIL_4S: 'media_movil_4s',
+    MEDIA_MOVIL_8S: 'media_movil_8s',
+
+    // Estadísticas Históricas - Tarjeta 5, 8
+    PROMEDIO_HIST: 'promedio_hist',
+    STD_HIST: 'std_hist',
+    MAX_HIST: 'max_hist',
+
+    // Stats Año Anterior
+    PROMEDIO_HIST_ANUAL: 'promedio_hist_anual',
+    STD_HIST_ANUAL: 'std_hist_anual',
+    MAX_HIST_ANUAL: 'max_hist_anual',
+
+    // Variaciones y Z-Scores
+    VAR_PCT_SEM: 'var_pct_vs_semana_anterior',
+    Z_SCORE: 'z_score',
+    Z_SCORE_YEAR_ANT: 'z_score_vs_año_anterior',
+    Z_CONCL: 'conclusion_z',
+    TENDENCIA: 'tendencia_corto_plazo',
+    RACHA: 'racha',
+
+    // Máximos y Alertas
+    SEMANA_MAX_HIST: 'id_semana_max_hist',
+    ALERTA: 'alerta_aumento_critico',
+    ALERTA_YEAR_ANT: 'alerta_vs_año_anterior',
+
+    // Comparativa Interanual - Tarjeta 2
+    CASOS_YEAR_ANT: 'casos_misma_semana_año_anterior',
+
+    // Geografía
+    PROVINCIA: 'Provincia',
+    COMUNA: 'Comuna',
+    REGION: 'Región',
+    CODREG: 'Codreg',
+
+    // Rankings Regionales - Tarjetas 13-14
+    RANKING: 'ranking_comunal_regional',
+    RANKING_ANT: 'ranking_comunal_regional_semana_anterior',
+
+    // Demografía
+    POBLACION_CLASE: 'poblacion_clase',
+    CLASE_POBLACION: 'clase_poblacion',
+    POBLACION: 'poblacion',
+    FACTOR_POBLACION: 'facor_poblacion',
+
+    // Proyecciones y Tasas - Tarjetas 4, 9
+    PROYECCION_ANUAL: 'proyeccion_anual',
+    TASA_SEMANAL: 'tasa_semanal',
+    TASA_PROY_ANUAL: 'tasa_proyectada_anual',
+
+    // Benchmarks Nacional/Regional - Tarjetas 10, 11, 12
+    TASA_PROY_NACIONAL: 'tasa_proyectada_nacional',
+    TASA_SEM_NACIONAL: 'tasa_semanal_nacional',
+    TASA_PROY_REGIONAL: 'tasa_proyectada_regional',
+    TASA_SEM_REGIONAL: 'tasa_semanal_regional',
+    CASOS_SEM_REGIONAL: 'casos_semana_regional',
+    APORTE_PCT_REGION: 'aporte_pct_region',
+
+    // Rankings Avanzados - Tarjetas 13-18
+    RANK_REG_PROY: 'ranking_regional_proy_anual',
+    RANK_NAC_SEM: 'ranking_nacional_semanal',
+    RANK_NAC_PROY: 'ranking_nacional_proy_anual',
+    RANK_CLUSTER_SEM: 'ranking_cluster_semanal',
+    RANK_CLUSTER_PROY: 'ranking_cluster_proy_anual',
+
+    // Rankings Anteriores
+    RANK_REG_PROY_ANT: 'ranking_regional_proy_anual_anterior',
+    RANK_NAC_SEM_ANT: 'ranking_nacional_semanal_anterior',
+    RANK_NAC_PROY_ANT: 'ranking_nacional_proy_anual_anterior',
+    RANK_CLUSTER_SEM_ANT: 'ranking_cluster_semanal_anterior',
+
+    // Stats Adicionales - Tarjetas 6, 8, 21
+    PROY_MES: 'proyeccion_mes_actual',
+    PROM_DIARIO_SEM: 'promedio_diario_semanal',
+    PROM_DIARIO_HIST: 'promedio_diario_historico',
+    SHARE_DELITO: 'share_delito_semanal'
 };
 
 // Parse URL parameters
 const params = new URLSearchParams(window.location.search);
 const codcom_url = params.get('codcom');
 const semana_id_url = params.get('semana_id');
+const targetCod = codcom_url ? parseInt(codcom_url) : 13101;
 
 /**
  * Data Loader
  */
 const dataLoader = {
+    _loadingInProgress: false,
+    _hasLoaded: false,
+
     async load() {
+        // Guard: Evitar cargas múltiples
+        if (this._loadingInProgress || this._hasLoaded) {
+            console.warn('⚠️ DataLoader: Carga ya en progreso o completada, ignorando');
+            return;
+        }
+        this._loadingInProgress = true;
+
         try {
             console.log('📊 Loading data...');
 
-            const response = await fetch('data/data3.json.gz');
+            const response = await fetch(`data/stop/${targetCod}`);
+
             if (!response.ok) throw new Error('Error IO Datos');
 
             const ds = new DecompressionStream('gzip');
             const decompressed = new Response(response.body.pipeThrough(ds));
             const rawData = await decompressed.json();
 
-            // Determine target CODCOM
-            const targetCod = codcom_url ? parseInt(codcom_url) : 13101;
             STATE_DATA.codcom = targetCod;
 
-            // Filter by Comuna first
-            const comunaData = rawData.filter(row => row[COLS.CODCOM] == targetCod);
+            // El archivo ya contiene solo datos de esta comuna (no necesita filtro)
+            // rawData es un array de objetos con claves como nombres de columna
+            console.log('🔍 Raw Data Sample:', rawData[0]);
+            console.log('🔍 Total rows loaded:', rawData.length);
 
-            // Separate 'Total' from individual Delitos
-            // Assuming 'Total' or 'TOTAL' as the identifier
-            STATE_DATA.allDataHistory = comunaData.filter(row => row[COLS.DELITO] !== 'Total' && row[COLS.DELITO] !== 'TOTAL');
-            STATE_DATA.allDataHistory_total = comunaData.filter(row => row[COLS.DELITO] === 'Total' || row[COLS.DELITO] === 'TOTAL');
-            console.log("Datos totales", STATE_DATA.allDataHistory_total)
+            // Separar 'Total' de delitos individuales
+            STATE_DATA.allDataHistory = rawData.filter(row => row[COLS.DELITO] !== 'Total' && row[COLS.DELITO] !== 'TOTAL');
+            STATE_DATA.allDataHistory_total = rawData.filter(row => row[COLS.DELITO] === 'Total' || row[COLS.DELITO] === 'TOTAL');
+
+            console.log('📊 Delitos individuales:', STATE_DATA.allDataHistory.length);
+            console.log('📊 Filas Total:', STATE_DATA.allDataHistory_total.length);
+
             // Main allData currently points to history of individual crimes
             STATE_DATA.allData = STATE_DATA.allDataHistory;
 
             // Get max ID_SEMANA
-            const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]));
+            const allSemanas = STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]).filter(s => s != null);
+            const maxSemana = allSemanas.length > 0 ? Math.max(...allSemanas) : 0;
             const targetSemana = semana_id_url ? parseInt(semana_id_url) : maxSemana;
 
-            // Find target week row for metadata
-            //const targetWeekRow = STATE_DATA.allData.find(row => row[COLS.ID_SEMANA] == targetSemana);
+            console.log('📅 Semanas encontradas:', allSemanas.length, 'Max:', maxSemana);
+
+            // Find target week row for metadata (from Total row)
             const targetWeekRow = STATE_DATA.allDataHistory_total.find(row => row[COLS.ID_SEMANA] == targetSemana);
 
             if (targetWeekRow) {
@@ -126,6 +199,8 @@ const dataLoader = {
             }
 
             STATE_DATA.isLoaded = true;
+            this._hasLoaded = true;
+            this._loadingInProgress = false;
 
             console.log(`✅ Loaded ${STATE_DATA.allData.length} records for ${STATE_DATA.comunaName}`);
             console.log(`📅 Max Semana: ${maxSemana}, Target: ${targetSemana}`);
@@ -139,6 +214,7 @@ const dataLoader = {
         } catch (error) {
             console.error("❌ Critical Error loading data:", error);
             STATE_DATA.isLoaded = false;
+            this._loadingInProgress = false;
         }
     },
 

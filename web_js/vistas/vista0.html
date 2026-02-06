@@ -1,4 +1,4 @@
-<!-- Vista 0: Desempeño Semanal Inmediato -->
+<!-- Vista 0: Dashboard Completo de Indicadores -->
 <style>
     /* Estilos compactos para PDF */
     .performance-table {
@@ -12,8 +12,8 @@
     }
 
     .performance-table td {
-        padding: 0.6rem 0.75rem;
-        font-size: 0.85rem;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
     }
 
     .performance-table td:first-child {
@@ -44,7 +44,7 @@
     }
 
     .conclusion-row td:last-child {
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 800;
     }
 
@@ -64,21 +64,54 @@
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
-        padding: 0.75rem 1rem;
-        margin-bottom: 1rem;
-        font-size: 0.8rem;
+        padding: 0.6rem 0.8rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.75rem;
         color: #475569;
-        line-height: 1.5;
+        line-height: 1.4;
     }
 
     .description-box strong {
         color: #dc2626;
     }
+
+    .card-header {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+        border-left: 4px solid var(--color-primary);
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.6rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .card-header h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-text);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .indicator-card {
+        padding: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
-<div class="card" style="padding: 1rem;">
-    <!-- Location/Week Row -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+<!-- Location/Week Header -->
+<div class="card" style="padding: 0.8rem; margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
         <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 6px; color: #cbd5e1;">/</span>
@@ -86,134 +119,617 @@
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
-
-    <!-- Header -->
-    <div
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 0.6rem 1rem; margin-bottom: 0.75rem; border-radius: 0 8px 8px 0;">
-        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            1. Desempeño Semanal Inmediato</h2>
-    </div>
-
-    <!-- Description Box -->
-    <div class="description-box">
-        Este bloque compara la actividad delictual de la semana en curso frente a la semana justo anterior.
-        Sirve para detectar <strong>quiebres de tendencia repentinos</strong> o fluctuaciones operativas de corto plazo.
-    </div>
-
-    <!-- Performance Table -->
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Casos Semana Actual</td>
-                <td id="v0_casos_actual">--</td>
-            </tr>
-            <tr>
-                <td>Casos Semana Anterior</td>
-                <td id="v0_casos_anterior">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. Abs vs Semana Anterior</td>
-                <td id="v0_var_abs">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. % vs Semana Anterior</td>
-                <td id="v0_var_pct">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td style="color: #dc2626; font-weight: 700;">Conclusión</td>
-                <td id="v0_conclusion" class="conclusion-aumento">--</td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div id="chartSourceFooter0" style="margin-top: 0.5rem;"></div>
 </div>
 
-<!-- Tarjeta 5: Desviación del Promedio Histórico -->
-<div class="card" style="padding: 1rem; margin-top: 1rem;">
-    <!-- Header -->
-    <div
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 0.6rem 1rem; margin-bottom: 0.75rem; border-radius: 0 8px 8px 0;">
-        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            5. Desviación del Promedio Histórico</h2>
+<!-- Grid de Tarjetas -->
+<div class="cards-grid">
+
+    <!-- Tarjeta 1: Desempeño Semanal Inmediato -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>1. Desempeño Semanal Inmediato</h2>
+        </div>
+        <div class="description-box">Compara casos vs semana anterior. Detecta <strong>quiebres de tendencia</strong>.
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana Actual</td>
+                    <td id="v0_t1_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Semana Anterior</td>
+                    <td id="v0_t1_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t1_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t1_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t1_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Description Box -->
-    <div class="description-box">
-        Contrasta los casos actuales contra la media histórica de la comuna.
-        Determina si la cifra de casos es una anomalía estadística o si se mantiene dentro de los <strong>parámetros
-            habituales de la zona</strong>.
+    <!-- Tarjeta 2: Comparativa Interanual Puntual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>2. Comparativa Interanual Puntual</h2>
+        </div>
+        <div class="description-box">Compara con <strong>misma semana año anterior</strong>. Neutraliza estacionalidad.
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana Actual</td>
+                    <td id="v0_t2_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Misma Semana Año Ant.</td>
+                    <td id="v0_t2_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t2_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t2_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t2_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Performance Table -->
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Casos Semana Actual</td>
-                <td id="v0_hist_casos_actual">--</td>
-            </tr>
-            <tr>
-                <td>Promedio Semanal Histórico</td>
-                <td id="v0_promedio_hist">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. Abs vs Promedio Semanal Histórico</td>
-                <td id="v0_hist_var_abs">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. % vs Promedio Semanal Histórico</td>
-                <td id="v0_hist_var_pct">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td style="color: #dc2626; font-weight: 700;">Conclusión</td>
-                <td id="v0_hist_conclusion" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- Tarjeta 9: Proyección de Tasa Anual -->
-<div class="card" style="padding: 1rem; margin-top: 1rem;">
-    <!-- Header -->
-    <div
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 0.6rem 1rem; margin-bottom: 0.75rem; border-radius: 0 8px 8px 0;">
-        <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            9. Proyección de Tasa Anual</h2>
+    <!-- Tarjeta 3: Estado del Acumulado Anual (YTD) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>3. Estado Acumulado Anual (YTD)</h2>
+        </div>
+        <div class="description-box">Total de casos desde Enero vs <strong>mismo periodo año anterior</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Acumulado Año Actual</td>
+                    <td id="v0_t3_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Acumulado Año Anterior (misma sem)</td>
+                    <td id="v0_t3_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t3_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t3_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t3_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Description Box -->
-    <div class="description-box">
-        Proyección de la tasa de casos por 100.000 habitantes para el cierre del año en curso.
-        Permite anticipar si la <strong>carga delictual relativa</strong> aumentará o disminuirá respecto al periodo
-        anterior ajustado por población.
+    <!-- Tarjeta 4: Pronóstico de Cierre Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>4. Pronóstico Cierre Anual</h2>
+        </div>
+        <div class="description-box">Proyección estadística de <strong>cómo terminará el año</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Proyección Año Actual</td>
+                    <td id="v0_t4_proy">--</td>
+                </tr>
+                <tr>
+                    <td>Total Año Anterior</td>
+                    <td id="v0_t4_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta Proyectada</td>
+                    <td id="v0_t4_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. % Proyectada</td>
+                    <td id="v0_t4_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t4_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
-    <!-- Performance Table -->
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Tasa/100 mil hab Proyectada Año Actual</td>
-                <td id="v0_tasa_proy">--</td>
-            </tr>
-            <tr>
-                <td>Tasa/100 mil hab Año Anterior (Estimada)</td>
-                <td id="v0_tasa_ant">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. Abs. Tasa Anual vs Tasa Año Anterior</td>
-                <td id="v0_tasa_var_abs">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. % Tasa Anual vs Tasa Año Anterior</td>
-                <td id="v0_tasa_var_pct">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td style="color: #dc2626; font-weight: 700;">Conclusión</td>
-                <td id="v0_tasa_conclusion" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+    <!-- Tarjeta 5: Desviación del Promedio Histórico -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>5. Desviación Promedio Histórico</h2>
+        </div>
+        <div class="description-box">Contrasta casos actuales contra <strong>media histórica</strong> comunal.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana Actual</td>
+                    <td id="v0_t5_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Promedio Semanal Histórico</td>
+                    <td id="v0_t5_promedio">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t5_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t5_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t5_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 6: Proyección Mensual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>6. Proyección Mensual</h2>
+        </div>
+        <div class="description-box">Estima <strong>cierre del mes actual</strong> vs mismo mes año anterior.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Proyección Fin de Mes</td>
+                    <td id="v0_t6_proy">--</td>
+                </tr>
+                <tr>
+                    <td>Mismo Mes Año Anterior</td>
+                    <td id="v0_t6_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t6_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t6_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t6_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 7: Media Móvil (Tendencia 4 Semanas) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>7. Media Móvil (4 Semanas)</h2>
+        </div>
+        <div class="description-box">Promedio últimas 4 semanas. Identifica <strong>tendencia sostenida</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Media Móvil (4s) Actual</td>
+                    <td id="v0_t7_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Media Móvil (4s) Año Anterior</td>
+                    <td id="v0_t7_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t7_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t7_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t7_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 8: Récords y Límites Operativos -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>8. Récords y Límites</h2>
+        </div>
+        <div class="description-box">Techos y promedios. <strong>Marco de referencia de crisis</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Promedio Diario Semanal</td>
+                    <td id="v0_t8_prom_diario">--</td>
+                </tr>
+                <tr>
+                    <td>Promedio Diario Histórico</td>
+                    <td id="v0_t8_prom_diario_hist">--</td>
+                </tr>
+                <tr>
+                    <td>Promedio Semanal Histórico</td>
+                    <td id="v0_t8_prom_sem">--</td>
+                </tr>
+                <tr>
+                    <td>Máximo Semanal Histórico</td>
+                    <td id="v0_t8_max">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Semana Máximo Histórico</td>
+                    <td id="v0_t8_semana_max">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 9: Brecha Tasa Proyectada Interanual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>9. Tasa Proyectada x100k</h2>
+        </div>
+        <div class="description-box">Tasa delitos <strong>por 100 mil habitantes</strong> proyectada vs año anterior.
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Proyectada Año Actual</td>
+                    <td id="v0_t9_proy">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Año Anterior</td>
+                    <td id="v0_t9_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t9_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t9_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t9_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 10: Benchmark Regional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>10. Benchmark Regional</h2>
+        </div>
+        <div class="description-box">Tasa comunal vs <strong>promedio regional</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Proyectada Comunal</td>
+                    <td id="v0_t10_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Regional</td>
+                    <td id="v0_t10_regional">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t10_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t10_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t10_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 11: Benchmark Nacional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>11. Benchmark Nacional</h2>
+        </div>
+        <div class="description-box">Tasa comunal vs <strong>promedio nacional</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Proyectada Comunal</td>
+                    <td id="v0_t11_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Nacional</td>
+                    <td id="v0_t11_nacional">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t11_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t11_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t11_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 12: Resumen Multiescalar de Tasas -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>12. Resumen Tasas Multiescalar</h2>
+        </div>
+        <div class="description-box">Vista consolidada <strong>Comuna / Región / Nación</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Semanal Comunal</td>
+                    <td id="v0_t12_sem_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Comunal</td>
+                    <td id="v0_t12_proy_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Regional</td>
+                    <td id="v0_t12_proy_regional">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Tasa Proyectada Nacional</td>
+                    <td id="v0_t12_proy_nacional">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 13: Ranking Regional Semanal -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>13. Ranking Regional (Semanal)</h2>
+        </div>
+        <div class="description-box">Posición comunal en la región <strong>esta semana</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Semana Actual</td>
+                    <td id="v0_t13_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Semana Anterior</td>
+                    <td id="v0_t13_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t13_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t13_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 14: Ranking Regional Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>14. Ranking Regional (Anual)</h2>
+        </div>
+        <div class="description-box">Posición proyectada <strong>cierre año</strong> en la región.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Proyectado Actual</td>
+                    <td id="v0_t14_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Sem. Anterior</td>
+                    <td id="v0_t14_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t14_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t14_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 15: Ranking Nacional Semanal -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>15. Ranking Nacional (Semanal)</h2>
+        </div>
+        <div class="description-box">Posición entre <strong>todas las comunas del país</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Semana Actual</td>
+                    <td id="v0_t15_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Semana Anterior</td>
+                    <td id="v0_t15_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t15_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t15_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 16: Ranking Nacional Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>16. Ranking Nacional (Anual)</h2>
+        </div>
+        <div class="description-box">Posición proyectada <strong>cierre año a nivel país</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Proyectado Actual</td>
+                    <td id="v0_t16_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Sem. Anterior</td>
+                    <td id="v0_t16_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t16_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t16_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 17: Ranking Clúster Semanal -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>17. Ranking Clúster (Semanal)</h2>
+        </div>
+        <div class="description-box">Ranking entre <strong>comunas de población similar</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Semana Actual</td>
+                    <td id="v0_t17_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Semana Anterior</td>
+                    <td id="v0_t17_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t17_var">--</td>
+                </tr>
+                <tr>
+                    <td>Clúster Poblacional</td>
+                    <td id="v0_t17_cluster">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t17_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 18: Ranking Clúster Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>18. Ranking Clúster (Anual)</h2>
+        </div>
+        <div class="description-box">Proyección anual entre <strong>comunas similares</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Proyectado Actual</td>
+                    <td id="v0_t18_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Sem. Anterior</td>
+                    <td id="v0_t18_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t18_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t18_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 25: Aporte Regional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>25. Aporte Comunal a Región</h2>
+        </div>
+        <div class="description-box">Peso porcentual de la comuna en el <strong>total regional</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana (Comuna)</td>
+                    <td id="v0_t25_casos_comuna">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Semana (Región)</td>
+                    <td id="v0_t25_casos_region">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Aporte % Actual</td>
+                    <td id="v0_t25_aporte_actual">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t25_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 21: Concentración Delictual (Pareto) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>21. Concentración Delictual</h2>
+        </div>
+        <div class="description-box">Peso de principales delitos. <strong>Análisis Pareto</strong>.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Share del Delito Principal</td>
+                    <td id="v0_t21_share">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Concentración</td>
+                    <td id="v0_t21_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- End cards-grid -->
+
+<div id="chartSourceFooter0" style="margin-top: 1rem;"></div>
 
 <script>
     (async function initVista0() {
@@ -230,181 +746,304 @@
         // Get total data for current week
         const totalData = STATE_DATA.allDataHistory_total;
         const maxWeek = Math.max(...totalData.map(r => r[COLS.ID_SEMANA]));
-        const currentWeekData = totalData.find(r => r[COLS.ID_SEMANA] === maxWeek);
+        const d = totalData.find(r => r[COLS.ID_SEMANA] === maxWeek); // d = current week data
 
-        if (!currentWeekData) {
-            console.error('No se encontraron datos totales para la semana actual');
-            return;
-        }
+        if (!d) { console.error('No se encontraron datos totales para la semana actual'); return; }
 
-        // Format numbers using ChartHelper if available
-        const formatNum = (val) => {
-            if (typeof ChartHelper !== 'undefined' && ChartHelper.formatNumber) {
-                return ChartHelper.formatNumber(val);
-            }
-            return Math.round(val).toLocaleString('es-CL');
+        // Formatters
+        const fN = (v) => Math.round(v || 0).toLocaleString('es-CL');
+        const fD = (v) => (v || 0).toFixed(1).replace('.', ',');
+        const fP = (v) => (v > 0 ? '+' : '') + (v || 0).toFixed(1) + '%';
+        const fV = (v) => (v > 0 ? '+' : '') + fN(v);
+        const fR = (v) => v ? Math.round(v) : '--';
+
+        // Conclusion helper
+        const getConclusion = (varPct, threshold = 5) => {
+            if (varPct > threshold) return { text: 'Aumento', cls: 'conclusion-aumento' };
+            if (varPct < -threshold) return { text: 'Disminución', cls: 'conclusion-disminucion' };
+            return { text: 'Estable', cls: 'conclusion-estable' };
         };
 
-        const formatDec = (val) => {
-            if (typeof ChartHelper !== 'undefined' && ChartHelper.formatNumber) {
-                return ChartHelper.formatNumber(val, 1);
-            }
-            return val.toFixed(1).replace('.', ',');
-        }
-
-        const formatPct = (val) => {
-            if (typeof ChartHelper !== 'undefined' && ChartHelper.formatPercent) {
-                return ChartHelper.formatPercent(val);
-            }
-            return val.toFixed(1) + '%';
+        const getRankConclusion = (diff) => {
+            if (diff > 0) return { text: `Mejora ${Math.abs(diff)} pos.`, cls: 'conclusion-disminucion' };
+            if (diff < 0) return { text: `Empeora ${Math.abs(diff)} pos.`, cls: 'conclusion-aumento' };
+            return { text: 'Sin Variación', cls: 'conclusion-estable' };
         };
+
+        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        const setConc = (id, c) => { const el = document.getElementById(id); if (el) { el.textContent = c.text; el.className = c.cls; } };
 
         // =====================
         // TARJETA 1: Desempeño Semanal Inmediato
         // =====================
-        const casosActual = currentWeekData[COLS.CASOS_ACTUAL] || 0;
-        const casosAnterior = currentWeekData[COLS.CASOS_ANT] || 0;
-        const delta = currentWeekData[COLS.DELTA] || (casosActual - casosAnterior);
-        const varPct = currentWeekData[COLS.VAR_PCT_SEM] || (casosAnterior > 0 ? ((casosActual - casosAnterior) / casosAnterior * 100) : 0);
+        const t1_actual = d[COLS.CASOS_ACTUAL] || 0;
+        const t1_ant = d[COLS.CASOS_ANT] || 0;
+        const t1_delta = d[COLS.DELTA] || (t1_actual - t1_ant);
+        const t1_varPct = d[COLS.VAR_PCT_SEM] || (t1_ant > 0 ? (t1_delta / t1_ant * 100) : 0);
 
-        // Determine conclusion
-        let conclusion = 'Estable';
-        let conclusionClass = 'conclusion-estable';
-        if (delta > 0) {
-            conclusion = 'Aumento';
-            conclusionClass = 'conclusion-aumento';
-        } else if (delta < 0) {
-            conclusion = 'Disminución';
-            conclusionClass = 'conclusion-disminucion';
-        }
-
-        // Update table 1
-        document.getElementById('v0_casos_actual').textContent = formatNum(casosActual);
-        document.getElementById('v0_casos_anterior').textContent = formatNum(casosAnterior);
-        document.getElementById('v0_var_abs').textContent = (delta > 0 ? '+' : '') + formatNum(delta);
-        document.getElementById('v0_var_pct').textContent = (varPct > 0 ? '+' : '') + formatPct(varPct);
-
-        const conclusionEl = document.getElementById('v0_conclusion');
-        conclusionEl.textContent = conclusion;
-        conclusionEl.className = conclusionClass;
+        setEl('v0_t1_actual', fN(t1_actual));
+        setEl('v0_t1_anterior', fN(t1_ant));
+        setEl('v0_t1_var_abs', fV(t1_delta));
+        setEl('v0_t1_var_pct', fP(t1_varPct));
+        setConc('v0_t1_concl', getConclusion(t1_varPct, 0));
 
         // =====================
-        // TARJETA 5: Desviación del Promedio Histórico
+        // TARJETA 2: Comparativa Interanual Puntual
         // =====================
-        const promedioHist = currentWeekData[COLS.PROMEDIO_HIST] || 0;
-        const deltaHist = casosActual - promedioHist;
-        const varPctHist = promedioHist > 0 ? ((casosActual - promedioHist) / promedioHist * 100) : 0;
+        const t2_actual = t1_actual;
+        const t2_ant = d[COLS.CASOS_YEAR_ANT] || 0;
+        const t2_delta = t2_actual - t2_ant;
+        const t2_varPct = t2_ant > 0 ? (t2_delta / t2_ant * 100) : 0;
 
-        // Determine historical conclusion
-        let conclusionHist = 'Normal';
-        let conclusionHistClass = 'conclusion-estable';
-        const zScore = currentWeekData[COLS.Z_SCORE] || 0;
-
-        if (zScore > 1.5 || varPctHist > 20) {
-            conclusionHist = 'Sobre Promedio';
-            conclusionHistClass = 'conclusion-aumento';
-        } else if (zScore < -1.5 || varPctHist < -20) {
-            conclusionHist = 'Bajo Promedio';
-            conclusionHistClass = 'conclusion-disminucion';
-        }
-
-        // Update table 5
-        document.getElementById('v0_hist_casos_actual').textContent = formatNum(casosActual);
-        document.getElementById('v0_promedio_hist').textContent = formatNum(promedioHist);
-        document.getElementById('v0_hist_var_abs').textContent = (deltaHist > 0 ? '+' : '') + formatNum(deltaHist);
-        document.getElementById('v0_hist_var_pct').textContent = (varPctHist > 0 ? '+' : '') + formatPct(varPctHist);
-
-        const conclusionHistEl = document.getElementById('v0_hist_conclusion');
-        conclusionHistEl.textContent = conclusionHist;
-        conclusionHistEl.className = conclusionHistClass;
+        setEl('v0_t2_actual', fN(t2_actual));
+        setEl('v0_t2_anterior', fN(t2_ant));
+        setEl('v0_t2_var_abs', fV(t2_delta));
+        setEl('v0_t2_var_pct', fP(t2_varPct));
+        setConc('v0_t2_concl', getConclusion(t2_varPct));
 
         // =====================
-        // TARJETA 9: Proyección de Tasa
+        // TARJETA 3: Estado Acumulado Anual (YTD)
         // =====================
-        // Lógica Robusta: Recalcular Acumulado y Semana basado en historial del año
-        // Esto corrige errores si la columna ACUM_ANUAL o SEMANA traen datos incorrectos (ej. Acum=CasosSemana o Semana=15 en vez de 3)
+        const t3_actual = d[COLS.ACUM_ANUAL] || 0;
+        const t3_ant = d[COLS.ACUM_ANUAL_ANT] || 0;
+        const t3_delta = t3_actual - t3_ant;
+        const t3_varPct = t3_ant > 0 ? (t3_delta / t3_ant * 100) : 0;
 
-        const anioActual = currentWeekData[COLS.ANIO];
-        const filasAnioActual = totalData.filter(r => r[COLS.ANIO] === anioActual);
+        setEl('v0_t3_actual', fN(t3_actual));
+        setEl('v0_t3_anterior', fN(t3_ant));
+        setEl('v0_t3_var_abs', fV(t3_delta));
+        setEl('v0_t3_var_pct', fP(t3_varPct));
+        setConc('v0_t3_concl', getConclusion(t3_varPct));
 
-        // Recalcular semana y acumulado real
-        const semanaReal = filasAnioActual.length || currentWeekData[COLS.SEMANA] || 1;
-        const acumuladoReal = filasAnioActual.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        // =====================
+        // TARJETA 4: Pronóstico Cierre Anual
+        // =====================
+        const t4_proy = d[COLS.PROYECCION_ANUAL] || 0;
+        // Año anterior: buscar total del año pasado
+        const anioActual = d[COLS.ANIO];
+        const filasAnioAnt = totalData.filter(r => r[COLS.ANIO] === anioActual - 1);
+        const t4_ant = filasAnioAnt.reduce((s, r) => s + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        const t4_delta = t4_proy - t4_ant;
+        const t4_varPct = t4_ant > 0 ? (t4_delta / t4_ant * 100) : 0;
 
-        const poblacion = currentWeekData[COLS.POBLACION] || 100000;
+        setEl('v0_t4_proy', fN(t4_proy));
+        setEl('v0_t4_anterior', fN(t4_ant));
+        setEl('v0_t4_var_abs', fV(t4_delta));
+        setEl('v0_t4_var_pct', fP(t4_varPct));
+        setConc('v0_t4_concl', getConclusion(t4_varPct));
 
-        // Para año anterior, hacemos lo mismo para ser consistentes
-        // Asumimos que queremos comparar con el año completo cerrado o la proyección equivalente
-        // Si hay datos del año anterior, usamos su total real
-        const anioAnt = anioActual - 1;
-        const filasAnioAnt = totalData.filter(r => r[COLS.ANIO] === anioAnt);
-        let acumuladoAnt = 0;
+        // =====================
+        // TARJETA 5: Desviación Promedio Histórico
+        // =====================
+        const t5_actual = t1_actual;
+        const t5_prom = d[COLS.PROMEDIO_HIST] || 0;
+        const t5_delta = t5_actual - t5_prom;
+        const t5_varPct = t5_prom > 0 ? (t5_delta / t5_prom * 100) : 0;
 
-        if (filasAnioAnt.length > 0) {
-            // Si tenemos el año anterior completo (o parcial), sumamos todo lo que hay
-            acumuladoAnt = filasAnioAnt.reduce((sum, r) => sum + (r[COLS.CASOS_ACTUAL] || 0), 0);
+        setEl('v0_t5_actual', fN(t5_actual));
+        setEl('v0_t5_promedio', fD(t5_prom));
+        setEl('v0_t5_var_abs', fV(t5_delta));
+        setEl('v0_t5_var_pct', fP(t5_varPct));
+        setConc('v0_t5_concl', getConclusion(t5_varPct, 10));
 
-            // Si el año anterior está incompleto en data (ej. dataset empieza a mitad de año), habría que proyectar.
-            // Pero asumiremos que si existe el año anterior, usamos su total.
-            // Sutil: Si queremos "Tasa Año Anterior" para comparar, debe ser la Tasa Anual Final.
-        } else {
-            // Fallback a columna si no hay filas históricas
-            acumuladoAnt = currentWeekData[COLS.ACUM_TOTAL] || currentWeekData[COLS.CASOS_YEAR_ANT] * 52 || 0;
-        }
+        // =====================
+        // TARJETA 6: Proyección Mensual
+        // =====================
+        const t6_proy = d[COLS.PROY_MES] || 0;
+        // Mismo mes año anterior (simplificado: no hay columna directa, se puede calcular offline)
+        const t6_ant = 0; // Placeholder - requiere datos adicionales
+        const t6_delta = t6_proy - t6_ant;
+        const t6_varPct = t6_ant > 0 ? (t6_delta / t6_ant * 100) : 0;
 
-        // Proyección lineal simple corregida
-        const factorProyeccion = semanaReal > 0 ? (52 / semanaReal) : 1;
-        const casosProyectados = acumuladoReal * factorProyeccion;
+        setEl('v0_t6_proy', fD(t6_proy));
+        setEl('v0_t6_anterior', t6_ant > 0 ? fN(t6_ant) : 'N/D');
+        setEl('v0_t6_var_abs', t6_ant > 0 ? fV(t6_delta) : 'N/D');
+        setEl('v0_t6_var_pct', t6_ant > 0 ? fP(t6_varPct) : 'N/D');
+        setConc('v0_t6_concl', t6_ant > 0 ? getConclusion(t6_varPct) : { text: 'Sin Datos', cls: 'conclusion-estable' });
 
-        // Año anterior: Si usamos filasAnioAnt, ya es el total anual (no proyectamos de nuevo si ya son 52 semanas)
-        // Pero si estamos comparando "Trayectoria vs Trayectoria", la Tasa del Año Anterior debe ser la Tasa Final Real.
-        const casosAntFinal = filasAnioAnt.length >= 50 ? acumuladoAnt : (acumuladoAnt * (filasAnioAnt.length > 0 ? 52 / filasAnioAnt.length : 1));
+        // =====================
+        // TARJETA 7: Media Móvil (4 Semanas)
+        // =====================
+        const t7_actual = d[COLS.MEDIA_MOVIL_4S] || 0;
+        // MM4S año anterior (simplificado)
+        const t7_ant = d[COLS.PROMEDIO_HIST_ANUAL] || 0;
+        const t7_delta = t7_actual - t7_ant;
+        const t7_varPct = t7_ant > 0 ? (t7_delta / t7_ant * 100) : 0;
 
-        const tasaProy = (casosProyectados / poblacion) * 100000;
-        const tasaAnt = (casosAntFinal / poblacion) * 100000;
+        setEl('v0_t7_actual', fD(t7_actual));
+        setEl('v0_t7_anterior', fD(t7_ant));
+        setEl('v0_t7_var_abs', fV(t7_delta));
+        setEl('v0_t7_var_pct', fP(t7_varPct));
+        setConc('v0_t7_concl', getConclusion(t7_varPct, 10));
 
-        const varAbsTasa = tasaProy - tasaAnt;
-        const varPctTasa = tasaAnt > 0 ? ((tasaProy - tasaAnt) / tasaAnt * 100) : 0;
+        // =====================
+        // TARJETA 8: Récords y Límites
+        // =====================
+        setEl('v0_t8_prom_diario', fD(d[COLS.PROM_DIARIO_SEM] || 0));
+        setEl('v0_t8_prom_diario_hist', fD(d[COLS.PROM_DIARIO_HIST] || 0));
+        setEl('v0_t8_prom_sem', fD(d[COLS.PROMEDIO_HIST] || 0));
+        setEl('v0_t8_max', fN(d[COLS.MAX_HIST] || 0));
+        setEl('v0_t8_semana_max', 'Sem. ' + fR(d[COLS.SEMANA_MAX_HIST]));
 
-        // DEBUG: Valores Tarjeta 9 (Recalculados)
-        console.group("🔍 Debug Tarjeta 9: Proyección Tasa (Robust)");
-        console.log("Datos Recalculados:", {
-            anioActual,
-            semanaReal_Count: semanaReal,
-            acumuladoReal_Sum: acumuladoReal,
-            poblacion
-        });
-        console.log("Año Anterior:", {
-            anioAnt,
-            filasFound: filasAnioAnt.length,
-            acumuladoAnt_Sum: acumuladoAnt,
-            casosAntFinal_Used: casosAntFinal
-        });
-        console.log("Proyección:", {
-            factor: factorProyeccion.toFixed(4),
-            casosProy: casosProyectados.toFixed(2),
-            tasaProy: tasaProy.toFixed(2)
-        });
-        console.groupEnd();
+        // =====================
+        // TARJETA 9: Tasa Proyectada x100k
+        // =====================
+        const t9_proy = d[COLS.TASA_PROY_ANUAL] || 0;
+        // Tasa año anterior (simplificado: calcular desde acumulado año ant / población)
+        const poblacion = d[COLS.POBLACION] || 100000;
+        const t9_ant = t4_ant > 0 ? (t4_ant / poblacion * 100000) : 0;
+        const t9_delta = t9_proy - t9_ant;
+        const t9_varPct = t9_ant > 0 ? (t9_delta / t9_ant * 100) : 0;
 
-        let conclusionTasa = 'Estable';
-        let conclusionTasaClass = 'conclusion-estable';
-        if (varPctTasa > 5) { conclusionTasa = 'Aumento'; conclusionTasaClass = 'conclusion-aumento'; }
-        else if (varPctTasa < -5) { conclusionTasa = 'Disminución'; conclusionTasaClass = 'conclusion-disminucion'; }
+        setEl('v0_t9_proy', fD(t9_proy));
+        setEl('v0_t9_anterior', fD(t9_ant));
+        setEl('v0_t9_var_abs', fV(t9_delta));
+        setEl('v0_t9_var_pct', fP(t9_varPct));
+        setConc('v0_t9_concl', getConclusion(t9_varPct));
 
-        document.getElementById('v0_tasa_proy').textContent = formatDec(tasaProy);
-        document.getElementById('v0_tasa_ant').textContent = formatDec(tasaAnt);
-        document.getElementById('v0_tasa_var_abs').textContent = (varAbsTasa > 0 ? '+' : '') + formatDec(varAbsTasa);
-        document.getElementById('v0_tasa_var_pct').textContent = (varPctTasa > 0 ? '+' : '') + formatPct(varPctTasa);
+        // =====================
+        // TARJETA 10: Benchmark Regional
+        // =====================
+        const t10_comunal = t9_proy;
+        const t10_regional = d[COLS.TASA_PROY_REGIONAL] || 0;
+        const t10_delta = t10_comunal - t10_regional;
+        const t10_varPct = t10_regional > 0 ? (t10_delta / t10_regional * 100) : 0;
 
-        const conclusionTasaEl = document.getElementById('v0_tasa_conclusion');
-        conclusionTasaEl.textContent = conclusionTasa;
-        conclusionTasaEl.className = conclusionTasaClass;
+        setEl('v0_t10_comunal', fD(t10_comunal));
+        setEl('v0_t10_regional', fD(t10_regional));
+        setEl('v0_t10_var_abs', fV(t10_delta));
+        setEl('v0_t10_var_pct', fP(t10_varPct));
+        // Invertido: menor que región = mejor
+        setConc('v0_t10_concl', t10_delta < 0 ? { text: 'Mejor que Región', cls: 'conclusion-disminucion' } :
+            t10_delta > 0 ? { text: 'Peor que Región', cls: 'conclusion-aumento' } :
+                { text: 'Igual a Región', cls: 'conclusion-estable' });
+
+        // =====================
+        // TARJETA 11: Benchmark Nacional
+        // =====================
+        const t11_comunal = t9_proy;
+        const t11_nacional = d[COLS.TASA_PROY_NACIONAL] || 0;
+        const t11_delta = t11_comunal - t11_nacional;
+        const t11_varPct = t11_nacional > 0 ? (t11_delta / t11_nacional * 100) : 0;
+
+        setEl('v0_t11_comunal', fD(t11_comunal));
+        setEl('v0_t11_nacional', fD(t11_nacional));
+        setEl('v0_t11_var_abs', fV(t11_delta));
+        setEl('v0_t11_var_pct', fP(t11_varPct));
+        setConc('v0_t11_concl', t11_delta < 0 ? { text: 'Mejor que País', cls: 'conclusion-disminucion' } :
+            t11_delta > 0 ? { text: 'Peor que País', cls: 'conclusion-aumento' } :
+                { text: 'Igual a País', cls: 'conclusion-estable' });
+
+        // =====================
+        // TARJETA 12: Resumen Multiescalar
+        // =====================
+        setEl('v0_t12_sem_comunal', fD(d[COLS.TASA_SEMANAL] || 0));
+        setEl('v0_t12_proy_comunal', fD(t9_proy));
+        setEl('v0_t12_proy_regional', fD(t10_regional));
+        setEl('v0_t12_proy_nacional', fD(t11_nacional));
+
+        // =====================
+        // TARJETA 13: Ranking Regional Semanal
+        // =====================
+        const t13_actual = d[COLS.RANKING] || 0;
+        const t13_anterior = d[COLS.RANKING_ANT] || 0;
+        const t13_diff = t13_anterior - t13_actual; // Positivo = mejora
+
+        setEl('v0_t13_actual', 'Pos. ' + fR(t13_actual));
+        setEl('v0_t13_anterior', 'Pos. ' + fR(t13_anterior));
+        setEl('v0_t13_var', t13_diff !== 0 ? (t13_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t13_diff) : '–');
+        setConc('v0_t13_concl', getRankConclusion(t13_diff));
+
+        // =====================
+        // TARJETA 14: Ranking Regional Anual
+        // =====================
+        const t14_actual = d[COLS.RANK_REG_PROY] || 0;
+        const t14_anterior = d[COLS.RANK_REG_PROY_ANT] || 0;
+        const t14_diff = t14_anterior - t14_actual;
+
+        setEl('v0_t14_actual', 'Pos. ' + fR(t14_actual));
+        setEl('v0_t14_anterior', 'Pos. ' + fR(t14_anterior));
+        setEl('v0_t14_var', t14_diff !== 0 ? (t14_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t14_diff) : '–');
+        setConc('v0_t14_concl', getRankConclusion(t14_diff));
+
+        // =====================
+        // TARJETA 15: Ranking Nacional Semanal
+        // =====================
+        const t15_actual = d[COLS.RANK_NAC_SEM] || 0;
+        const t15_anterior = d[COLS.RANK_NAC_SEM_ANT] || 0;
+        const t15_diff = t15_anterior - t15_actual;
+
+        setEl('v0_t15_actual', 'Pos. ' + fR(t15_actual));
+        setEl('v0_t15_anterior', 'Pos. ' + fR(t15_anterior));
+        setEl('v0_t15_var', t15_diff !== 0 ? (t15_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t15_diff) : '–');
+        setConc('v0_t15_concl', getRankConclusion(t15_diff));
+
+        // =====================
+        // TARJETA 16: Ranking Nacional Anual
+        // =====================
+        const t16_actual = d[COLS.RANK_NAC_PROY] || 0;
+        const t16_anterior = d[COLS.RANK_NAC_PROY_ANT] || 0;
+        const t16_diff = t16_anterior - t16_actual;
+
+        setEl('v0_t16_actual', 'Pos. ' + fR(t16_actual));
+        setEl('v0_t16_anterior', 'Pos. ' + fR(t16_anterior));
+        setEl('v0_t16_var', t16_diff !== 0 ? (t16_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t16_diff) : '–');
+        setConc('v0_t16_concl', getRankConclusion(t16_diff));
+
+        // =====================
+        // TARJETA 17: Ranking Clúster Semanal
+        // =====================
+        const t17_actual = d[COLS.RANK_CLUSTER_SEM] || 0;
+        const t17_anterior = d[COLS.RANK_CLUSTER_SEM_ANT] || 0;
+        const t17_diff = t17_anterior - t17_actual;
+
+        setEl('v0_t17_actual', 'Pos. ' + fR(t17_actual));
+        setEl('v0_t17_anterior', 'Pos. ' + fR(t17_anterior));
+        setEl('v0_t17_var', t17_diff !== 0 ? (t17_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t17_diff) : '–');
+        setEl('v0_t17_cluster', d[COLS.CLASE_POBLACION] || 'N/D');
+        setConc('v0_t17_concl', getRankConclusion(t17_diff));
+
+        // =====================
+        // TARJETA 18: Ranking Clúster Anual
+        // =====================
+        const t18_actual = d[COLS.RANK_CLUSTER_PROY] || 0;
+        const t18_anterior = d[COLS.RANK_CLUSTER_SEM_ANT] || 0; // Usando semanal anterior como proxy
+        const t18_diff = t18_anterior - t18_actual;
+
+        setEl('v0_t18_actual', 'Pos. ' + fR(t18_actual));
+        setEl('v0_t18_anterior', 'Pos. ' + fR(t18_anterior));
+        setEl('v0_t18_var', t18_diff !== 0 ? (t18_diff > 0 ? '▲ ' : '▼ ') + Math.abs(t18_diff) : '–');
+        setConc('v0_t18_concl', getRankConclusion(t18_diff));
+
+        // =====================
+        // TARJETA 25: Aporte Comunal a Región
+        // =====================
+        const t25_casos_comuna = t1_actual;
+        const t25_casos_region = d[COLS.CASOS_SEM_REGIONAL] || 0;
+        const t25_aporte = d[COLS.APORTE_PCT_REGION] || 0;
+
+        setEl('v0_t25_casos_comuna', fN(t25_casos_comuna));
+        setEl('v0_t25_casos_region', fN(t25_casos_region));
+        setEl('v0_t25_aporte_actual', fD(t25_aporte) + '%');
+        setConc('v0_t25_concl', t25_aporte > 15 ? { text: 'Alto Aporte', cls: 'conclusion-aumento' } :
+            t25_aporte < 5 ? { text: 'Bajo Aporte', cls: 'conclusion-disminucion' } :
+                { text: 'Aporte Normal', cls: 'conclusion-estable' });
+
+        // =====================
+        // TARJETA 21: Concentración Delictual (Share)
+        // =====================
+        const t21_share = d[COLS.SHARE_DELITO] || 0;
+        setEl('v0_t21_share', fD(t21_share) + '%');
+        setConc('v0_t21_concl', t21_share > 30 ? { text: 'Alta Concentración', cls: 'conclusion-aumento' } :
+            t21_share < 10 ? { text: 'Baja Concentración', cls: 'conclusion-disminucion' } :
+                { text: 'Normal', cls: 'conclusion-estable' });
 
         // Add source footer
         if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {
             document.getElementById('chartSourceFooter0').innerHTML = ChartHelper.getSourceFooterHtml('STOP');
         }
+
+        console.log('✅ Vista 0 cargada con éxito - Todas las tarjetas pobladas');
 
     })();
 </script>

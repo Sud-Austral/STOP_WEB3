@@ -31,7 +31,7 @@ window.switchSidebarTab = function (tabId) {
 const App = {
     // Configuration
     config: {
-        defaultView: 'vista0',
+        defaultView: 'vista1',
         chartRenderDelay: 1500,
         pdfScale: 2,
         views: [
