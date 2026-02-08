@@ -205,6 +205,7 @@ const dataLoader = {
             const allSemanas = STATE_DATA.allDataHistory.map(row => row[COLS.ID_SEMANA]).filter(s => s != null);
             const maxSemana = allSemanas.length > 0 ? Math.max(...allSemanas) : 0;
             const targetSemana = semana_id_url ? parseInt(semana_id_url) : maxSemana;
+            console.log('📅 Semana objetivo:', targetSemana);
 
             console.log('📅 Semanas encontradas:', allSemanas.length, 'Max:', maxSemana);
 
