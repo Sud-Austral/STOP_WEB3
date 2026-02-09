@@ -20,6 +20,7 @@ window.STATE_DATA = {
 };
 // Column Keys - Mapeado a data3.json (orient='records')
 // Ahora usa nombres de columna en lugar de índices numéricos
+// Column Keys - Mapeado a data_stop.json (orient='records')
 window.COLS = {
     // Identificadores Base
     DELITO: 'delito',
@@ -31,113 +32,82 @@ window.COLS = {
     ANIO: 'año',
     MES: 'mes',
     SEMANA: 'semana_numero',
+    SEMANA_SAFE: 'semana_numero_safe',
 
-    // Métricas Base Tarjeta 1
+    // Métricas Base (T1-T3)
     CASOS_ACTUAL: 'casos_semana_actual',
     CASOS_ANT: 'casos_semana_anterior',
     DELTA: 'delta',
     ACUM_ANUAL: 'acumulado_anual',
     ACUM_TOTAL: 'acumulado_total',
-
-    // Acumulado Año Anterior - Tarjeta 3
     ACUM_ANUAL_ANT: 'acumulado_anual_anterior',
 
-    // Medias Móviles - Tarjeta 7
+    // Comparativas (T2, T12)
+    CASOS_YEAR_ANT: 'casos_misma_semana_año_anterior',
+    CASOS_MES_YEAR_ANT: 'casos_mismo_mes_año_anterior',
+
+    // Medias Móviles y Stats (T4-T8)
     MEDIA_MOVIL_4S: 'media_movil_4s',
     MEDIA_MOVIL_8S: 'media_movil_8s',
-
-    // Estadísticas Históricas - Tarjeta 5, 8
     PROMEDIO_HIST: 'promedio_hist',
     STD_HIST: 'std_hist',
     MAX_HIST: 'max_hist',
-
-    // Stats Año Anterior
     PROMEDIO_HIST_ANUAL: 'promedio_hist_anual',
     STD_HIST_ANUAL: 'std_hist_anual',
     MAX_HIST_ANUAL: 'max_hist_anual',
 
-    // Variaciones y Z-Scores
+    // Tendencias, Rachas y Z-Score (T29-T34)
+    TENDENCIA: 'tendencia_corto_plazo',
+    RACHA_ALZA: 'racha_alza',
+    RACHA_BAJA: 'racha_baja',
+    RACHA: 'racha',
     VAR_PCT_SEM: 'var_pct_vs_semana_anterior',
     Z_SCORE: 'z_score',
     Z_SCORE_YEAR_ANT: 'z_score_vs_año_anterior',
     Z_CONCL: 'conclusion_z',
-    TENDENCIA: 'tendencia_corto_plazo',
-    RACHA: 'racha',
 
-    // Máximos y Alertas
+    // Alertas y Récords
     SEMANA_MAX_HIST: 'id_semana_max_hist',
     SEMANA_DETALLE_MAX_HIST: 'semana_detalle_max_hist',
     ALERTA: 'alerta_aumento_critico',
     ALERTA_YEAR_ANT: 'alerta_vs_año_anterior',
 
-    // Comparativa Interanual - Tarjeta 2
-    CASOS_YEAR_ANT: 'casos_misma_semana_año_anterior',
-    CASOS_MES_YEAR_ANT: 'casos_mismo_mes_año_anterior',
-
-    // Geografía
+    // Geografía y Población
     PROVINCIA: 'Provincia',
     COMUNA: 'Comuna',
     REGION: 'Región',
     CODREG: 'Codreg',
-
-    // Rankings Regionales - Tarjetas 13-14
-    RANKING: 'ranking_comunal_regional',
-    RANKING_ANT: 'ranking_comunal_regional_semana_anterior',
-
-    // Demografía
     POBLACION_CLASE: 'poblacion_clase',
     CLASE_POBLACION: 'clase_poblacion',
     POBLACION: 'poblacion',
-    FACTOR_POBLACION: 'facor_poblacion',
+    FACTOR_POBLACION: 'factor_poblacion',
 
-    // Proyecciones y Tasas - Tarjetas 4, 9
-    PROYECCION_ANUAL: 'proyeccion_anual',
-    TASA_SEMANAL: 'tasa_semanal',
-    TASA_PROY_ANUAL: 'tasa_proyectada_anual',
-
-    // Benchmarks Nacional/Regional - Tarjetas 10, 11, 12
-    TASA_PROY_NACIONAL: 'tasa_proyectada_nacional',
-    TASA_SEM_NACIONAL: 'tasa_semanal_nacional',
-    TASA_PROY_REGIONAL: 'tasa_proyectada_regional',
-    TASA_SEM_REGIONAL: 'tasa_semanal_regional',
-    CASOS_SEM_REGIONAL: 'casos_semana_regional',
-    APORTE_PCT_REGION: 'aporte_pct_region',
-
-    // Rankings Avanzados - Tarjetas 13-18
-    RANK_REG_PROY: 'ranking_regional_proy_anual',
+    // Rankings (T13-T18)
+    RANKING: 'ranking_comunal_regional',
+    RANKING_ANT: 'ranking_comunal_regional_semana_anterior',
     RANK_NAC_SEM: 'ranking_nacional_semanal',
+    RANK_REG_PROY: 'ranking_regional_proy_anual',
     RANK_NAC_PROY: 'ranking_nacional_proy_anual',
-    RANK_CLUSTER_SEM: 'ranking_cluster_semanal',
     RANK_CLUSTER_PROY: 'ranking_cluster_proy_anual',
+    RANK_CLUSTER_SEM: 'ranking_cluster_semanal',
 
-    // Rankings Anteriores
-    RANK_REG_PROY_ANT: 'ranking_regional_proy_anual_anterior',
-    RANK_NAC_SEM_ANT: 'ranking_nacional_semanal_anterior',
-    RANK_NAC_PROY_ANT: 'ranking_nacional_proy_anual_anterior',
-    RANK_CLUSTER_SEM_ANT: 'ranking_cluster_semanal_anterior',
-
-    // Stats Adicionales - Tarjetas 6, 8, 21
-    PROY_MES: 'proyeccion_mes_actual',
-    PROM_DIARIO_SEM: 'promedio_diario_semanal',
-    PROM_DIARIO_HIST: 'promedio_diario_historico',
-    SHARE_DELITO_SEM: 'share_delito_semanal',
-
-    // Diagnósticos Críticos (T19, T20)
+    // Diagnósticos Críticos (T19-T20)
     T19_DELITO: 't19_delito_sem',
     T19_RANK: 't19_rank_sem',
     T19_DELITO_ANT: 't19_delito_ant',
     T19_RANK_ANT: 't19_rank_ant',
+
     T20_DELITO: 't20_delito_sem',
     T20_RANK: 't20_rank_sem',
     T20_DELITO_ANT: 't20_delito_ant',
     T20_RANK_ANT: 't20_rank_ant',
 
-    // Concentración (T21)
+    // Pareto (T21)
     T21_DELITO_1: 't21_delito_1',
-    T21_VAL_1: 't21_val_1',
     T21_DELITO_2: 't21_delito_2',
-    T21_VAL_2: 't21_val_2',
     T21_DELITO_3: 't21_delito_3',
+    T21_VAL_1: 't21_val_1',
+    T21_VAL_2: 't21_val_2',
     T21_VAL_3: 't21_val_3',
 
     // Correlación (T23)
@@ -146,11 +116,59 @@ window.COLS = {
     T23_VAL: 't23_val',
 
     // Aportes (T25)
+    CASOS_SEM_REG: 'casos_semana_regional',
     APORTE_PCT: 'aporte_pct_region',
     APORTE_PCT_ANT: 'aporte_pct_region_ant',
-    CASOS_SEM_REG: 'casos_semana_regional',
-    CASOS_SEM_REG_ANT: 'casos_semana_regional_ant'
+    CASOS_SEM_REG_ANT: 'casos_semana_regional_ant',
+
+    // Proyecciones (T4, T9)
+    PROYECCION_ANUAL: 'proyeccion_anual',
+    TASA_SEMANAL: 'tasa_semanal',
+    TASA_PROY_ANUAL: 'tasa_proyectada_anual',
+
+    // IDI y Tasas Agregadas (T10-T12, T26-T28, T34)
+    IDI_PESO: 'idi_peso',
+    IDI_PROY_MES: 'idi_proy_mes',
+    IDI_MES_ANT_YEAR: 'idi_mes_ant_year',
+    IDI_MES_ANTERIOR: 'idi_mes_anterior',
+    IDI_PROY_ANUAL: 'idi_proy_anual',
+    IDI_ANUAL_ANT: 'idi_anual_anterior',
+
+    IDI_REGIONAL: 'idi_proy_regional',
+    IDI_NACIONAL: 'idi_proy_nacional',
+    IDI_CLUSTER: 'idi_proy_cluster',
+
+    TASA_PROY_REGIONAL: 'tasa_proyectada_regional',
+    TASA_PROY_NACIONAL: 'tasa_proyectada_nacional',
+    TASA_PROY_CLUSTER: 'tasa_proyectada_cluster',
+
+    // Rachas Top 3 (T29, T30)
+    PRIORIDAD_VAL: 'prioridad_val',
+    ES_RACHA_NEG: 'es_racha_neg',
+    ES_RACHA_POS: 'es_racha_pos',
+
+    RACHA_NEG_DELITO_1: 't29_delito_1',
+    RACHA_NEG_DELITO_2: 't29_delito_2',
+    RACHA_NEG_DELITO_3: 't29_delito_3',
+    RACHA_NEG_SEM_1: 't29_semanas_1',
+    RACHA_NEG_SEM_2: 't29_semanas_2',
+    RACHA_NEG_SEM_3: 't29_semanas_3',
+
+    RACHA_POS_DELITO_1: 't30_delito_1',
+    RACHA_POS_DELITO_2: 't30_delito_2',
+    RACHA_POS_DELITO_3: 't30_delito_3',
+    RACHA_POS_SEM_1: 't30_semanas_1',
+    RACHA_POS_SEM_2: 't30_semanas_2',
+    RACHA_POS_SEM_3: 't30_semanas_3',
+
+    // Crecimiento (T31, T32)
+    MM4S_LAG4: 'mm4s_lag4',
+    T31_CAGR: 't31_cagr_4s',
+    CASOS_SEM1: 'casos_sem1',
+    T32_CAGR: 't32_cagr_anual'
 };
+
+
 
 // Parse URL parameters
 const params = new URLSearchParams(window.location.search);
