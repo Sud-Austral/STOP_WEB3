@@ -230,8 +230,8 @@
         <div class="card-header">
             <h2>4. Pronóstico Cierre Anual</h2>
         </div>
-        <div class="description-box">Estimación matemática de cómo cerrará el año si la tendencia actual se
-            pasado."*</div>
+        <div class="description-box">Estimación matemática de cómo cerrará el año si la tendencia actual se mantiene.
+            *Ejemplo: "Si la tendencia actual se mantiene, ¿cuántos delitos tendremos al 31 de diciembre?"*</div>
         <table class="performance-table">
             <tbody>
                 <tr>
@@ -263,826 +263,838 @@
         <div class="card-header">
             <h2>5. Desviación Promedio Histórico</h2>
         </div>
-        normal son 10 casos por semana y hoy hubo 15, es una señal clara de alerta."*
+        <div class="description-box">Comparación con el promedio "normal" histórico de la comuna. *Ejemplo: "Si lo
+            normal son 10 casos por semana y hoy hubo 15, es una señal clara de alerta."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana Actual</td>
+                    <td id="v0_t5_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Promedio Semanal Histórico</td>
+                    <td id="v0_t5_promedio">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t5_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t5_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t5_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Casos Semana Actual</td>
-                <td id="v0_t5_actual">--</td>
-            </tr>
-            <tr>
-                <td>Promedio Semanal Histórico</td>
-                <td id="v0_t5_promedio">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. Absoluta</td>
-                <td id="v0_t5_var_abs">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. %</td>
-                <td id="v0_t5_var_pct">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t5_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 6: Proyección Mensual -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>6. Proyección Mensual</h2>
+    <!-- Tarjeta 6: Proyección Mensual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>6. Proyección Mensual</h2>
+        </div>
+        <div class="description-box">Pronóstico de cómo terminará el mes en curso comparado con el año pasado. *Ejemplo:
+            "A este ritmo actual, ¿superaremos los casos registrados en febrero del año pasado?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Proyección Fin de Mes</td>
+                    <td id="v0_t6_proy">--</td>
+                </tr>
+                <tr>
+                    <td>Mismo Mes Año Anterior</td>
+                    <td id="v0_t6_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t6_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t6_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t6_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    *Ejemplo: "A este ritmo actual, ¿superaremos los casos registrados en febrero del año pasado?"*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Proyección Fin de Mes</td>
-            <td id="v0_t6_proy">--</td>
-        </tr>
-        <tr>
-            <td>Mismo Mes Año Anterior</td>
-            <td id="v0_t6_anterior">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. Absoluta</td>
-            <td id="v0_t6_var_abs">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. %</td>
-            <td id="v0_t6_var_pct">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t6_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 7: Media Móvil (Tendencia 4 Semanas) -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>7. Media Móvil (4 Semanas)</h2>
+    <!-- Tarjeta 7: Media Móvil (Tendencia 4 Semanas) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>7. Media Móvil (4 Semanas)</h2>
+        </div>
+        <div class="description-box">Promedio suavizado del último mes para ver la tendencia real sin el ruido diario.
+            *Ejemplo: "Elimina los picos aislados de un día para mostrar si la curva de fondo realmente va hacia
+            arriba."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Media Móvil (4s) Actual</td>
+                    <td id="v0_t7_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Media Móvil (4s) Año Anterior</td>
+                    <td id="v0_t7_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t7_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t7_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t7_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    hacia arriba."*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Media Móvil (4s) Actual</td>
-            <td id="v0_t7_actual">--</td>
-        </tr>
-        <tr>
-            <td>Media Móvil (4s) Año Anterior</td>
-            <td id="v0_t7_anterior">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. Absoluta</td>
-            <td id="v0_t7_var_abs">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. %</td>
-            <td id="v0_t7_var_pct">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t7_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 8: Récords y Límites Operativos -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>8. Récords y Límites</h2>
+    <!-- Tarjeta 8: Récords y Límites Operativos -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>8. Récords y Límites</h2>
+        </div>
+        <div class="description-box">Referencias históricas extremas para contexto operativo. *Ejemplo: "¿Estamos cerca
+            del peor momento histórico registrado o operando dentro de rangos normales y manejables?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Promedio Diario Semanal</td>
+                    <td id="v0_t8_prom_diario">--</td>
+                </tr>
+                <tr>
+                    <td>Promedio Diario Histórico</td>
+                    <td id="v0_t8_prom_diario_hist">--</td>
+                </tr>
+                <tr>
+                    <td>Promedio Semanal Histórico</td>
+                    <td id="v0_t8_prom_sem">--</td>
+                </tr>
+                <tr>
+                    <td>Máximo Semanal Histórico</td>
+                    <td id="v0_t8_max">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Semana Máximo Histórico</td>
+                    <td id="v0_t8_semana_max">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    cerca del peor momento histórico registrado o operando dentro de rangos normales y manejables?"*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Promedio Diario Semanal</td>
-            <td id="v0_t8_prom_diario">--</td>
-        </tr>
-        <tr>
-            <td>Promedio Diario Histórico</td>
-            <td id="v0_t8_prom_diario_hist">--</td>
-        </tr>
-        <tr>
-            <td>Promedio Semanal Histórico</td>
-            <td id="v0_t8_prom_sem">--</td>
-        </tr>
-        <tr>
-            <td>Máximo Semanal Histórico</td>
-            <td id="v0_t8_max">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Semana Máximo Histórico</td>
-            <td id="v0_t8_semana_max">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 9: Brecha Tasa Proyectada Interanual -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>9. Tasa Proyectada x100k</h2>
+    <!-- Tarjeta 9: Brecha Tasa Proyectada Interanual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>9. Tasa Proyectada x100k</h2>
+        </div>
+        <div class="description-box">Cantidad de delitos ajustada por población (Tasa x 100k hab) para comparaciones
+            justas. *Ejemplo: "Permite comparar la peligrosidad real entre comunas grandes y chicas en igualdad de
+            condiciones."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Proyectada Año Actual</td>
+                    <td id="v0_t9_proy">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Año Anterior</td>
+                    <td id="v0_t9_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t9_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t9_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t9_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Cantidad de delitos ajustada por población (Tasa x 100k hab) para comparaciones
-        justas. *Ejemplo: "Permite comparar la peligrosidad real entre comunas grandes y chicas en igualdad de
-        condiciones."*
-    </div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Tasa Proyectada Año Actual</td>
-                <td id="v0_t9_proy">--</td>
-            </tr>
-            <tr>
-                <td>Tasa Año Anterior</td>
-                <td id="v0_t9_anterior">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. Absoluta</td>
-                <td id="v0_t9_var_abs">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. %</td>
-                <td id="v0_t9_var_pct">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t9_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 10: Benchmark Regional -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>10. Benchmark Regional</h2>
+    <!-- Tarjeta 10: Benchmark Regional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>10. Benchmark Regional</h2>
+        </div>
+        <div class="description-box">Comparación de la realidad local versus el promedio de toda la región. *Ejemplo:
+            "¿Es nuestra comuna más o menos segura que el promedio de las comunas vecinas?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Proyectada Comunal</td>
+                    <td id="v0_t10_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Regional</td>
+                    <td id="v0_t10_regional">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t10_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t10_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t10_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    *Ejemplo: "¿Es nuestra comuna más o menos segura que el promedio de las comunas vecinas?"*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Tasa Proyectada Comunal</td>
-            <td id="v0_t10_comunal">--</td>
-        </tr>
-        <tr>
-            <td>Tasa Proyectada Regional</td>
-            <td id="v0_t10_regional">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. Absoluta</td>
-            <td id="v0_t10_var_abs">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. %</td>
-            <td id="v0_t10_var_pct">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t10_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 11: Benchmark Nacional -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>11. Benchmark Nacional</h2>
+    <!-- Tarjeta 11: Benchmark Nacional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>11. Benchmark Nacional</h2>
+        </div>
+        <div class="description-box">Comparación de la realidad local versus el promedio de todo el país. *Ejemplo:
+            "¿Cómo nos situamos en el contexto amplio de seguridad nacional?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Proyectada Comunal</td>
+                    <td id="v0_t11_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Nacional</td>
+                    <td id="v0_t11_nacional">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t11_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. %</td>
+                    <td id="v0_t11_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t11_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    "¿Cómo nos situamos en el contexto amplio de seguridad nacional?"*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Tasa Proyectada Comunal</td>
-            <td id="v0_t11_comunal">--</td>
-        </tr>
-        <tr>
-            <td>Tasa Proyectada Nacional</td>
-            <td id="v0_t11_nacional">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. Absoluta</td>
-            <td id="v0_t11_var_abs">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Var. %</td>
-            <td id="v0_t11_var_pct">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t11_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 12: Resumen Multiescalar de Tasas -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>12. Resumen Tasas Multiescalar</h2>
+    <!-- Tarjeta 12: Resumen Tasas Multiescalar -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>12. Resumen Tasas Multiescalar</h2>
+        </div>
+        <div class="description-box">Resumen ejecutivo de las tasas de delito en los tres niveles geográficos. *Ejemplo:
+            "Un semáforo rápido para ver si el problema es puramente local o es una tendencia generalizada."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Tasa Semanal Comunal</td>
+                    <td id="v0_t12_sem_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Comunal</td>
+                    <td id="v0_t12_proy_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>Tasa Proyectada Regional</td>
+                    <td id="v0_t12_proy_regional">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Tasa Proyectada Nacional</td>
+                    <td id="v0_t12_proy_nacional">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    generalizada."*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Tasa Semanal Comunal</td>
-            <td id="v0_t12_sem_comunal">--</td>
-        </tr>
-        <tr>
-            <td>Tasa Proyectada Comunal</td>
-            <td id="v0_t12_proy_comunal">--</td>
-        </tr>
-        <tr>
-            <td>Tasa Proyectada Regional</td>
-            <td id="v0_t12_proy_regional">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Tasa Proyectada Nacional</td>
-            <td id="v0_t12_proy_nacional">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 13: Ranking Regional Semanal -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>13. Ranking Regional (Semanal)</h2>
+    <!-- Tarjeta 13: Ranking Regional Semanal -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>13. Ranking Regional (Semanal)</h2>
+        </div>
+        <div class="description-box">Posición de la comuna en el ranking regional de delitos (1 = Peor). *Ejemplo: "Si
+            estamos en el puesto 1, somos la comuna con mayor tasa delictual de toda la región esta semana."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Semana Actual</td>
+                    <td id="v0_t13_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Semana Anterior</td>
+                    <td id="v0_t13_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t13_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t13_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    "Si estamos en el puesto 1, somos la comuna con mayor tasa delictual de toda la región esta semana."*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Ranking Semana Actual</td>
-            <td id="v0_t13_actual">--</td>
-        </tr>
-        <tr>
-            <td>Ranking Semana Anterior</td>
-            <td id="v0_t13_anterior">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Variación Posiciones</td>
-            <td id="v0_t13_var">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t13_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 14: Ranking Regional Anual -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>14. Ranking Regional (Anual)</h2>
+    <!-- Tarjeta 14: Ranking Regional Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>14. Ranking Regional (Anual)</h2>
+        </div>
+        <div class="description-box">Proyección de en qué puesto del ranking regional terminaremos el año. *Ejemplo:
+            "Alerta si vamos camino a convertirnos en la comuna más conflictiva de la región al cierre del año."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Proyectado Actual</td>
+                    <td id="v0_t14_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Sem. Anterior</td>
+                    <td id="v0_t14_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t14_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t14_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    "Alerta si vamos camino a convertirnos en la comuna más conflictiva de la región al cierre del año."*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Ranking Proyectado Actual</td>
-            <td id="v0_t14_actual">--</td>
-        </tr>
-        <tr>
-            <td>Ranking Sem. Anterior</td>
-            <td id="v0_t14_anterior">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Variación Posiciones</td>
-            <td id="v0_t14_var">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t14_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 15: Ranking Nacional Semanal -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>15. Ranking Nacional (Semanal)</h2>
+    <!-- Tarjeta 15: Ranking Nacional Semanal -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>15. Ranking Nacional (Semanal)</h2>
+        </div>
+        <div class="description-box">Ranking de la comuna a nivel nacional (1 = Peor / Más delitos). *Ejemplo: "Estar en
+            el Top 10 nacional indica una prioridad crítica de seguridad a nivel país."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Semana Actual</td>
+                    <td id="v0_t15_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Semana Anterior</td>
+                    <td id="v0_t15_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t15_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t15_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    "Estar en el Top 10 nacional indica una prioridad crítica de seguridad a nivel país."*
-</div>
-<table class="performance-table">
-    <tbody>
-        <tr>
-            <td>Ranking Semana Actual</td>
-            <td id="v0_t15_actual">--</td>
-        </tr>
-        <tr>
-            <td>Ranking Semana Anterior</td>
-            <td id="v0_t15_anterior">--</td>
-        </tr>
-        <tr class="row-highlight-yellow">
-            <td>Variación Posiciones</td>
-            <td id="v0_t15_var">--</td>
-        </tr>
-        <tr class="conclusion-row">
-            <td>Conclusión</td>
-            <td id="v0_t15_concl" class="conclusion-estable">--</td>
-        </tr>
-    </tbody>
-</table>
-</div>
 
-<!-- Tarjeta 16: Ranking Nacional Anual -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>16. Ranking Nacional (Anual)</h2>
+    <!-- Tarjeta 16: Ranking Nacional Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>16. Ranking Nacional (Anual)</h2>
+        </div>
+        <div class="description-box">Proyección de nuestro ranking nacional al cierre del año. *Ejemplo: "¿Estamos
+            escalando posiciones en el ranking de peligrosidad nacional respecto al inicio de año?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Proyectado Actual</td>
+                    <td id="v0_t16_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Sem. Anterior</td>
+                    <td id="v0_t16_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t16_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t16_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Proyección de nuestro ranking nacional al cierre del año. *Ejemplo: "¿Estamos
-        escalando posiciones en el ranking de peligrosidad nacional respecto al inicio de año?"*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Ranking Proyectado Actual</td>
-                <td id="v0_t16_actual">--</td>
-            </tr>
-            <tr>
-                <td>Ranking Sem. Anterior</td>
-                <td id="v0_t16_anterior">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Variación Posiciones</td>
-                <td id="v0_t16_var">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t16_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 17: Ranking Clúster Semanal -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>17. Ranking Clúster (Semanal)</h2>
+    <!-- Tarjeta 17: Ranking Clúster Semanal -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>17. Ranking Clúster (Semanal)</h2>
+        </div>
+        <div class="description-box">Comparación con comunas "gemelas" (mismo tamaño y perfil socio-demográfico).
+            *Ejemplo: "¿Lo hacemos mejor o peor que otras comunas que son parecidas a la nuestra?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Semana Actual</td>
+                    <td id="v0_t17_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Semana Anterior</td>
+                    <td id="v0_t17_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t17_var">--</td>
+                </tr>
+                <tr>
+                    <td>Clúster Poblacional</td>
+                    <td id="v0_t17_cluster">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t17_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Comparación con comunas "gemelas" (mismo tamaño y perfil socio-demográfico).
-        *Ejemplo: "¿Lo hacemos mejor o peor que otras comunas que son parecidas a la nuestra?"*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Ranking Semana Actual</td>
-                <td id="v0_t17_actual">--</td>
-            </tr>
-            <tr>
-                <td>Ranking Semana Anterior</td>
-                <td id="v0_t17_anterior">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Variación Posiciones</td>
-                <td id="v0_t17_var">--</td>
-            </tr>
-            <tr>
-                <td>Clúster Poblacional</td>
-                <td id="v0_t17_cluster">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t17_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 18: Ranking Clúster Anual -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>18. Ranking Clúster (Anual)</h2>
+    <!-- Tarjeta 18: Ranking Clúster Anual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>18. Ranking Clúster (Anual)</h2>
+        </div>
+        <div class="description-box">Proyección de nuestro desempeño anual comparado con nuestro grupo de pares.
+            *Ejemplo: "Tendencia de largo plazo frente a comunas equivalentes en recursos y población."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Ranking Proyectado Actual</td>
+                    <td id="v0_t18_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Ranking Sem. Anterior</td>
+                    <td id="v0_t18_anterior">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Variación Posiciones</td>
+                    <td id="v0_t18_var">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t18_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Proyección de nuestro desempeño anual comparado con nuestro grupo de pares.
-        *Ejemplo: "Tendencia de largo plazo frente a comunas equivalentes en recursos y población."*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Ranking Proyectado Actual</td>
-                <td id="v0_t18_actual">--</td>
-            </tr>
-            <tr>
-                <td>Ranking Sem. Anterior</td>
-                <td id="v0_t18_anterior">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Variación Posiciones</td>
-                <td id="v0_t18_var">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t18_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 19: Diagnóstico Crítico Regional -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>19. Tipología Crítica Regional</h2>
+    <!-- Tarjeta 19: Diagnóstico Crítico Regional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>19. Tipología Crítica Regional</h2>
+        </div>
+        <div class="description-box">El delito específico donde la comuna tiene peor desempeño comparado con la
+            región. *Ejemplo: "Aunque el delito general baje, podemos ser los peores de la región específicamente en
+            hurtos."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Peor Ranking Sem. Actual</td>
+                    <td id="v0_t19_delito_act">--</td>
+                </tr>
+                <tr>
+                    <td>Posición Ranking</td>
+                    <td id="v0_t19_rank_act">--</td>
+                </tr>
+                <tr>
+                    <td>Peor Ranking Sem. Ant.</td>
+                    <td id="v0_t19_delito_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Posición Ranking Ant.</td>
+                    <td id="v0_t19_rank_ant">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">El delito específico donde la comuna tiene peor desempeño comparado con la
-        región. *Ejemplo: "Aunque el delito general baje, podemos ser los peores de la región específicamente en
-        hurtos."*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Peor Ranking Sem. Actual</td>
-                <td id="v0_t19_delito_act">--</td>
-            </tr>
-            <tr>
-                <td>Posición Ranking</td>
-                <td id="v0_t19_rank_act">--</td>
-            </tr>
-            <tr>
-                <td>Peor Ranking Sem. Ant.</td>
-                <td id="v0_t19_delito_ant">--</td>
-            </tr>
-            <tr>
-                <td>Posición Ranking Ant.</td>
-                <td id="v0_t19_rank_ant">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 20: Diagnóstico Crítico Nacional -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>20. Tipología Crítica Nacional</h2>
+    <!-- Tarjeta 20: Diagnóstico Crítico Nacional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>20. Tipología Crítica Nacional</h2>
+        </div>
+        <div class="description-box">El delito específico donde la comuna destaca negativamente a nivel país.
+            *Ejemplo: "Señalando nuestro punto más débil: ¿En qué delito somos críticos a nivel nacional?"*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Peor Ranking Sem. Actual</td>
+                    <td id="v0_t20_delito_act">--</td>
+                </tr>
+                <tr>
+                    <td>Posición Ranking</td>
+                    <td id="v0_t20_rank_act">--</td>
+                </tr>
+                <tr>
+                    <td>Peor Ranking Sem. Ant.</td>
+                    <td id="v0_t20_delito_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Posición Ranking Ant.</td>
+                    <td id="v0_t20_rank_ant">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">El delito específico donde la comuna destaca negativamente a nivel país.
-        *Ejemplo: "Señalando nuestro punto más débil: ¿En qué delito somos críticos a nivel nacional?"*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Peor Ranking Sem. Actual</td>
-                <td id="v0_t20_delito_act">--</td>
-            </tr>
-            <tr>
-                <td>Posición Ranking</td>
-                <td id="v0_t20_rank_act">--</td>
-            </tr>
-            <tr>
-                <td>Peor Ranking Sem. Ant.</td>
-                <td id="v0_t20_delito_ant">--</td>
-            </tr>
-            <tr>
-                <td>Posición Ranking Ant.</td>
-                <td id="v0_t20_rank_ant">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 21: Concentración Delictual (Pareto) -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>21. Concentración Delictual (Pareto)</h2>
+    <!-- Tarjeta 21: Concentración Delictual (Pareto) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>21. Concentración Delictual (Pareto)</h2>
+        </div>
+        <div class="description-box">Qué porcentaje del problema total representan los 3 delitos más frecuentes.
+            *Ejemplo: "Si el 80% son solo 3 delitos (Pareto), enfocarse solo en ellos tendrá el máximo impacto
+            posible."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr class="row-highlight-yellow">
+                    <td>Índice Concentración</td>
+                    <td id="v0_t21_total">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t21_d1_name">Delito 1</td>
+                    <td id="v0_t21_d1_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t21_d2_name">Delito 2</td>
+                    <td id="v0_t21_d2_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t21_d3_name">Delito 3</td>
+                    <td id="v0_t21_d3_val">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Qué porcentaje del problema total representan los 3 delitos más frecuentes.
-        *Ejemplo: "Si el 80% son solo 3 delitos (Pareto), enfocarse solo en ellos tendrá el máximo impacto
-        posible."*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr class="row-highlight-yellow">
-                <td>Índice Concentración</td>
-                <td id="v0_t21_total">--</td>
-            </tr>
-            <tr>
-                <td id="v0_t21_d1_name">Delito 1</td>
-                <td id="v0_t21_d1_val">--</td>
-            </tr>
-            <tr>
-                <td id="v0_t21_d2_name">Delito 2</td>
-                <td id="v0_t21_d2_val">--</td>
-            </tr>
-            <tr>
-                <td id="v0_t21_d3_name">Delito 3</td>
-                <td id="v0_t21_d3_val">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 22: Correlación (Largo Plazo) [Placeholder] -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>22. Correlación (Largo Plazo)</h2>
+    <!-- Tarjeta 22: Correlación (Largo Plazo) [Placeholder] -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>22. Correlación (Largo Plazo)</h2>
+        </div>
+        <div class="description-box">Patrones de asociación histórica (3 años).</div>
+        <div class="text-center py-4 text-muted fst-italic">
+            En desarrollo
+        </div>
     </div>
-    <div class="description-box">Patrones de asociación histórica (3 años).</div>
-    <div class="text-center py-4 text-muted fst-italic">
-        En desarrollo
-    </div>
-</div>
 
-<!-- Tarjeta 23: Correlación Corto Plazo -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>23. Correlación (Corto Plazo)</h2>
+    <!-- Tarjeta 23: Correlación Corto Plazo -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>23. Correlación (Corto Plazo)</h2>
+        </div>
+        <div class="description-box">Detecta delitos que estadísticamente suelen subir o bajar juntos. *Ejemplo:
+            "Cuando sube el robo de autos, la historia dice que también subirán los portonazos (Correlación
+            Fuerte)."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Delito A</td>
+                    <td id="v0_t23_d1" style="font-weight: 600;">--</td>
+                </tr>
+                <tr>
+                    <td>Delito B</td>
+                    <td id="v0_t23_d2" style="font-weight: 600;">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Fuerza Correlación</td>
+                    <td id="v0_t23_val">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Interpretación</td>
+                    <td id="v0_t23_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Detecta delitos que estadísticamente suelen subir o bajar juntos. *Ejemplo:
-        "Cuando sube el robo de autos, la historia dice que también subirán los portonazos (Correlación
-        Fuerte)."*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Delito A</td>
-                <td id="v0_t23_d1" style="font-weight: 600;">--</td>
-            </tr>
-            <tr>
-                <td>Delito B</td>
-                <td id="v0_t23_d2" style="font-weight: 600;">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Fuerza Correlación</td>
-                <td id="v0_t23_val">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Interpretación</td>
-                <td id="v0_t23_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Tarjeta 25: Aporte Regional -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>25. Aporte Comunal a Región</h2>
+    <!-- Tarjeta 25: Aporte Regional -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>25. Aporte Comunal a Región</h2>
+        </div>
+        <div class="description-box">Cuánto contribuye nuestra comuna a la delincuencia total de la región.
+            *Ejemplo: "Muestra nuestro 'peso' en el problema regional: De cada 100 delitos en la región, X ocurren
+            aquí."*</div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>Casos Semana Actual</td>
+                    <td id="v0_t25_casos_comuna">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Misma Sem. Región</td>
+                    <td id="v0_t25_casos_region">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Aporte % Actual</td>
+                    <td id="v0_t25_aporte_actual">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Sem. Anterior</td>
+                    <td id="v0_t25_casos_comuna_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Casos Sem. Ant. Región</td>
+                    <td id="v0_t25_casos_region_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Aporte % Anterior</td>
+                    <td id="v0_t25_aporte_ant">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t25_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Cuánto contribuye nuestra comuna a la delincuencia total de la región.
-        *Ejemplo: "Muestra nuestro 'peso' en el problema regional: De cada 100 delitos en la región, X ocurren
-        aquí."*</div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>Casos Semana Actual</td>
-                <td id="v0_t25_casos_comuna">--</td>
-            </tr>
-            <tr>
-                <td>Casos Misma Sem. Región</td>
-                <td id="v0_t25_casos_region">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Aporte % Actual</td>
-                <td id="v0_t25_aporte_actual">--</td>
-            </tr>
-            <tr>
-                <td>Casos Sem. Anterior</td>
-                <td id="v0_t25_casos_comuna_ant">--</td>
-            </tr>
-            <tr>
-                <td>Casos Sem. Ant. Región</td>
-                <td id="v0_t25_casos_region_ant">--</td>
-            </tr>
-            <tr>
-                <td>Aporte % Anterior</td>
-                <td id="v0_t25_aporte_ant">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t25_concl" class="conclusion-estable">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- Header Sección Métricas Avanzadas -->
-<div
-    style="grid-column: 1 / -1; margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">
-    <h5 class="text-uppercase text-muted fw-bold" style="font-size: 0.85rem; letter-spacing: 1px; margin: 0;">
-        <i class="fa-solid fa-chart-line me-2"></i>Métricas Avanzadas: IDI & Tendencias
-    </h5>
-</div>
-
-<!-- T26: Eficiencia Comparativa de Gravedad (IDI Interanual) -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>26. Eficiencia Comparativa Gravedad (IDI Total)</h2>
+    <!-- Header Sección Métricas Avanzadas -->
+    <div
+        style="grid-column: 1 / -1; margin-top: 1.5rem; margin-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">
+        <h5 class="text-uppercase text-muted fw-bold" style="font-size: 0.85rem; letter-spacing: 1px; margin: 0;">
+            <i class="fa-solid fa-chart-line me-2"></i>Métricas Avanzadas: IDI & Tendencias
+        </h5>
     </div>
-    <div class="description-box">
-        Medición de gravedad acumulada (daño social) actual vs año pasado. *Ejemplo: "El IDI mide si los delitos
-        son más violentos o costosos socialmente que antes, más allá de la cantidad."*
-    </div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>IDI Proy. Mes Actual</td>
-                <td id="v0_t26_idi_actual">--</td>
-            </tr>
-            <tr>
-                <td>IDI Mismo Mes Año Ant.</td>
-                <td id="v0_t26_idi_ant">--</td>
-            </tr>
-            <tr>
-                <td>Var. Absoluta</td>
-                <td id="v0_t26_var_abs">--</td>
-            </tr>
-            <tr class="row-highlight-yellow">
-                <td>Var. Porcentual</td>
-                <td id="v0_t26_var_pct">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t26_concl">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
+    <!-- T26: Eficiencia Comparativa de Gravedad (IDI Interanual) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>26. Eficiencia Comparativa Gravedad (IDI Total)</h2>
+        </div>
+        <div class="description-box">
+            Medición de gravedad acumulada (daño social) actual vs año pasado. *Ejemplo: "El IDI mide si los delitos
+            son más violentos o costosos socialmente que antes, más allá de la cantidad."*
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>IDI Proy. Mes Actual</td>
+                    <td id="v0_t26_idi_actual">--</td>
+                </tr>
+                <tr>
+                    <td>IDI Mismo Mes Año Ant.</td>
+                    <td id="v0_t26_idi_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t26_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. Porcentual</td>
+                    <td id="v0_t26_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t26_concl">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
 
-<!-- T27: Balance Peligrosidad Proyectada (IDI Anual) -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>27. Balance Peligrosidad Anual (IDI Proy)</h2>
-    </div>
-    <div class="description-box">
-        Nivel de riesgo anual proyectado comparado con una línea base estándar. *Ejemplo: "Estar sobre la base
-        significa que el año será más complejo en gravedad delictual que el estándar aceptable."*
-    </div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>IDI Proy. Anual</td>
-                <td id="v0_t27_idi_anual">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Nivel de Riesgo</td>
-                <td id="v0_t27_concl">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- T28: Posicionamiento IDI Escalas -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>28. Benchmarking IDI (Regional/Nac)</h2>
+    <!-- T27: Balance Peligrosidad Proyectada (IDI Anual) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>27. Balance Peligrosidad Anual (IDI Proy)</h2>
+        </div>
+        <div class="description-box">
+            Nivel de riesgo anual proyectado comparado con una línea base estándar. *Ejemplo: "Estar sobre la base
+            significa que el año será más complejo en gravedad delictual que el estándar aceptable."*
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>IDI Proy. Anual</td>
+                    <td id="v0_t27_idi_anual">--</td>
+                </tr>
+                <tr>
+                    <td>IDI Año Anterior</td>
+                    <td id="v0_t27_idi_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Var. Abs vs Año Anterior</td>
+                    <td id="v0_t27_var_abs">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Var. % vs Año Anterior</td>
+                    <td id="v0_t27_var_pct">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Nivel de Riesgo</td>
+                    <td id="v0_t27_concl">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>IDI Comunal (Proy)</td>
-                <td id="v0_t28_idi_comunal">--</td>
-            </tr>
-            <tr>
-                <td>IDI Regional</td>
-                <td id="v0_t28_idi_regional">--</td>
-            </tr>
-            <tr>
-                <td>IDI Nacional</td>
-                <td id="v0_t28_idi_nacional">--</td>
-            </tr>
-            <tr>
-                <td>IDI Clúster</td>
-                <td id="v0_t28_idi_cluster">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Vs Región</td>
-                <td id="v0_t28_concl">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- T29: Racha Negativa (Alza) -->
-<div class="card indicator-card">
-    <div class="card-header header-yellow">
-        <h2>29. Monitoreo Rachas Negativas</h2>
+    <!-- T28: Posicionamiento IDI Escalas -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>28. Benchmarking IDI (Regional/Nac)</h2>
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>IDI Comunal (Proy)</td>
+                    <td id="v0_t28_idi_comunal">--</td>
+                </tr>
+                <tr>
+                    <td>IDI Regional</td>
+                    <td id="v0_t28_idi_regional">--</td>
+                </tr>
+                <tr>
+                    <td>IDI Nacional</td>
+                    <td id="v0_t28_idi_nacional">--</td>
+                </tr>
+                <tr>
+                    <td>IDI Clúster</td>
+                    <td id="v0_t28_idi_cluster">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Vs Región</td>
+                    <td id="v0_t28_concl">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">
-        Top delitos que llevan varias semanas seguidas subiendo consecutivamente. *Ejemplo: "Alerta temprana:
-        este delito no ha parado de crecer semana tras semana desde hace un mes."*
-    </div>
-    <table class="performance-table compact-table">
-        <thead>
-            <tr class="text-muted small">
-                <th>Delito</th>
-                <th class="text-end">Semanas</th>
-            </tr>
-        </thead>
-        <tbody id="v0_t29_list">
-            <tr>
-                <td colspan="2" class="text-center text-muted">Sin Rachas</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- T30: Racha Positiva (Baja) -->
-<div class="card indicator-card">
-    <div class="card-header header-green">
-        <h2>30. Monitoreo Rachas Positivas</h2>
+    <!-- T29: Racha Negativa (Alza) -->
+    <div class="card indicator-card">
+        <div class="card-header header-yellow">
+            <h2>29. Monitoreo Rachas Negativas</h2>
+        </div>
+        <div class="description-box">
+            Top delitos que llevan varias semanas seguidas subiendo consecutivamente. *Ejemplo: "Alerta temprana:
+            este delito no ha parado de crecer semana tras semana desde hace un mes."*
+        </div>
+        <table class="performance-table compact-table">
+            <thead>
+                <tr class="text-muted small">
+                    <th>Delito</th>
+                    <th class="text-end">Semanas</th>
+                </tr>
+            </thead>
+            <tbody id="v0_t29_list">
+                <tr>
+                    <td colspan="2" class="text-center text-muted">Sin Rachas</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">
-        Top delitos que llevan varias semanas seguidas bajando consecutivamente. *Ejemplo: "Éxito sostenido: Las
-        medidas en estos delitos están funcionando de manera consistente."*
-    </div>
-    <table class="performance-table compact-table">
-        <thead>
-            <tr class="text-muted small">
-                <th>Delito</th>
-                <th class="text-end">Semanas</th>
-            </tr>
-        </thead>
-        <tbody id="v0_t30_list">
-            <tr>
-                <td colspan="2" class="text-center text-muted">Sin Rachas</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
 
-<!-- T31: Crecimiento Corto Plazo -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>31. Tasa Crecimiento (4 Semanas)</h2>
+    <!-- T30: Racha Positiva (Baja) -->
+    <div class="card indicator-card">
+        <div class="card-header header-green">
+            <h2>30. Monitoreo Rachas Positivas</h2>
+        </div>
+        <div class="description-box">
+            Top delitos que llevan varias semanas seguidas bajando consecutivamente. *Ejemplo: "Éxito sostenido: Las
+            medidas en estos delitos están funcionando de manera consistente."*
+        </div>
+        <table class="performance-table compact-table">
+            <thead>
+                <tr class="text-muted small">
+                    <th>Delito</th>
+                    <th class="text-end">Semanas</th>
+                </tr>
+            </thead>
+            <tbody id="v0_t30_list">
+                <tr>
+                    <td colspan="2" class="text-center text-muted">Sin Rachas</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <div class="description-box">Velocidad a la que el delito está acelerando o frenando este mes. *Ejemplo:
-        "+10% significa que el problema está cobrando velocidad y creciendo cada vez más rápido."*</div>
-    <div class="text-center py-4">
-        <div id="v0_t31_val" class="display-6 fw-bold">--</div>
-        <div id="v0_t31_concl" class="small fw-bold mt-2">--</div>
-    </div>
-</div>
 
-<!-- T32: Crecimiento Interanual -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>32. Tasa Crecimiento Interanual</h2>
+    <!-- T31: Crecimiento Corto Plazo -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>31. Tasa Crecimiento (4 Semanas)</h2>
+        </div>
+        <div class="description-box">Velocidad a la que el delito está acelerando o frenando este mes. *Ejemplo:
+            "+10% significa que el problema está cobrando velocidad y creciendo cada vez más rápido."*</div>
+        <div class="text-center py-4">
+            <div id="v0_t31_val" class="display-6 fw-bold">--</div>
+            <div id="v0_t31_concl" class="small fw-bold mt-2">--</div>
+        </div>
     </div>
-    <div class="description-box">Tendencia de fondo del año comparada con la trayectoria estructural del año
-        anterior. *Ejemplo: "Muestra si la 'marea' delictual general está subiendo o bajando a largo plazo."*
-    </div>
-    <div class="text-center py-4">
-        <div id="v0_t32_val" class="display-6 fw-bold">--</div>
-        <div id="v0_t32_concl" class="small fw-bold mt-2">--</div>
-    </div>
-</div>
 
-<!-- T33: Z-Score (Desviación Normalizada) -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>33. Z-Score (Desviación Normalizada)</h2>
+    <!-- T32: Crecimiento Interanual -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>32. Tasa Crecimiento Interanual</h2>
+        </div>
+        <div class="description-box">Tendencia de fondo del año comparada con la trayectoria estructural del año
+            anterior. *Ejemplo: "Muestra si la 'marea' delictual general está subiendo o bajando a largo plazo."*
+        </div>
+        <div class="text-center py-4">
+            <div id="v0_t32_val" class="display-6 fw-bold">--</div>
+            <div id="v0_t32_concl" class="small fw-bold mt-2">--</div>
+        </div>
     </div>
-    <div class="description-box">Nivel de rareza estadística del dato actual. *Ejemplo: "Un Z-Score alto (>2)
-        indica un evento extraordinario, fuera de cualquier patrón normal histórico."*</div>
-    <div class="text-center py-4">
-        <div id="v0_t33_val" class="display-6 fw-bold">--</div>
-        <div id="v0_t33_concl" class="small fw-bold mt-2">--</div>
-    </div>
-</div>
 
-<!-- T34: Variación Mensual IDI -->
-<div class="card indicator-card">
-    <div class="card-header">
-        <h2>34. Variación Mensual IDI</h2>
+    <!-- T33: Z-Score (Desviación Normalizada) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>33. Z-Score (Desviación Normalizada)</h2>
+        </div>
+        <div class="description-box">Nivel de rareza estadística del dato actual. *Ejemplo: "Un Z-Score alto (>2)
+            indica un evento extraordinario, fuera de cualquier patrón normal histórico."*</div>
+        <div class="text-center py-4">
+            <div id="v0_t33_val" class="display-6 fw-bold">--</div>
+            <div id="v0_t33_concl" class="small fw-bold mt-2">--</div>
+        </div>
     </div>
-    <table class="performance-table">
-        <tbody>
-            <tr>
-                <td>IDI Mes Actual (Proy)</td>
-                <td id="v0_t34_idi_actual">--</td>
-            </tr>
-            <tr>
-                <td>IDI Mes Anterior</td>
-                <td id="v0_t34_idi_ant">--</td>
-            </tr>
-            <tr>
-                <td>Var. Absoluta</td>
-                <td id="v0_t34_var_abs">--</td>
-            </tr>
-            <tr class="conclusion-row">
-                <td>Conclusión</td>
-                <td id="v0_t34_concl">--</td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+
+    <!-- T34: Variación Mensual IDI -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>34. Variación Mensual IDI</h2>
+        </div>
+        <table class="performance-table">
+            <tbody>
+                <tr>
+                    <td>IDI Mes Actual (Proy)</td>
+                    <td id="v0_t34_idi_actual">--</td>
+                </tr>
+                <tr>
+                    <td>IDI Mes Anterior</td>
+                    <td id="v0_t34_idi_ant">--</td>
+                </tr>
+                <tr>
+                    <td>Var. Absoluta</td>
+                    <td id="v0_t34_var_abs">--</td>
+                </tr>
+                <tr class="conclusion-row">
+                    <td>Conclusión</td>
+                    <td id="v0_t34_concl">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div id="chartSourceFooter0" style="margin-top: 1rem;"></div>
@@ -1239,11 +1251,14 @@
         // =====================
         // TARJETA 8: Récords y Límites
         // =====================
-        setEl('v0_t8_prom_diario', fD(d[COLS.PROM_DIARIO_SEM] || 0));
-        setEl('v0_t8_prom_diario_hist', fD(d[COLS.PROM_DIARIO_HIST] || 0));
-        setEl('v0_t8_prom_sem', fD(d[COLS.PROMEDIO_HIST] || 0));
+        const t8_prom_hist = d[COLS.PROMEDIO_HIST] || 0;
+        const t8_casos_actual = d[COLS.CASOS_ACTUAL] || 0;
+
+        setEl('v0_t8_prom_diario', fD(t8_casos_actual / 7));
+        setEl('v0_t8_prom_diario_hist', fD(t8_prom_hist / 7));
+        setEl('v0_t8_prom_sem', fD(t8_prom_hist));
         setEl('v0_t8_max', fN(d[COLS.MAX_HIST] || 0));
-        setEl('v0_t8_semana_max', d[COLS.SEMANA_DETALLE_MAX_HIST] || ('Sem. ' + fR(d[COLS.SEMANA_MAX_HIST])));
+        setEl('v0_t8_semana_max', d[COLS.SEMANA_DETALLE_MAX_HIST] || (d[COLS.SEMANA_MAX_HIST] ? 'Sem. ' + fR(d[COLS.SEMANA_MAX_HIST]) : '--'));
 
         // =====================
         // TARJETA 9: Tasa Proyectada x100k
@@ -1463,10 +1478,18 @@
         // TARJETA 27: Balance Peligrosidad Anual
         // =====================
         const t27_val = d[COLS.IDI_PROY_ANUAL] || 0;
+        const t27_ant = d[COLS.IDI_ANUAL_ANT] || 0;
+        const t27_diff_abs = t27_val - t27_ant;
+        const t27_diff_pct = t27_ant > 0 ? (t27_diff_abs / t27_ant) : 0;
+
         setEl('v0_t27_idi_anual', fD(t27_val));
+        setEl('v0_t27_idi_ant', fD(t27_ant));
+        setEl('v0_t27_var_abs', fD(t27_diff_abs));
+        setEl('v0_t27_var_pct', fP(t27_diff_pct));
+
         const t27_base = 110.526;
-        const t27_diff = t27_val - t27_base;
-        setConc('v0_t27_concl', t27_diff > 0 ? { text: 'Sobre Base (Alto Riesgo)', cls: 'conclusion-aumento' } : { text: 'Bajo Base (Controlado)', cls: 'conclusion-disminucion' });
+        const t27_diff_base = t27_val - t27_base;
+        setConc('v0_t27_concl', t27_diff_base > 0 ? { text: 'Sobre Base (Alto Riesgo)', cls: 'conclusion-aumento' } : { text: 'Bajo Base (Controlado)', cls: 'conclusion-disminucion' });
 
         // =====================
         // TARJETA 28: Benchmarking IDI
@@ -1585,7 +1608,7 @@
         // =====================
         // TARJETA 34: Variación Mensual IDI (Vs Mes Anterior)
         // =====================
-        const t34_ant = d[COLS.IDI_MES_ANT] || 0;
+        const t34_ant = d[COLS.IDI_MES_ANTERIOR] || 0;
         const t34_com = d[COLS.IDI_PROY_MES] || 0; // Use clean var
         const t34_delta = t34_com - t34_ant;
 

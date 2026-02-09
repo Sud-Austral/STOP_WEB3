@@ -364,10 +364,25 @@ if 'Codreg' in df.columns:
 # =========================================
 print("Preparando DataFrame Final...")
 df3 = df.copy()
-df3['semana_numero_safe'] = df3['semana_numero'].replace(0, 1)
-df3['proyeccion_anual'] = (df3['acumulado_anual'] / df3['semana_numero_safe']) * 52
-df3['tasa_semanal'] = (df3['frecuencia'] / df3['poblacion']) * 100000
-df3['tasa_proyectada_anual'] = (df3['proyeccion_anual'] / df3['poblacion']) * 100000
+
+# 0. Setup Fechas (Necesario para proyecciones)
+df3['fecha_fin'] = df3['fecha']  #+ pd.Timedelta(days=6)
+
+# 1. Proyección Anual (Extrapolación precisa por días)
+# Solicitud explícita usuario: "la proyeccion debe hacerse por dias transcurridos"
+# Usamos fecha_fin (Domingo) porque el acumulado incluye hasta el final de la semana actual.
+# Factor = 365 / DiaAño(Domingo).
+df3['dias_año'] = np.where(df3['fecha_fin'].dt.is_leap_year, 366, 365)
+df3['dia_año_actual'] = df3['fecha_fin'].dt.dayofyear
+df3['factor_expansion_anual'] = df3['dias_año'] / df3['dia_año_actual']
+df3['proyeccion_anual'] = df3['acumulado_anual'] * df3['factor_expansion_anual']
+
+
+
+# Tasas
+# Usar factor_poblacion para tasas
+df3['tasa_semanal'] = df3['frecuencia'] / df3['factor_poblacion']
+df3['tasa_proyectada_anual'] = df3['proyeccion_anual'] / df3['factor_poblacion']
 
 # Rankings (Regional/Nacional/Cluster Proy)
 if 'Codreg' in df3.columns:
@@ -375,9 +390,30 @@ if 'Codreg' in df3.columns:
     
 df3['ranking_nacional_proy_anual'] = df3.groupby(['delito', 'id_semana'])['proyeccion_anual'].rank(method='dense', ascending=False)
 
+
 if 'clase_poblacion' in df3.columns:
     df3['ranking_cluster_proy_anual'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['proyeccion_anual'].rank(method='dense', ascending=False)
     df3['ranking_cluster_semanal'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['frecuencia'].rank(method='dense', ascending=False)
+
+# =====================================================
+# 16b. CALCULOS DE RANKINGS ANTERIORES (NO EXISTENTES)
+# =====================================================
+print("Calculando Rankings Anteriores...")
+rank_cols_to_shift = [
+    'ranking_nacional_semanal',
+    'ranking_regional_proy_anual', 
+    'ranking_nacional_proy_anual',
+    'ranking_cluster_proy_anual',
+    'ranking_cluster_semanal'
+]
+
+df3 = df3.sort_values(['codcom', 'delito', 'id_semana'])
+for col in rank_cols_to_shift:
+    if col in df3.columns:
+        # Usamos sufijo '_anterior' para consistencia interna
+        new_col = f"{col}_anterior"
+        # Shift 1 periodo (semana anterior) agrupado por comuna y delito
+        df3[new_col] = df3.groupby(['codcom', 'delito'])[col].shift(1).fillna(0)
 
 # =====================================================
 # 16. CALCULOS DE NUEVAS TARJETAS (IDI, RACHAS, CRECIMIENTO)
@@ -391,45 +427,68 @@ weights_idi = {
     'LEY DE DROGAS': 30,
     'DELITOS EN CONTEXTO DE VIOLENCIA INTRAFAMILIAR': 40
 }
-BASE_IDI_ANUAL = 110.526
-BASE_IDI_MENSUAL = 9.279
+BASE_IDI_ANUAL = 110526
+BASE_IDI_MENSUAL = 9279
 
 df3['idi_peso'] = df3['delito'].map(weights_idi).fillna(0)
 
 # Calcular Proyección Mensual si faltante
-if 'proyeccion_mes_actual' not in df3.columns:
-    df3['proyeccion_mes_actual'] = df3['media_movil_4s'] * 4.33
+# Calcular Proyección Mensual (Extrapolación lineal simple del acumulado)
+# 1. Fecha Fin de Semana (Lunes + 6 = Domingo)
+df3['fecha_fin'] = df3['fecha'] + pd.Timedelta(days=6)
+# 2. Días (Lógica vectorizada para manejar cruce de mes)
+cond_mismo_mes = df3['fecha_fin'].dt.month == df3['fecha'].dt.month
 
-# Calcular Puntos IDI
-df3['idi_pts_proy_mes'] = df3['proyeccion_mes_actual'] * df3['idi_peso']
-df3['idi_pts_mes_ant_year'] = df3['casos_mismo_mes_año_anterior'] * df3['idi_peso']
-df3['idi_pts_anual_proy'] = df3['proyeccion_anual'] * df3['idi_peso']
-df3['idi_pts_real_sem'] = df3['frecuencia'] * df3['idi_peso']
+df3['dias_mes'] = df3['fecha'].dt.days_in_month
+# Si estamos en el mismo mes, usamos el día de fin de semana. 
+# Si cruzamos de mes, asumimos que el mes base se completó (usamos total días del mes).
+df3['dia_actual'] = np.where(cond_mismo_mes, 
+                             df3['fecha_fin'].dt.day, 
+                             df3['dias_mes'])
+   
+# 3. Acumulado casos en el mes hasta la fecha
+df3 = df3.sort_values(['codcom', 'delito', 'año', 'mes', 'id_semana'])
+df3['casos_acum_mes'] = df3.groupby(['codcom', 'delito', 'año', 'mes'])['frecuencia'].cumsum()
+   
+# 4. Proyección Lineal: Acumulado * (TotalDias / DiasTranscurridos)
+# Factor de expansión: Si vamos día 15 de 30 (0.5), factor es 2.
+df3['factor_expansion_mes'] = df3['dias_mes'] / df3['dia_actual']
+df3['proyeccion_mes_actual'] = df3['casos_acum_mes'] * df3['factor_expansion_mes']
 
-print("   > Calculando Agregaciones IDI...")
-# Agregación Básica IDI por Comuna/Semana
-# Usamos tqdm wrapper solo si es muy lento, pero groupby apply es tricky con tqdm
+# Calcular Puntos IDI Parciales (Normalizados por Factor Población a nivel fila)
+# Fórmula Usuario: Peso * Proyeccion / FactorPoblacion
+df3['idi_parcial_mes'] = (df3['idi_peso'] * df3['proyeccion_mes_actual'] / df3['factor_poblacion']).fillna(0)
+# Revisado: Cálculo correcto. Usa casos totales reales del mes homólogo año anterior (Cierre Mes vs Proyección Cierre Mes).
+df3['idi_parcial_mes_ant_year'] = (df3['idi_peso'] * df3['casos_mismo_mes_año_anterior'] / df3['factor_poblacion']).fillna(0)
+df3['idi_parcial_anual_proy'] = (df3['idi_peso'] * df3['proyeccion_anual'] / df3['factor_poblacion']).fillna(0)
+df3['idi_parcial_real_sem'] = (df3['idi_peso'] * df3['frecuencia'] / df3['factor_poblacion']).fillna(0)
+
+
+
+print("   > Calculando Agregaciones IDI (Nueva Fórmula)...")
+# Agregación: Suma de parciales
 idi_grp = df3.groupby(['codcom', 'id_semana']).apply(lambda x: pd.Series({
-    'idi_pts_mes': x['idi_pts_proy_mes'].sum(),
-    'idi_pts_mes_ant_year': x['idi_pts_mes_ant_year'].sum(),
-    'idi_pts_anual_proy': x['idi_pts_anual_proy'].sum(),
-    'pob': x['poblacion'].iloc[0] if len(x) > 0 else 100000
+    'sum_idi_mes': x['idi_parcial_mes'].sum(),
+    'sum_idi_mes_ant_year': x['idi_parcial_mes_ant_year'].sum(),
+    'sum_idi_anual_proy': x['idi_parcial_anual_proy'].sum(),
+    'factor_poblacion': x['factor_poblacion'].iloc[0] if len(x) > 0 else 1.0 
 })).reset_index()
 
-# IDI Resultados
-idi_grp['idi_proy_mes'] = (idi_grp['idi_pts_mes'] / idi_grp['pob'] * 100000) / BASE_IDI_MENSUAL * 100
-idi_grp['idi_mes_ant_year'] = (idi_grp['idi_pts_mes_ant_year'] / idi_grp['pob'] * 100000) / BASE_IDI_MENSUAL * 100
-idi_grp['idi_proy_anual'] = (idi_grp['idi_pts_anual_proy'] / idi_grp['pob'] * 100000) / BASE_IDI_ANUAL * 100
+# IDI Resultados Finales (Suma / Base * 100)
+idi_grp['idi_proy_mes'] = (idi_grp['sum_idi_mes'] / BASE_IDI_MENSUAL) * 100
+idi_grp['idi_mes_ant_year'] = (idi_grp['sum_idi_mes_ant_year'] / BASE_IDI_MENSUAL) * 100
+idi_grp['idi_proy_anual'] = (idi_grp['sum_idi_anual_proy'] / BASE_IDI_ANUAL) * 100
 
 # T34: IDI Mes Anterior (Lag 4 semanas)
 idi_grp = idi_grp.sort_values(['codcom', 'id_semana'])
 idi_grp['idi_mes_anterior'] = idi_grp.groupby('codcom')['idi_proy_mes'].shift(4)
 
 # T27: IDI Año Anterior (Cierre Real Total)
-col_pob = df3[['codcom', 'año', 'poblacion']].drop_duplicates(subset=['codcom', 'año'])
-idi_anual_real = df3.groupby(['codcom', 'año'])['idi_pts_real_sem'].sum().reset_index(name='idi_pts_total_real')
-idi_anual_real = idi_anual_real.merge(col_pob, on=['codcom', 'año'], how='left')
-idi_anual_real['idi_anual_cierre'] = (idi_anual_real['idi_pts_total_real'] / idi_anual_real['poblacion'] * 100000) / BASE_IDI_ANUAL * 100
+# Calcular parciales reales históricos
+col_idi_real = df3.groupby(['codcom', 'año'])['idi_parcial_real_sem'].sum().reset_index(name='sum_idi_total_real')
+# No necesitamos hacer merge de poblacion de nuevo porque ya dividimos por factor en la fila
+idi_anual_real = col_idi_real.copy()
+idi_anual_real['idi_anual_cierre'] = (idi_anual_real['sum_idi_total_real'] / BASE_IDI_ANUAL) * 100
 
 # Shift Year
 idi_anual_real['año_join'] = idi_anual_real['año'] + 1
@@ -444,63 +503,99 @@ idi_grp = idi_grp.merge(idi_prev, on=['codcom', 'año'], how='left')
 meta_cols = df3[['codcom', 'Codreg', 'clase_poblacion']].drop_duplicates()
 idi_grp = idi_grp.merge(meta_cols, on='codcom', how='left')
 
-idi_reg = idi_grp.groupby(['Codreg', 'id_semana']).apply(lambda x: pd.Series({
-    'idi_proy_regional': (x['idi_pts_mes'].sum() / x['pob'].sum() * 100000) / BASE_IDI_MENSUAL * 100
-})).reset_index()
+# --- 11. Agregación Regional, Nacional y Cluster (Corregido) ---
+def calc_agg_metrics(group, level_suffix):
+    # Filtrar Totales para evitar doble contabilidad en numerador
+    # Asumimos que IDI se compone de delitos individuales
+    base_data = group[group['delito'] != 'Total']
+    
+    # 1. IDI Regional/Nacional
+    # Numerador: Suma de Puntos IDI (Peso * Proyección Mes) de delitos individuales
+    sum_puntos_mes = (base_data['idi_peso'] * base_data['proyeccion_mes_actual']).sum()
+    
+    # Denominador: Población Total del Grupo (Suma de Factores Únicos de Comunas)
+    # Usamos group completo para sacar factores únicos de comunas presentes
+    pob_total = group[['codcom', 'factor_poblacion']].drop_duplicates()['factor_poblacion'].sum()
+    
+    idi_val = (sum_puntos_mes / pob_total / BASE_IDI_MENSUAL) * 100 if pob_total > 0 else 0
+    
+    # 2. Tasa Proyectada
+    # Numerador: Suma de Proyecciones Anuales (delitos individuales)
+    sum_proy_anual = base_data['proyeccion_anual'].sum()
+    tasa_val = sum_proy_anual / pob_total if pob_total > 0 else 0
+    
+    return pd.Series({
+        f'idi_proy_{level_suffix}': idi_val,
+        f'tasa_proyectada_{level_suffix}': tasa_val
+    })
 
-# Better approach: Calculate Rates Aggregates separately from df3
-print("   > Calculando Tasas Agregadas (Regional/Nacional)...")
-# Regional
-tasas_reg = df3.groupby(['Codreg', 'id_semana']).apply(lambda x: pd.Series({
-    'tasa_proyectada_regional': (x['proyeccion_anual'].sum() / x['poblacion'].sum() * 100000)
-})).reset_index()
+print("   > Calculando Métricas Agregadas (Reg/Nac/Clus)...")
+aggs_reg = df3.groupby(['Codreg', 'id_semana']).apply(calc_agg_metrics, level_suffix='regional').reset_index()
+aggs_nac = df3.groupby(['id_semana']).apply(calc_agg_metrics, level_suffix='nacional').reset_index()
 
-# Nacional
-tasas_nac = df3.groupby(['id_semana']).apply(lambda x: pd.Series({
-    'tasa_proyectada_nacional': (x['proyeccion_anual'].sum() / x['poblacion'].sum() * 100000)
-})).reset_index()
-
-# Cluster
 if 'clase_poblacion' in df3.columns:
-    tasas_clus = df3.groupby(['clase_poblacion', 'id_semana']).apply(lambda x: pd.Series({
-        'tasa_proyectada_cluster': (x['proyeccion_anual'].sum() / x['poblacion'].sum() * 100000)
-    })).reset_index()
-
-# IDI Aggregates (Keep existing logic but simplified to avoid conflict if I replaced block)
-# ... checks existing code ...
-# The user asked to "fix discrepancies". I will inject the Rate calculations and Merge them.
-
-# Re-implementing IDI + Rates Aggregation Block
-idi_reg = idi_grp.groupby(['Codreg', 'id_semana']).apply(lambda x: pd.Series({
-    'idi_proy_regional': (x['idi_pts_mes'].sum() / x['pob'].sum() * 100000) / BASE_IDI_MENSUAL * 100
-})).reset_index()
-
-idi_nac = idi_grp.groupby(['id_semana']).apply(lambda x: pd.Series({
-    'idi_proy_nacional': (x['idi_pts_mes'].sum() / x['pob'].sum() * 100000) / BASE_IDI_MENSUAL * 100
-})).reset_index()
-
-idi_clus = idi_grp.groupby(['clase_poblacion', 'id_semana']).apply(lambda x: pd.Series({
-    'idi_proy_cluster': (x['idi_pts_mes'].sum() / x['pob'].sum() * 100000) / BASE_IDI_MENSUAL * 100
-})).reset_index()
-
-# Merge IDI
-idi_grp = idi_grp.merge(idi_reg, on=['Codreg', 'id_semana'], how='left')
-idi_grp = idi_grp.merge(idi_nac, on=['id_semana'], how='left')
-idi_grp = idi_grp.merge(idi_clus, on=['clase_poblacion', 'id_semana'], how='left')
-
-# Merge Rates
-idi_grp = idi_grp.merge(tasas_reg, on=['Codreg', 'id_semana'], how='left')
-idi_grp = idi_grp.merge(tasas_nac, on=['id_semana'], how='left')
-# Cluster rate merge if exists
-if 'clase_poblacion' in df3.columns:
-     idi_grp = idi_grp.merge(tasas_clus, on=['clase_poblacion', 'id_semana'], how='left')
+    aggs_clus = df3.groupby(['clase_poblacion', 'id_semana']).apply(calc_agg_metrics, level_suffix='cluster').reset_index()
 else:
-     idi_grp['tasa_proyectada_cluster'] = 0
+    aggs_clus = pd.DataFrame()
 
-# Now simulating T23 columns in df3 to avoid discrepancies
-df3['t23_d1'] = 'N/D'
-df3['t23_d2'] = 'N/D'
-df3['t23_val'] = 0.0
+# Merge back to idi_grp
+idi_grp = idi_grp.merge(aggs_reg, on=['Codreg', 'id_semana'], how='left')
+idi_grp = idi_grp.merge(aggs_nac, on=['id_semana'], how='left')
+
+if not aggs_clus.empty:
+    idi_grp = idi_grp.merge(aggs_clus, on=['clase_poblacion', 'id_semana'], how='left')
+else:
+    idi_grp['idi_proy_cluster'] = 0
+    idi_grp['tasa_proyectada_cluster'] = 0
+
+
+
+# T23 Correlations Implementation
+print("   > Calculando Correlaciones (Top 1 Par)...")
+def calculate_top_correlation(group):
+    # Pivot: Index=Week, Columns=Delito, Values=Frecuencia
+    # We only care about sufficient data
+    if len(group) < 10: return pd.Series({'t23_d1': 'Insuf. Datos', 't23_d2': 'Insuf. Datos', 't23_val': 0.0})
+    
+    pivot = group.pivot(index='id_semana', columns='delito', values='frecuencia').fillna(0)
+    # Filter columns with 0 variance (all zeros)
+    pivot = pivot.loc[:, (pivot != pivot.iloc[0]).any()]
+    
+    if pivot.shape[1] < 2:
+        return pd.Series({'t23_d1': 'Sin Var', 't23_d2': 'Sin Var', 't23_val': 0.0})
+        
+    corr_matrix = pivot.corr()
+    # Mask diagonal and lower triangle to avoid duplicates and self-correlation
+    mask = np.triu(np.ones_like(corr_matrix, dtype=bool), k=1)
+    corr_upper = corr_matrix.where(mask)
+    
+    # Find max correlation
+    try:
+        max_corr_val = corr_upper.max().max()
+        if pd.isna(max_corr_val): return pd.Series({'t23_d1': '-', 't23_d2': '-', 't23_val': 0.0})
+        
+        # Get coordinates of max
+        # stack() converts to series, idxmax() gets (Row, Col) index
+        max_idx = corr_upper.stack().idxmax()
+        d1, d2 = max_idx
+        
+        return pd.Series({'t23_d1': d1, 't23_d2': d2, 't23_val': max_corr_val})
+    except:
+        return pd.Series({'t23_d1': 'Error', 't23_d2': 'Error', 't23_val': 0.0})
+
+# Apply per commune
+# Note: This operation might be slow on large datasets. Optimization: do it only for target crime or subset?
+# Doing it for all crimes in the commune group.
+df_corr_base = df3[df3['delito'] != 'Total'][['codcom', 'id_semana', 'delito', 'frecuencia']].copy()
+# Only take last 52 weeks for relevance? Or full history?
+# Let's take full history available in df3 for better correlation
+top_corrs = df_corr_base.groupby('codcom').apply(calculate_top_correlation).reset_index()
+
+# Merge back to df3
+# T23 is singular per commune (static property? or dynamic window?)
+# Here we calculated it "globally" for the commune based on all history.
+# We will broadcast this static finding to all weeks for that commune.
+df3 = df3.merge(top_corrs, on='codcom', how='left')
 
 # Update the merge line to include standard Rates
 # df3 = df3.merge(idi_grp[['codcom', 'id_semana', ... 'tasa_proyectada_regional', ...]], ...)
@@ -551,13 +646,13 @@ df3 = df3.merge(t30, on=['codcom', 'id_semana'], how='left')
 
 # --- C. Pareto (Concentración Delictual - T21) ---
 print("   > Calculando Pareto (Top 3 Delitos)...")
-# Filter only crimes with cases > 0 to avoid noise, sort by frequency desc
-pareto_base = df3[df3['frecuencia'] > 0].sort_values(['codcom', 'id_semana', 'frecuencia'], ascending=[True, True, False])
+# Filter only crimes with cases > 0 and exclude 'Total' to avoid noise, sort by frequency desc
+pareto_base = df3[(df3['frecuencia'] > 0) & (df3['delito'] != 'Total')].sort_values(['codcom', 'id_semana', 'frecuencia'], ascending=[True, True, False])
 # Get Top 3 per group
 pareto_top3 = pareto_base.groupby(['codcom', 'id_semana']).head(3)
 pareto_top3['rank'] = pareto_top3.groupby(['codcom', 'id_semana']).cumcount() + 1
-# Calculate Total Cases per week for pct calculation
-week_totals = df3.groupby(['codcom', 'id_semana'])['frecuencia'].sum().reset_index(name='total_semanal')
+# Calculate Total Cases per week for pct calculation (exclude 'Total'row from sum to prevent double counting)
+week_totals = df3[df3['delito'] != 'Total'].groupby(['codcom', 'id_semana'])['frecuencia'].sum().reset_index(name='total_semanal')
 pareto_top3 = pareto_top3.merge(week_totals, on=['codcom', 'id_semana'], how='left')
 pareto_top3['pct_contribution'] = (pareto_top3['frecuencia'] / pareto_top3['total_semanal'] * 100).fillna(0)
 
@@ -602,46 +697,70 @@ santiago = df3[(df3['codcom'] == target_comuna) & (df3['delito'] == 'Total')].so
 if not santiago.empty:
     ultima = santiago.iloc[-1]
     
+    def print_comp(label, actual, anterior):
+        try:
+            act = float(actual) if pd.notnull(actual) else 0
+            ant = float(anterior) if pd.notnull(anterior) else 0
+            delta = act - ant
+            pct = (delta / ant * 100) if ant > 0 else 0
+            return f"{label}: {act:,.1f} vs {ant:,.1f} | Var: {delta:+,.1f} ({pct:+.1f}%)"
+        except:
+            return f"{label}: {actual} vs {anterior} (Error)"
+
     print(f"\n=== VALIDACIÓN COMUNA {target_comuna} - SEMANA {ultima['semana_detalle']} ===\n")
-    print(f"[T1] Casos Actuales: {ultima.get('casos_semana_actual', 'N/A')}")
-    print(f"[T2] Casos Anterior: {ultima.get('casos_semana_anterior', 'N/A')} (Delta: {ultima.get('delta', 'N/A')})")
-    print(f"[T3] Acumulado Anual: {ultima.get('acumulado_anual', 'N/A')}")
-    print(f"[T4] Media Movil 4S: {ultima.get('media_movil_4s', 0):.1f}")
-    print(f"[T5] Promedio Histórico: {ultima.get('promedio_hist', 0):.1f}")
     
-    z_score = ultima.get('z_score', 0)
-    conclusion_z = ultima.get('conclusion_z', 'N/A')
-    print(f"[T6] Z-Score: {z_score:.2f} ({conclusion_z})")
+    # T1-T3: KPIs
+    print(f"[T1] Casos Actuales: {ultima.get('frecuencia', 0)}")
+    print(f"[T2] Var Semanal: {print_comp('', ultima.get('frecuencia', 0), ultima.get('casos_semana_anterior', 0))}")
+    print(f"[T3] Acumulado Anual: {print_comp('', ultima.get('acumulado_anual', 0), ultima.get('acumulado_anual_anterior', 0))}")
     
-    print(f"[T7] Racha: {ultima.get('racha', 'N/A')} semanas")
-    print(f"[T8] Max Historico Semana: {ultima.get('semana_detalle_max_hist', 'N/A')}")
-    print(f"[T9] Alerta Aumento Critico: {ultima.get('alerta_aumento_critico', 'N/A')}")
-    print(f"[T10] Alerta Año Anterior: {ultima.get('alerta_vs_año_anterior', 'N/A')}")
-    print(f"[T11] Casos Misma Sem Año Ant: {ultima.get('casos_misma_semana_año_anterior', 'N/A')}")
-    print(f"[T12] Casos Mismo Mes Año Ant: {ultima.get('casos_mismo_mes_año_anterior', 'N/A')}")
-    print(f"[T13] Ranking Reg Semanal: {ultima.get('ranking_comunal_regional', 'N/A')}")
-    print(f"[T14] Ranking Nac Semanal: {ultima.get('ranking_nacional_semanal', 'N/A')}")
-    print(f"[T15] Ranking Cluster Semanal: {ultima.get('ranking_cluster_semanal', 'N/A')}")
-    print(f"[T16] Proyección Anual: {ultima.get('proyeccion_anual', 0):.0f}")
-    print(f"[T17] Tasa Semanal: {ultima.get('tasa_semanal', 0):.1f}")
-    print(f"[T18] Tasa Proyectada: {ultima.get('tasa_proyectada_anual', 0):.1f}")
-    print(f"[T10] Tasa Proy Regional: {ultima.get('tasa_proyectada_regional', 0):.1f} (vs Comunal: {ultima.get('tasa_proyectada_anual', 0):.1f})")
-    print(f"[T11] Tasa Proy Nacional: {ultima.get('tasa_proyectada_nacional', 0):.1f}")
-    print(f"[T19] Peor Ranking Regional Actual: {ultima.get('t19_delito_sem', 'N/A')} (Pos {ultima.get('t19_rank_sem', 0):.0f})")
-    print(f"[T20] Peor Ranking Nacional Actual: {ultima.get('t20_delito_sem', 'N/A')} (Pos {ultima.get('t20_rank_sem', 0):.0f})")
-    print(f"[T21] Top 1 Delito: {ultima.get('t21_delito_1', 'N/A')} ({ultima.get('t21_val_1', 0):.1f}%)")
-    print(f"[T23] Correlación Fuerte: {ultima.get('t23_d1', 'N/A')} vs {ultima.get('t23_d2', 'N/A')} ({ultima.get('t23_val', 0):.2f})")
-    print(f"[T25] Aporte Regional: {ultima.get('aporte_pct_region', 0):.1f}% (Ant: {ultima.get('aporte_pct_region_ant', 0):.1f}%)")
+    # T4-T12: Métricas Base
+    print(f"[T4] Proyección Anual: {print_comp('Casos', ultima.get('proyeccion_anual', 0), ultima.get('acumulado_anual_anterior', 0))}")
+    print(f"[T5] Desviación Histórica: {print_comp('Casos', ultima.get('frecuencia', 0), ultima.get('promedio_hist', 0))}")
+    print(f"[T6] Proyección Mensual: {print_comp('Casos', ultima.get('proyeccion_mes_actual', 0), ultima.get('casos_mismo_mes_año_anterior', 0))}")
+    print(f"[T7] Media Móvil 4S: {print_comp('Casos', ultima.get('media_movil_4s', 0), ultima.get('promedio_hist_anual', 0))}")
     
-    # Nuevas Métricas
-    print(f"[T26] IDI Eficiencia Gravedad: {ultima.get('idi_proy_mes', 0):.1f} vs {ultima.get('idi_mes_ant_year', 0):.1f}")
-    print(f"[T27] IDI Balance Peligrosidad: {ultima.get('idi_proy_anual', 0):.1f} vs Base 110.5")
-    print(f"[T28] IDI Regional: {ultima.get('idi_proy_regional', 0):.1f} | Nac: {ultima.get('idi_proy_nacional', 0):.1f} | Cluster: {ultima.get('idi_proy_cluster', 0):.1f}")
-    print(f"[T29] Racha Negativa: {ultima.get('t29_delito', 'N/A')} ({ultima.get('t29_semanas', 0):.0f} sem)")
-    print(f"[T30] Racha Positiva: {ultima.get('t30_delito', 'N/A')} ({ultima.get('t30_semanas', 0):.0f} sem)")
-    print(f"[T31] Crecimiento Corto Plazo: {ultima.get('t31_cagr_4s', 0):.2f}%")
-    print(f"[T32] Crecimiento Interanual: {ultima.get('t32_cagr_anual', 0):.2f}%")
-    print(f"[T34] IDI Var Mensual: {ultima.get('idi_proy_mes', 0):.1f} vs {ultima.get('idi_mes_anterior', 0):.1f}")
+    print(f"[T8] Récords:")
+    print(f"  - Prom Diario Sem: {(ultima.get('frecuencia', 0)/7):.1f}")
+    print(f"  - Prom Diario Hist: {(ultima.get('promedio_hist', 0)/7):.1f}")
+    print(f"  - Prom Sem Hist: {ultima.get('promedio_hist', 0):.1f}")
+    print(f"  - Max Sem Hist: {ultima.get('max_hist', 0):.0f} ({ultima.get('semana_detalle_max_hist', '-')})")
+    
+    tasa_ant = (ultima.get('acumulado_anual_anterior', 0) / ultima.get('factor_poblacion', 1))
+    print(f"[T9] Tasa Proy 100k: {print_comp('', ultima.get('tasa_proyectada_anual', 0), tasa_ant)}")
+    print(f"[T10] Bench Regional: {print_comp('Tasa', ultima.get('tasa_proyectada_anual', 0), ultima.get('tasa_proyectada_regional', 0))}")
+    print(f"[T11] Bench Nacional: {print_comp('Tasa', ultima.get('tasa_proyectada_anual', 0), ultima.get('tasa_proyectada_nacional', 0))}")
+    print(f"[T12] Tasas: Sem({ultima.get('tasa_semanal', 0):.1f}) | Proy({ultima.get('tasa_proyectada_anual', 0):.1f}) | Reg({ultima.get('tasa_proyectada_regional', 0):.1f}) | Nac({ultima.get('tasa_proyectada_nacional', 0):.1f})")
+
+    # Rankings
+    def print_rank(title, act, ant):
+         a = float(act) if pd.notnull(act) else 0
+         b = float(ant) if pd.notnull(ant) else 0
+         diff = b - a
+         print(f"[{title}] Pos {a:.0f} (Ant: {b:.0f}) | Var: {diff:+,.0f}")
+
+    print_rank("T13] Rank Reg Sem", ultima.get('ranking_comunal_regional'), ultima.get('ranking_comunal_regional_semana_anterior'))
+    print_rank("T14] Rank Reg Anual", ultima.get('ranking_regional_proy_anual'), ultima.get('ranking_regional_proy_anual_anterior'))
+    print_rank("T15] Rank Nac Sem", ultima.get('ranking_nacional_semanal'), ultima.get('ranking_nacional_semanal_anterior'))
+    print_rank("T16] Rank Nac Anual", ultima.get('ranking_nacional_proy_anual'), ultima.get('ranking_nacional_proy_anual_anterior'))
+    print_rank("T17] Rank Clus Sem", ultima.get('ranking_cluster_semanal'), ultima.get('ranking_cluster_semanal_anterior'))
+    print_rank("T18] Rank Clus Anual", ultima.get('ranking_cluster_proy_anual'), ultima.get('ranking_cluster_proy_anual_anterior'))
+
+    # T19-T25
+    print(f"[T19] Peor Rank Reg (Sem): {ultima.get('t19_delito_sem', '-')} (#{ultima.get('t19_rank_sem', '-')})")
+    print(f"[T20] Peor Rank Nac (Sem): {ultima.get('t20_delito_sem', '-')} (#{ultima.get('t20_rank_sem', '-')})")
+    print(f"[T21] Pareto Top 1: {ultima.get('t21_delito_1', '-')} ({ultima.get('t21_val_1', 0):.1f}%)")
+    print(f"[T23] Correlación: {ultima.get('t23_d1', '-')} vs {ultima.get('t23_d2', '-')} (R={ultima.get('t23_val', 0):.2f})")
+    print(f"[T25] Aporte Regional: {print_comp('Pct', ultima.get('aporte_pct_region', 0), ultima.get('aporte_pct_region_ant', 0))}")
+
+    # T26-T32
+    print(f"[T26] IDI Mensual: {print_comp('Puntos', ultima.get('idi_proy_mes', 0), ultima.get('idi_mes_ant_year', 0))}")
+    print(f"[T27] IDI Anual: {print_comp('Puntos', ultima.get('idi_proy_anual', 0), ultima.get('idi_anual_anterior', 0))}")
+    print(f"[T28] Benchmark IDI: Com({ultima.get('idi_proy_mes', 0):.1f}) vs Reg({ultima.get('idi_proy_regional', 0):.1f}) vs Nac({ultima.get('idi_proy_nacional', 0):.1f})")
+    print(f"[T29] Racha Negativa: {ultima.get('t29_delito_1', '-')}")
+    print(f"[T30] Racha Positiva: {ultima.get('t30_delito_1', '-')}")
+    print(f"[T31] Crecimiento CP (4S): {ultima.get('t31_cagr_4s', 0):.1f}%")
+    print(f"[T32] Crecimiento LP (YTD): {ultima.get('t32_cagr_anual', 0):.1f}%")
 
 # =========================================
 # OUTPUT

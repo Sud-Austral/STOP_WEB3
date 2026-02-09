@@ -85,11 +85,21 @@ window.COLS = {
     // Rankings (T13-T18)
     RANKING: 'ranking_comunal_regional',
     RANKING_ANT: 'ranking_comunal_regional_semana_anterior',
+
     RANK_NAC_SEM: 'ranking_nacional_semanal',
+    RANK_NAC_SEM_ANT: 'ranking_nacional_semanal_anterior',
+
     RANK_REG_PROY: 'ranking_regional_proy_anual',
+    RANK_REG_PROY_ANT: 'ranking_regional_proy_anual_anterior',
+
     RANK_NAC_PROY: 'ranking_nacional_proy_anual',
+    RANK_NAC_PROY_ANT: 'ranking_nacional_proy_anual_anterior',
+
     RANK_CLUSTER_PROY: 'ranking_cluster_proy_anual',
+    RANK_CLUSTER_PROY_ANT: 'ranking_cluster_proy_anual_anterior',
+
     RANK_CLUSTER_SEM: 'ranking_cluster_semanal',
+    RANK_CLUSTER_SEM_ANT: 'ranking_cluster_semanal_anterior',
 
     // Diagnósticos Críticos (T19-T20)
     T19_DELITO: 't19_delito_sem',
@@ -123,6 +133,7 @@ window.COLS = {
 
     // Proyecciones (T4, T9)
     PROYECCION_ANUAL: 'proyeccion_anual',
+    PROY_MES: 'proyeccion_mes_actual',
     TASA_SEMANAL: 'tasa_semanal',
     TASA_PROY_ANUAL: 'tasa_proyectada_anual',
 
