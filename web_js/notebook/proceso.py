@@ -70,6 +70,10 @@ if not os.path.exists(url):
 
 print("Cargando datos...")
 df = pd.read_csv(url)
+delito_min = pd.read_excel(r"C:\Users\limc_\Laboratorio\web_stop\delito_min.xlsx")
+delito_min.columns = ["delito","delito_min"]
+dict_delito = dict(zip(delito_min["delito"],delito_min["delito_min"]))
+df["delito"] = df["delito"].map(dict_delito)
 #df  = df[df["codcom"] == 13101]
 
 # Función para verificar integridad

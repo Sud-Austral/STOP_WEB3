@@ -1,169 +1,1238 @@
-﻿<!-- Vista 6: ¿Cómo nos comparamos regionalmente? -->
-
-<!-- Section -->
-<div class="card">
-    <!-- Location/Week and Source Row -->
-    <div class="location-source-row"
-        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-            <span class="semana-fill">--</span>
-        </div>
-        <!-- Source badge will be injected here by app.js -->
-        <div id="sourceBadgeContainer"></div>
-    </div>
-
-    <div class="question-section"
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
-        <h2
-            style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
-            ¿Cómo nos comparamos regionalmente?
-        </h2>
-        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Benchmark con otras comunas de la
-            Región Metropolitana</p>
-    </div>
-
-    <!-- Alert Box -->
-    <div class="alert alert--info mb-lg" id="alertIA6">
-        <strong>🤖 Interpretación de IA:</strong> <span id="alertText6">Comparando con otras comunas...</span>
-    </div>
-
-    <!-- Legend -->
-    <h3 class="section-title mb-lg">Titulo por definir</h3>
-    <div class="chart-legend mb-md">
-        <div class="legend-item">
-            <span class="legend-color" style="background: #3b82f6;"></span>
-            Ranking Actual (Pos N°)
-        </div>
-        <div class="legend-item">
-            <span class="legend-color" style="background: #f59e0b;"></span>
-            Tasa x 100k habitantes
-        </div>
-    </div>
-
-    <!-- Chart -->
-    <div class="chart-wrapper chart-wrapper--xl">
-        <canvas id="chartRegional"></canvas>
-    </div>
-
-    <p class="chart-footnote text-muted">
-        * Tasa calculada por 100.000 habitantes. Ranking basado en posición relativa entre comunas de la región.
-    </p>
-</div>
-
+﻿<!-- Vista 6: Correlaciones Delictuales -->
 <style>
-    .chart-legend {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1.5rem;
-        padding: 0.5rem 0;
+    .performance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Outfit', sans-serif;
     }
 
-    .legend-item {
+    .performance-table tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .performance-table td {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .performance-table td:first-child {
+        font-weight: 600;
+        color: #1e293b;
+        background: #f8fafc;
+        width: 65%;
+    }
+
+    .performance-table td:last-child {
+        text-align: right;
+        font-weight: 700;
+        width: 35%;
+    }
+
+    .row-highlight-yellow td {
+        background: #fef3c7 !important;
+        color: #92400e;
+    }
+
+    .conclusion-row td {
+        background: linear-gradient(90deg, #fef3c7, #fde68a) !important;
+    }
+
+    .conclusion-row td:last-child {
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .conclusion-aumento {
+        color: #dc2626 !important;
+    }
+
+    .conclusion-disminucion {
+        color: #16a34a !important;
+    }
+
+    .conclusion-estable {
+        color: #64748b !important;
+    }
+
+    .description-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.6rem 0.8rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.75rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+
+    .description-box strong {
+        color: #dc2626;
+    }
+
+    .card-header {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+        border-left: 4px solid var(--color-primary);
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.6rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .card-header h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-text);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .indicator-card {
+        padding: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Heatmap */
+    .heatmap-container {
+        overflow-x: auto;
+        margin-top: 0.5rem;
+    }
+
+    .heatmap-table {
+        border-collapse: collapse;
+        font-size: 0.65rem;
+        font-family: 'Outfit', sans-serif;
+        min-width: 100%;
+    }
+
+    .heatmap-table th {
+        padding: 4px 6px;
+        font-weight: 700;
+        color: #64748b;
+        background: #f8fafc;
+        text-align: center;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+        max-width: 70px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .heatmap-table th:first-child {
+        text-align: left;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: #f8fafc;
+    }
+
+    .heatmap-table td {
+        padding: 4px 6px;
+        text-align: center;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        min-width: 40px;
+    }
+
+    .heatmap-table td:first-child {
+        text-align: left;
+        font-weight: 700;
+        color: #1e293b;
+        background: #f8fafc;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        white-space: nowrap;
+        max-width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .heatmap-table tbody tr:hover td {
+        opacity: 0.85;
+    }
+
+    /* Network canvas */
+    .network-wrap {
+        position: relative;
+        height: 350px;
+        margin-top: 0.5rem;
+        background: #0f172a;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Insight box */
+    .insight-box {
+        background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        margin-top: 0.75rem;
+        font-size: 0.82rem;
+        color: #1e40af;
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        font-size: 0.8rem;
-        color: var(--color-text-muted);
     }
 
-    .legend-color {
-        width: 12px;
-        height: 12px;
-        border-radius: 2px;
-    }
-
-    .chart-footnote {
+    /* Detail table */
+    .detail-table-6 {
+        width: 100%;
+        border-collapse: collapse;
         font-size: 0.75rem;
-        margin-top: 1rem;
-        font-style: italic;
-        text-align: center;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .detail-table-6 thead th {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        padding: 0.5rem 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        text-align: left;
+        background: #f8fafc;
+    }
+
+    .detail-table-6 thead th:not(:first-child):not(:nth-child(2)) {
+        text-align: right;
+    }
+
+    .detail-table-6 tbody td {
+        padding: 0.45rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .detail-table-6 tbody td:not(:first-child):not(:nth-child(2)) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .detail-table-6 tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .pill-sm {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.65rem;
+        font-weight: 700;
+    }
+
+    .pill-sm-danger {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .pill-sm-success {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .pill-sm-warning {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .pill-sm-neutral {
+        background: #f1f5f9;
+        color: #64748b;
     }
 </style>
 
-<script>
-    (async function initVista6() {
-        // Wait for data
-        const waitForData = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory && STATE_DATA.allDataHistory.length > 0) {
-                        resolve();
-                    } else {
-                        setTimeout(check, 100);
-                    }
-                };
-                check();
-            });
-        };
+<!-- Location/Week Header -->
+<div class="card" style="padding: 0.8rem; margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 6px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+</div>
 
-        await waitForData();
+<!-- Pregunta Guía -->
+<div class="question-section"
+    style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+    <h2
+        style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+        ¿Qué delitos suelen moverse juntos y podrían compartir causas comunes?
+    </h2>
+    <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Detección de patrones de asociación
+        estadística entre delitos en corto plazo (4 semanas) y largo plazo (52 semanas)</p>
+</div>
 
-        // Update Header Info
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
-        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
-        await new Promise(resolve => { const c = () => typeof Chart !== 'undefined' ? resolve() : setTimeout(c, 100); c(); });
+<!-- AI Interpretation -->
+<div class="alert alert--info" id="alertIA6">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText6">Analizando correlaciones delictuales...</span>
+</div>
 
-        const maxSemana = Math.max(...STATE_DATA.allDataHistory.map(r => r[COLS.ID_SEMANA]));
-        const currentData = STATE_DATA.allDataHistory.filter(r => r[COLS.ID_SEMANA] === maxSemana);
+<!-- Insight Box -->
+<div class="insight-box" id="v6_insight">
+    <i class="fa-solid fa-lightbulb"></i>
+    <span id="v6_insight_text">Calculando correlaciones...</span>
+</div>
 
-        // Get ranking data (simulate regional comparison with delitos as "comunas")
-        let rankingData = currentData
-            .filter(r => r[COLS.RANKING] && r[COLS.RANKING] > 0)
-            .sort((a, b) => (a[COLS.RANKING] || 999) - (b[COLS.RANKING] || 999))
-            .slice(0, 8);
+<!-- Cards Row -->
+<div class="cards-grid" style="grid-template-columns: 1fr;">
+    <!-- Heatmap -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>6a. Matriz de Correlación (Pearson) — 52 Semanas</h2>
+        </div>
+        <div class="description-box" style="margin-top: 0.5rem;">
+            <span style="color: #dc2626;">■</span> Fuerte (+) &nbsp;
+            <span style="color: #f59e0b;">■</span> Moderada &nbsp;
+            <span style="color: #e2e8f0;">■</span> Débil &nbsp;
+            <span style="color: #3b82f6;">■</span> Fuerte (−)
+        </div>
+        <div class="heatmap-container">
+            <table class="heatmap-table" id="v6_heatmap">
+                <tbody>
+                    <tr>
+                        <td colspan="2" style="text-align:center; color: #94a3b8;">Cargando datos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        // Fallback: if no ranking data, use top delitos by cases
-        if (rankingData.length === 0) {
-            rankingData = [...currentData]
-                .sort((a, b) => (b[COLS.CASOS_ACTUAL] || 0) - (a[COLS.CASOS_ACTUAL] || 0))
-                .slice(0, 8);
-        }
+    <!-- Network Graph -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>6b. Red de Asociación entre Delitos</h2>
+        </div>
+        <div class="description-box" style="margin-top: 0.5rem;">
+            Nodos = delitos (tamaño ∝ casos). Aristas = correlación (grosor ∝ fuerza, <span
+                style="color:#dc2626;">rojo</span>=positiva, <span style="color:#3b82f6;">azul</span>=negativa). Solo
+            |r| ≥ 0.3.
+        </div>
+        <div class="network-wrap">
+            <canvas id="canvasNetwork6"></canvas>
+        </div>
+    </div>
+</div>
 
-        const labels = rankingData.map(r => {
-            const name = r[COLS.DELITO] || 'Sin nombre';
-            return name.length > 20 ? name.substring(0, 18) + '...' : name;
-        });
+<!-- Detail Table -->
+<div class="card indicator-card" style="margin-top: 0.8rem;">
+    <div class="card-header">
+        <h2>6c. Top Pares Correlacionados (52 semanas)</h2>
+    </div>
+    <div style="overflow-x: auto; margin-top: 0.5rem;">
+        <table class="detail-table-6">
+            <thead>
+                <tr>
+                    <th>Delito A</th>
+                    <th>Delito B</th>
+                    <th>r (Pearson)</th>
+                    <th>Periodicidad</th>
+                    <th>Fuerza</th>
+                </tr>
+            </thead>
+            <tbody id="v6_detail_body">
+                <tr>
+                    <td colspan="5" style="text-align:center; color: #94a3b8;">Cargando datos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        const rankings = rankingData.map(r => r[COLS.RANKING] || 0);
-        const tasas = rankingData.map(r => (r[COLS.CASOS_ACTUAL] || 0) * 2.5); // Simulated rate
+<!-- Sankey Diagram -->
+<div class="card indicator-card" style="margin-top: 0.8rem;">
+    <div class="card-header">
+        <h2>6d. Diagrama de Flujo de Correlaciones (Sankey)</h2>
+    </div>
+    <div class="description-box" style="margin-top: 0.5rem;">
+        Flujos entre delitos proporcionales a la fuerza de correlación. <span style="color:#3b82f6;">■ Azul</span> =
+        correlación positiva (co-movimiento), <span style="color:#ef4444;">■ Rojo</span> = correlación negativa
+        (inverso). Solo |r| ≥ 0.3.
+    </div>
+    <div
+        style="position: relative; height: 420px; margin-top: 0.5rem; background: #0f172a; border-radius: 8px; overflow: hidden;">
+        <canvas id="canvasSankey6"></canvas>
+    </div>
+</div>
 
-        const comunaName = STATE_DATA.comunaName || 'La comuna';
+<!-- Top 10 Relationships Sankey -->
+<div class="card indicator-card" style="margin-top: 0.8rem;">
+    <div class="card-header">
+        <h2>6e. Sankey — Top 10 Relaciones Más Fuertes</h2>
+    </div>
+    <div class="description-box" style="margin-top: 0.5rem;">
+        <div class="description-box" style="margin-top: 0.5rem;">
+            Flujos de correlación por intensidad:<br>
+            <span style="color:#dc2626;">■ Fuerte (+)</span>,
+            <span style="color:#f59e0b;">■ Moderada</span>,
+            <span style="color:#94a3b8;">■ Débil</span>.
+        </div>
+        <div
+            style="position: relative; height: 420px; margin-top: 0.5rem; background: #0f172a; border-radius: 8px; overflow: hidden;">
+            <canvas id="canvasTop10_6"></canvas>
+        </div>
+    </div>
 
-        // Try AI interpretation
-        if (typeof IAModule !== 'undefined') {
-            IAModule.getInterpretation('vista6').then(interpretation => {
-                document.getElementById('alertText6').innerHTML = interpretation;
-            });
-        } else {
-            document.getElementById('alertText6').innerHTML =
-                `<strong>${comunaName}</strong> se mantiene en línea con el promedio regional. ` +
-                `Monitorear evolución comparativa para detectar cambios en posición relativa.`;
-        }
+    <!-- Source Footer -->
+    <div id="chartSourceFooter6" style="margin-top: 0.5rem;"></div>
 
-        new Chart(document.getElementById('chartRegional'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Tasa x 100k',
-                    data: tasas,
-                    backgroundColor: tasas.map((t, i) => i === 3 ? '#3b82f6' : '#94a3b8'),
-                    borderRadius: 4,
-                    barThickness: 30
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y',
-                plugins: { legend: { display: true, position: 'top' } },
-                scales: {
-                    x: { beginAtZero: true, grid: { color: '#e2e8f0' } },
-                    y: { grid: { display: false } }
-                }
+    <script>
+        (function () {
+            function waitForData(cb) {
+                if (window.STATE_DATA && window.STATE_DATA.isLoaded) { cb(); return; }
+                window.addEventListener('dataLoaded', cb);
             }
-        });
-    })();
-</script>
+
+            waitForData(function () {
+                var S = window.STATE_DATA;
+                var C = window.COLS;
+
+                // Fill comuna/semana
+                document.querySelectorAll('.comuna-fill').forEach(function (el) { el.textContent = S.comunaName || 'Sin Comuna'; });
+                document.querySelectorAll('.semana-fill').forEach(function (el) { el.textContent = S.semanaDetalle || '--'; });
+
+                // ─── Build weekly series per delito ───
+                var data = S.allDataHistory;
+                var maxWeek = Math.max.apply(null, data.map(function (r) { return r[C.ID_SEMANA]; }));
+
+                // Get unique delitos that appear in current week
+                var currentWeek = data.filter(function (r) { return r[C.ID_SEMANA] === maxWeek; });
+                var delitos = currentWeek
+                    .filter(function (r) { return (r[C.CASOS_ACTUAL] || 0) > 0; })
+                    .sort(function (a, b) { return (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0); })
+                    .map(function (r) { return r[C.DELITO]; })
+                    .slice(0, 10); // Top 10 for readability
+
+                if (delitos.length < 3) {
+                    document.getElementById('v6_insight_text').textContent = 'Datos insuficientes para calcular correlaciones (se requieren al menos 3 delitos activos).';
+                    return;
+                }
+
+                // Get all unique weeks sorted
+                var weeksSet = {};
+                data.forEach(function (r) { weeksSet[r[C.ID_SEMANA]] = true; });
+                var weeks = Object.keys(weeksSet).map(Number).sort(function (a, b) { return a - b; });
+                // Use last 52 weeks
+                var last52 = weeks.slice(-52);
+
+                // Build series: { delito: [val_w1, val_w2, ...] }
+                var series = {};
+                delitos.forEach(function (d) { series[d] = []; });
+
+                last52.forEach(function (w) {
+                    delitos.forEach(function (d) {
+                        var row = data.find(function (r) { return r[C.ID_SEMANA] === w && r[C.DELITO] === d; });
+                        series[d].push(row ? (row[C.CASOS_ACTUAL] || row[C.FRECUENCIA] || 0) : 0);
+                    });
+                });
+
+                // Cases count for node sizing
+                var casesMap = {};
+                currentWeek.forEach(function (r) { casesMap[r[C.DELITO]] = r[C.CASOS_ACTUAL] || 0; });
+
+                // ─── Pearson Correlation ───
+                function pearson(x, y) {
+                    var n = x.length;
+                    if (n < 4) return 0;
+                    var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+                    for (var i = 0; i < n; i++) {
+                        sumX += x[i]; sumY += y[i];
+                        sumXY += x[i] * y[i];
+                        sumX2 += x[i] * x[i]; sumY2 += y[i] * y[i];
+                    }
+                    var denom = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+                    if (denom === 0) return 0;
+                    return (n * sumXY - sumX * sumY) / denom;
+                }
+
+                // Compute correlation matrix
+                var corrMatrix = [];
+                var pairs = [];
+                for (var i = 0; i < delitos.length; i++) {
+                    corrMatrix[i] = [];
+                    for (var j = 0; j < delitos.length; j++) {
+                        if (i === j) {
+                            corrMatrix[i][j] = 1;
+                        } else {
+                            var r = pearson(series[delitos[i]], series[delitos[j]]);
+                            corrMatrix[i][j] = r;
+                            if (j > i) {
+                                pairs.push({
+                                    a: delitos[i], b: delitos[j],
+                                    r: r, absR: Math.abs(r),
+                                    idxA: i, idxB: j
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Sort pairs by absolute correlation
+                pairs.sort(function (a, b) { return b.absR - a.absR; });
+
+                // ─── Heatmap ───
+                var hmEl = document.getElementById('v6_heatmap');
+                if (hmEl) {
+                    var shortNames = delitos.map(function (d) {
+                        return d.length > 12 ? d.substring(0, 10) + '…' : d;
+                    });
+
+                    var hmHtml = '<thead><tr><th></th>';
+                    shortNames.forEach(function (n) { hmHtml += '<th title="' + n + '">' + n + '</th>'; });
+                    hmHtml += '</tr></thead><tbody>';
+
+                    for (var ri = 0; ri < delitos.length; ri++) {
+                        hmHtml += '<tr><td title="' + delitos[ri] + '">' + shortNames[ri] + '</td>';
+                        for (var ci = 0; ci < delitos.length; ci++) {
+                            var val = corrMatrix[ri][ci];
+                            if (ri === ci) {
+                                hmHtml += '<td style="background:#e2e8f0; color:#94a3b8;">—</td>';
+                            } else {
+                                var bg = corrColor(val);
+                                var txt = val.toFixed(2);
+                                var txtColor = Math.abs(val) > 0.5 ? '#fff' : '#334155';
+                                hmHtml += '<td style="background:' + bg + '; color:' + txtColor + ';" title="' + delitos[ri] + ' vs ' + delitos[ci] + ': r=' + val.toFixed(3) + '">' + txt + '</td>';
+                            }
+                        }
+                        hmHtml += '</tr>';
+                    }
+                    hmHtml += '</tbody>';
+                    hmEl.innerHTML = hmHtml;
+                }
+
+                function corrColor(r) {
+                    if (r >= 0.7) return '#dc2626';
+                    if (r >= 0.4) return '#f97316';
+                    if (r >= 0.2) return '#fbbf24';
+                    if (r > -0.2) return '#e2e8f0';
+                    if (r > -0.4) return '#93c5fd';
+                    if (r > -0.7) return '#3b82f6';
+                    return '#1e40af';
+                }
+
+                // ─── Network Graph (Interactive Force-Directed) ───
+                var canvas = document.getElementById('canvasNetwork6');
+                if (canvas) {
+                    var ctx = canvas.getContext('2d');
+                    var wrap = canvas.parentElement;
+                    var dpr = window.devicePixelRatio || 1;
+
+                    function resizeCanvas() {
+                        var rect = wrap.getBoundingClientRect();
+                        canvas.width = rect.width * dpr;
+                        canvas.height = rect.height * dpr;
+                        canvas.style.width = rect.width + 'px';
+                        canvas.style.height = rect.height + 'px';
+                        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    }
+                    resizeCanvas();
+
+                    var W = wrap.getBoundingClientRect().width;
+                    var H = wrap.getBoundingClientRect().height;
+                    var cxC = W / 2, cyC = H / 2;
+                    var layoutR = Math.min(W, H) * 0.42;
+
+                    // Select top 5 delitos by total correlation strength
+                    var corrStrength = {};
+                    delitos.forEach(function (d) { corrStrength[d] = 0; });
+                    pairs.forEach(function (p) {
+                        corrStrength[p.a] += p.absR;
+                        corrStrength[p.b] += p.absR;
+                    });
+                    var netDelitos = delitos.slice().sort(function (a, b) {
+                        return corrStrength[b] - corrStrength[a];
+                    }).slice(0, 5);
+
+                    // Build index map for netDelitos
+                    var netIdx = {};
+                    netDelitos.forEach(function (d, i) { netIdx[d] = i; });
+
+                    // Filter pairs to only those between netDelitos
+                    var netPairs = pairs.filter(function (p) {
+                        return netIdx.hasOwnProperty(p.a) && netIdx.hasOwnProperty(p.b);
+                    }).map(function (p) {
+                        return { a: p.a, b: p.b, r: p.r, absR: p.absR, idxA: netIdx[p.a], idxB: netIdx[p.b] };
+                    });
+
+                    // Build nodes
+                    var nodes = netDelitos.map(function (d, i) {
+                        var angle = (2 * Math.PI * i / netDelitos.length) - Math.PI / 2;
+                        var cases = casesMap[d] || 1;
+                        var nodeR = Math.max(12, Math.min(28, Math.sqrt(cases) * 3.5));
+                        return {
+                            x: cxC + layoutR * Math.cos(angle),
+                            y: cyC + layoutR * Math.sin(angle),
+                            vx: 0, vy: 0,
+                            r: nodeR,
+                            label: d.length > 15 ? d.substring(0, 13) + '…' : d,
+                            fullLabel: d,
+                            cases: cases,
+                            fixed: false
+                        };
+                    });
+
+                    var strongPairs = netPairs.filter(function (p) { return p.absR >= 0.3; });
+                    var dragNode = null;
+                    var hoverNode = null;
+
+                    // ─── Force Simulation ───
+                    function applyForces() {
+                        var damping = 0.85;
+                        var repulsion = 2500;
+                        var attraction = 0.003;
+                        var centerForce = 0.01;
+
+                        // Repulsion between all nodes
+                        for (var i = 0; i < nodes.length; i++) {
+                            if (nodes[i].fixed) continue;
+                            for (var j = i + 1; j < nodes.length; j++) {
+                                var dx = nodes[i].x - nodes[j].x;
+                                var dy = nodes[i].y - nodes[j].y;
+                                var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                                var force = repulsion / (dist * dist);
+                                var fx = (dx / dist) * force;
+                                var fy = (dy / dist) * force;
+                                if (!nodes[i].fixed) { nodes[i].vx += fx; nodes[i].vy += fy; }
+                                if (!nodes[j].fixed) { nodes[j].vx -= fx; nodes[j].vy -= fy; }
+                            }
+                        }
+
+                        // Attraction along edges
+                        strongPairs.forEach(function (p) {
+                            var nA = nodes[p.idxA], nB = nodes[p.idxB];
+                            var dx = nB.x - nA.x;
+                            var dy = nB.y - nA.y;
+                            var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+                            var targetDist = 120 - p.absR * 40;
+                            var force = (dist - targetDist) * attraction * p.absR;
+                            var fx = (dx / dist) * force;
+                            var fy = (dy / dist) * force;
+                            if (!nA.fixed) { nA.vx += fx; nA.vy += fy; }
+                            if (!nB.fixed) { nB.vx -= fx; nB.vy -= fy; }
+                        });
+
+                        // Center gravity
+                        nodes.forEach(function (n) {
+                            if (n.fixed) return;
+                            n.vx += (cxC - n.x) * centerForce;
+                            n.vy += (cyC - n.y) * centerForce;
+                        });
+
+                        // Apply velocity
+                        nodes.forEach(function (n) {
+                            if (n.fixed) return;
+                            n.vx *= damping;
+                            n.vy *= damping;
+                            n.x += n.vx;
+                            n.y += n.vy;
+                            // Bounds
+                            n.x = Math.max(n.r + 5, Math.min(W - n.r - 5, n.x));
+                            n.y = Math.max(n.r + 5, Math.min(H - n.r - 5, n.y));
+                        });
+                    }
+
+                    // ─── Draw ───
+                    function draw() {
+                        ctx.clearRect(0, 0, W, H);
+
+                        // Edges
+                        strongPairs.forEach(function (p) {
+                            var nA = nodes[p.idxA], nB = nodes[p.idxB];
+                            var isHovered = hoverNode !== null && (p.idxA === hoverNode || p.idxB === hoverNode);
+                            var alpha = isHovered ? 0.9 : p.absR * 0.6;
+                            ctx.beginPath();
+                            ctx.moveTo(nA.x, nA.y);
+                            ctx.lineTo(nB.x, nB.y);
+                            ctx.strokeStyle = p.r > 0
+                                ? 'rgba(239, 68, 68, ' + alpha + ')'
+                                : 'rgba(59, 130, 246, ' + alpha + ')';
+                            ctx.lineWidth = isHovered ? Math.max(2, p.absR * 5) : Math.max(1, p.absR * 3);
+                            ctx.stroke();
+
+                            // Edge label
+                            if (isHovered || p.absR >= 0.5) {
+                                var mx = (nA.x + nB.x) / 2, my = (nA.y + nB.y) / 2;
+                                ctx.fillStyle = 'rgba(255,255,255,' + (isHovered ? 0.95 : 0.6) + ')';
+                                ctx.font = (isHovered ? 'bold 10px' : '9px') + ' Outfit';
+                                ctx.textAlign = 'center';
+                                ctx.fillText(p.r.toFixed(2), mx, my - 4);
+                            }
+                        });
+
+                        // Nodes
+                        nodes.forEach(function (n, i) {
+                            var isHov = hoverNode === i;
+                            var isDrag = dragNode === i;
+                            var glow = isHov || isDrag ? 8 : 4;
+                            var glowAlpha = isHov || isDrag ? 0.35 : 0.15;
+
+                            // Glow
+                            ctx.beginPath();
+                            ctx.arc(n.x, n.y, n.r + glow, 0, 2 * Math.PI);
+                            ctx.fillStyle = 'rgba(59, 130, 246, ' + glowAlpha + ')';
+                            ctx.fill();
+
+                            // Node circle
+                            ctx.beginPath();
+                            ctx.arc(n.x, n.y, n.r, 0, 2 * Math.PI);
+                            var grad = ctx.createRadialGradient(n.x - 2, n.y - 2, 1, n.x, n.y, n.r);
+                            grad.addColorStop(0, isHov ? '#93c5fd' : '#60a5fa');
+                            grad.addColorStop(1, isHov ? '#2563eb' : '#3b82f6');
+                            ctx.fillStyle = grad;
+                            ctx.fill();
+                            ctx.strokeStyle = isHov ? '#fff' : '#1e40af';
+                            ctx.lineWidth = isHov ? 2.5 : 1.5;
+                            ctx.stroke();
+
+                            // Label
+                            ctx.fillStyle = '#f1f5f9';
+                            ctx.font = 'bold ' + (isHov ? '11px' : '9px') + ' Outfit';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(n.label, n.x, n.y + n.r + 12);
+                        });
+
+                        // Cursor hint
+                        if (hoverNode !== null) {
+                            canvas.style.cursor = 'grab';
+                        } else {
+                            canvas.style.cursor = 'default';
+                        }
+                        if (dragNode !== null) canvas.style.cursor = 'grabbing';
+                    }
+
+                    // ─── Animation Loop ───
+                    var frameCount = 0;
+                    function animate() {
+                        frameCount++;
+                        // Run forces only first 200 frames or when dragging
+                        if (frameCount < 200 || dragNode !== null) {
+                            applyForces();
+                        }
+                        draw();
+                        requestAnimationFrame(animate);
+                    }
+                    animate();
+
+                    // ─── Mouse / Touch Events ───
+                    function getPos(e) {
+                        var r = canvas.getBoundingClientRect();
+                        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                        return { x: clientX - r.left, y: clientY - r.top };
+                    }
+
+                    function findNode(pos) {
+                        for (var i = nodes.length - 1; i >= 0; i--) {
+                            var dx = pos.x - nodes[i].x, dy = pos.y - nodes[i].y;
+                            if (dx * dx + dy * dy <= (nodes[i].r + 6) * (nodes[i].r + 6)) return i;
+                        }
+                        return null;
+                    }
+
+                    canvas.addEventListener('mousedown', function (e) {
+                        var pos = getPos(e);
+                        var idx = findNode(pos);
+                        if (idx !== null) {
+                            dragNode = idx;
+                            nodes[idx].fixed = true;
+                            frameCount = 0; // restart forces
+                        }
+                    });
+
+                    canvas.addEventListener('mousemove', function (e) {
+                        var pos = getPos(e);
+                        if (dragNode !== null) {
+                            nodes[dragNode].x = pos.x;
+                            nodes[dragNode].y = pos.y;
+                        } else {
+                            hoverNode = findNode(pos);
+                        }
+                    });
+
+                    canvas.addEventListener('mouseup', function () {
+                        if (dragNode !== null) {
+                            nodes[dragNode].fixed = false;
+                            nodes[dragNode].vx = 0;
+                            nodes[dragNode].vy = 0;
+                            dragNode = null;
+                        }
+                    });
+
+                    canvas.addEventListener('mouseleave', function () {
+                        if (dragNode !== null) {
+                            nodes[dragNode].fixed = false;
+                            dragNode = null;
+                        }
+                        hoverNode = null;
+                    });
+
+                    // Touch support
+                    canvas.addEventListener('touchstart', function (e) {
+                        e.preventDefault();
+                        var pos = getPos(e);
+                        var idx = findNode(pos);
+                        if (idx !== null) { dragNode = idx; nodes[idx].fixed = true; frameCount = 0; }
+                    }, { passive: false });
+
+                    canvas.addEventListener('touchmove', function (e) {
+                        e.preventDefault();
+                        if (dragNode !== null) {
+                            var r = canvas.getBoundingClientRect();
+                            nodes[dragNode].x = e.touches[0].clientX - r.left;
+                            nodes[dragNode].y = e.touches[0].clientY - r.top;
+                        }
+                    }, { passive: false });
+
+                    canvas.addEventListener('touchend', function () {
+                        if (dragNode !== null) {
+                            nodes[dragNode].fixed = false;
+                            nodes[dragNode].vx = 0;
+                            nodes[dragNode].vy = 0;
+                            dragNode = null;
+                        }
+                    });
+                }
+
+                // ─── Insight Box ───
+                var insightEl = document.getElementById('v6_insight_text');
+                if (insightEl && pairs.length > 0) {
+                    var top = pairs[0];
+                    var direction = top.r > 0 ? 'positiva' : 'negativa';
+                    var strength = top.absR >= 0.7 ? 'fuerte' : top.absR >= 0.4 ? 'moderada' : 'débil';
+                    insightEl.textContent = 'Correlación más significativa: "' + top.a + '" y "' + top.b +
+                        '" (r=' + top.r.toFixed(2) + ', ' + strength + ' ' + direction + '). ' +
+                        (top.r > 0
+                            ? 'Cuando uno sube, históricamente el otro también tiende a subir.'
+                            : 'Cuando uno sube, históricamente el otro tiende a bajar.');
+                }
+
+                // ─── Detail Table ───
+                var tbody = document.getElementById('v6_detail_body');
+                if (tbody) {
+                    var topPairs = pairs.slice(0, 15);
+                    var html = '';
+                    topPairs.forEach(function (p) {
+                        var strengthLabel, pillCls;
+                        if (p.absR >= 0.7) { strengthLabel = 'Fuerte'; pillCls = 'pill-sm-danger'; }
+                        else if (p.absR >= 0.4) { strengthLabel = 'Moderada'; pillCls = 'pill-sm-warning'; }
+                        else if (p.absR >= 0.2) { strengthLabel = 'Débil'; pillCls = 'pill-sm-neutral'; }
+                        else { strengthLabel = 'Muy Débil'; pillCls = 'pill-sm-neutral'; }
+
+                        var periodLabel = p.r > 0 ? 'Co-movimiento' : 'Inverso';
+                        var rColor = p.r > 0 ? '#dc2626' : '#3b82f6';
+
+                        var nameA = p.a.length > 22 ? p.a.substring(0, 20) + '…' : p.a;
+                        var nameB = p.b.length > 22 ? p.b.substring(0, 20) + '…' : p.b;
+
+                        html += '<tr>'
+                            + '<td style="font-weight:600; color:#1e293b;">' + nameA + '</td>'
+                            + '<td style="font-weight:600; color:#1e293b;">' + nameB + '</td>'
+                            + '<td style="color:' + rColor + '; font-weight:700;">' + (p.r > 0 ? '+' : '') + p.r.toFixed(3) + '</td>'
+                            + '<td>' + periodLabel + '</td>'
+                            + '<td><span class="pill-sm ' + pillCls + '">' + strengthLabel + '</span></td>'
+                            + '</tr>';
+                    });
+                    tbody.innerHTML = html;
+                }
+
+                // ─── Sankey Diagram (Interactive) ───
+                var sankey = document.getElementById('canvasSankey6');
+                if (sankey && pairs.length > 0) {
+                    var sCtx = sankey.getContext('2d');
+                    var sWrap = sankey.parentElement;
+                    var sDpr = window.devicePixelRatio || 1;
+                    var sRect = sWrap.getBoundingClientRect();
+                    sankey.width = sRect.width * sDpr;
+                    sankey.height = sRect.height * sDpr;
+                    sankey.style.width = sRect.width + 'px';
+                    sankey.style.height = sRect.height + 'px';
+                    sCtx.setTransform(sDpr, 0, 0, sDpr, 0, 0);
+
+                    var sW = sRect.width, sH = sRect.height;
+                    var sPad = { top: 20, bottom: 20, left: 20, right: 20 };
+                    var sNodeW = 14;
+                    var sColL = sPad.left;
+                    var sColR = sW - sPad.right - sNodeW;
+
+                    var sankeyPairs = pairs.filter(function (p) { return p.absR >= 0.3; });
+                    var sHover = -1; // hovered flow index
+
+                    if (sankeyPairs.length === 0) {
+                        sCtx.fillStyle = '#64748b'; sCtx.font = '13px Outfit'; sCtx.textAlign = 'center';
+                        sCtx.fillText('No hay correlaciones significativas (|r| ≥ 0.3)', sW / 2, sH / 2);
+                    } else {
+                        var sInvSet = {};
+                        sankeyPairs.forEach(function (p) { sInvSet[p.a] = true; sInvSet[p.b] = true; });
+                        var sInvDel = delitos.filter(function (d) { return sInvSet[d]; });
+
+                        var sUsable = sH - sPad.top - sPad.bottom;
+                        var sGap = 8;
+                        var sTotalNodeH = sUsable - (sInvDel.length - 1) * sGap;
+
+                        var sFlow = {};
+                        sInvDel.forEach(function (d) { sFlow[d] = 0; });
+                        sankeyPairs.forEach(function (p) { sFlow[p.a] += p.absR; sFlow[p.b] += p.absR; });
+                        var sMaxFlow = Math.max.apply(null, sInvDel.map(function (d) { return sFlow[d]; }));
+
+                        var sNodeH = {};
+                        var sTotW = sInvDel.reduce(function (s, d) { return s + sFlow[d]; }, 0);
+                        sInvDel.forEach(function (d) { sNodeH[d] = Math.max(20, (sFlow[d] / sTotW) * sTotalNodeH); });
+                        var sActH = sInvDel.reduce(function (s, d) { return s + sNodeH[d]; }, 0);
+                        var sScale = sTotalNodeH / sActH;
+                        sInvDel.forEach(function (d) { sNodeH[d] *= sScale; });
+
+                        var sLY = {}, sRY = {};
+                        var sCur = sPad.top;
+                        sInvDel.forEach(function (d) { sLY[d] = sCur; sRY[d] = sCur; sCur += sNodeH[d] + sGap; });
+
+                        // Pre-compute flow geometry
+                        var flowGeo = [];
+                        var sLS = {}, sRS = {};
+                        sInvDel.forEach(function (d) { sLS[d] = 0; sRS[d] = 0; });
+                        sankeyPairs.forEach(function (p) {
+                            var fH = Math.max(3, (p.absR / sMaxFlow) * 30);
+                            var y1 = sLY[p.a] + sLS[p.a] + fH / 2; sLS[p.a] += fH + 1;
+                            var y2 = sRY[p.b] + sRS[p.b] + fH / 2; sRS[p.b] += fH + 1;
+                            flowGeo.push({ p: p, fH: fH, y1: y1, y2: y2, x1: sColL + sNodeW, x2: sColR });
+                        });
+
+                        function drawSankey() {
+                            sCtx.clearRect(0, 0, sW, sH);
+
+                            // Flows
+                            flowGeo.forEach(function (fg, fi) {
+                                var isHov = sHover === fi;
+                                var dimmed = sHover >= 0 && !isHov;
+                                var baseAlpha = 0.25 + fg.p.absR * 0.5;
+                                var alpha = dimmed ? 0.08 : isHov ? 0.95 : baseAlpha;
+                                var color = fg.p.r > 0
+                                    ? 'rgba(59, 130, 246, ' + alpha + ')'
+                                    : 'rgba(239, 68, 68, ' + alpha + ')';
+
+                                var cpx = (fg.x1 + fg.x2) / 2;
+                                sCtx.beginPath();
+                                sCtx.moveTo(fg.x1, fg.y1 - fg.fH / 2);
+                                sCtx.bezierCurveTo(cpx, fg.y1 - fg.fH / 2, cpx, fg.y2 - fg.fH / 2, fg.x2, fg.y2 - fg.fH / 2);
+                                sCtx.lineTo(fg.x2, fg.y2 + fg.fH / 2);
+                                sCtx.bezierCurveTo(cpx, fg.y2 + fg.fH / 2, cpx, fg.y1 + fg.fH / 2, fg.x1, fg.y1 + fg.fH / 2);
+                                sCtx.closePath();
+                                sCtx.fillStyle = color;
+                                sCtx.fill();
+
+                                if (isHov || (!dimmed && fg.p.absR >= 0.5)) {
+                                    var my = (fg.y1 + fg.y2) / 2;
+                                    sCtx.fillStyle = isHov ? '#fff' : 'rgba(255,255,255,0.6)';
+                                    sCtx.font = (isHov ? 'bold 11px' : '9px') + ' Outfit';
+                                    sCtx.textAlign = 'center';
+                                    sCtx.fillText((fg.p.r > 0 ? '+' : '') + fg.p.r.toFixed(2), (fg.x1 + fg.x2) / 2, my);
+                                }
+                            });
+
+                            // Nodes left
+                            sInvDel.forEach(function (d) {
+                                var grad = sCtx.createLinearGradient(sColL, sLY[d], sColL + sNodeW, sLY[d]);
+                                grad.addColorStop(0, '#3b82f6'); grad.addColorStop(1, '#60a5fa');
+                                sCtx.fillStyle = grad; sCtx.fillRect(sColL, sLY[d], sNodeW, sNodeH[d]);
+                                var lbl = d.length > 18 ? d.substring(0, 16) + '…' : d;
+                                sCtx.fillStyle = '#e2e8f0'; sCtx.font = 'bold 10px Outfit';
+                                sCtx.textAlign = 'left'; sCtx.textBaseline = 'middle';
+                                sCtx.fillText(lbl, sColL + sNodeW + 6, sLY[d] + sNodeH[d] / 2);
+                            });
+                            // Nodes right
+                            sInvDel.forEach(function (d) {
+                                var grad = sCtx.createLinearGradient(sColR, sRY[d], sColR + sNodeW, sRY[d]);
+                                grad.addColorStop(0, '#60a5fa'); grad.addColorStop(1, '#3b82f6');
+                                sCtx.fillStyle = grad; sCtx.fillRect(sColR, sRY[d], sNodeW, sNodeH[d]);
+                                var lbl = d.length > 18 ? d.substring(0, 16) + '…' : d;
+                                sCtx.fillStyle = '#e2e8f0'; sCtx.font = 'bold 10px Outfit';
+                                sCtx.textAlign = 'right'; sCtx.textBaseline = 'middle';
+                                sCtx.fillText(lbl, sColR - 6, sRY[d] + sNodeH[d] / 2);
+                            });
+
+                            // Tooltip
+                            if (sHover >= 0 && flowGeo[sHover]) {
+                                var hf = flowGeo[sHover];
+                                var tx = (hf.x1 + hf.x2) / 2, ty = (hf.y1 + hf.y2) / 2 - 22;
+                                var ttxt = hf.p.a + ' ↔ ' + hf.p.b + '  r=' + hf.p.r.toFixed(3);
+                                sCtx.font = 'bold 11px Outfit'; var tw = sCtx.measureText(ttxt).width + 16;
+                                sCtx.fillStyle = 'rgba(15,23,42,0.92)';
+                                sCtx.beginPath(); sCtx.roundRect(tx - tw / 2, ty - 12, tw, 24, 6); sCtx.fill();
+                                sCtx.strokeStyle = '#334155'; sCtx.lineWidth = 1; sCtx.stroke();
+                                sCtx.fillStyle = '#fff'; sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
+                                sCtx.fillText(ttxt, tx, ty);
+                            }
+                        }
+                        drawSankey();
+
+                        // Hit test: check if mouse is inside a flow bezier band
+                        function hitSankey(mx, my) {
+                            for (var fi = flowGeo.length - 1; fi >= 0; fi--) {
+                                var fg = flowGeo[fi];
+                                var cpx = (fg.x1 + fg.x2) / 2;
+                                // Sample bezier to check proximity
+                                for (var t = 0; t <= 1; t += 0.05) {
+                                    var t2 = t * t, t3 = t2 * t;
+                                    var bx = (1 - t) * (1 - t) * (1 - t) * fg.x1 + 3 * (1 - t) * (1 - t) * t * cpx + 3 * (1 - t) * t2 * cpx + t3 * fg.x2;
+                                    var byTop = (1 - t) * (1 - t) * (1 - t) * (fg.y1 - fg.fH / 2) + 3 * (1 - t) * (1 - t) * t * (fg.y1 - fg.fH / 2) + 3 * (1 - t) * t2 * (fg.y2 - fg.fH / 2) + t3 * (fg.y2 - fg.fH / 2);
+                                    var byBot = (1 - t) * (1 - t) * (1 - t) * (fg.y1 + fg.fH / 2) + 3 * (1 - t) * (1 - t) * t * (fg.y1 + fg.fH / 2) + 3 * (1 - t) * t2 * (fg.y2 + fg.fH / 2) + t3 * (fg.y2 + fg.fH / 2);
+                                    if (Math.abs(mx - bx) < 20 && my >= byTop - 4 && my <= byBot + 4) return fi;
+                                }
+                            }
+                            return -1;
+                        }
+
+                        sankey.addEventListener('mousemove', function (e) {
+                            var r = sankey.getBoundingClientRect();
+                            var prev = sHover;
+                            sHover = hitSankey(e.clientX - r.left, e.clientY - r.top);
+                            if (sHover !== prev) drawSankey();
+                            sankey.style.cursor = sHover >= 0 ? 'pointer' : 'default';
+                        });
+                        sankey.addEventListener('mouseleave', function () {
+                            if (sHover >= 0) { sHover = -1; drawSankey(); }
+                            sankey.style.cursor = 'default';
+                        });
+                    }
+                }
+
+                // ─── 6e. Top 10 Relaciones — Sankey (Interactive) ───
+                var c6e = document.getElementById('canvasTop10_6');
+                if (c6e && pairs.length > 0) {
+                    var eCtx = c6e.getContext('2d');
+                    var eWrap = c6e.parentElement;
+                    var eDpr = window.devicePixelRatio || 1;
+                    var eRect = eWrap.getBoundingClientRect();
+                    c6e.width = eRect.width * eDpr;
+                    c6e.height = eRect.height * eDpr;
+                    c6e.style.width = eRect.width + 'px';
+                    c6e.style.height = eRect.height + 'px';
+                    eCtx.setTransform(eDpr, 0, 0, eDpr, 0, 0);
+
+                    var eW = eRect.width, eH = eRect.height;
+                    var top10 = pairs.slice(0, 10);
+                    var eHover = -1;
+
+                    // Separate left (source=a) and right (dest=b) delitos
+                    var eLeftSet = {}, eRightSet = {};
+                    top10.forEach(function (p) { eLeftSet[p.a] = true; eRightSet[p.b] = true; });
+                    var eLeftDels = Object.keys(eLeftSet);
+                    var eRightDels = Object.keys(eRightSet);
+
+                    var ePad = { top: 20, bottom: 20, left: 20, right: 20 };
+                    var eNodeW = 14;
+                    var eColL = ePad.left;
+                    var eColR = eW - ePad.right - eNodeW;
+                    var eUsable = eH - ePad.top - ePad.bottom;
+                    var eGap = 6;
+
+                    // Left flow = sum of |r| where delito is source
+                    var eLFlow = {};
+                    eLeftDels.forEach(function (d) { eLFlow[d] = 0; });
+                    top10.forEach(function (p) { eLFlow[p.a] += p.absR; });
+                    var eLMax = Math.max.apply(null, eLeftDels.map(function (d) { return eLFlow[d]; }));
+
+                    // Right flow = sum of |r| where delito is dest
+                    var eRFlow = {};
+                    eRightDels.forEach(function (d) { eRFlow[d] = 0; });
+                    top10.forEach(function (p) { eRFlow[p.b] += p.absR; });
+                    var eRMax = Math.max.apply(null, eRightDels.map(function (d) { return eRFlow[d]; }));
+
+                    // Left node heights
+                    var eLNH = {};
+                    var eLTotalNodeH = eUsable - Math.max(0, (eLeftDels.length - 1)) * eGap;
+                    var eLTotW = eLeftDels.reduce(function (s, d) { return s + eLFlow[d]; }, 0);
+                    eLeftDels.forEach(function (d) { eLNH[d] = Math.max(18, (eLFlow[d] / eLTotW) * eLTotalNodeH); });
+                    var eLActH = eLeftDels.reduce(function (s, d) { return s + eLNH[d]; }, 0);
+                    var eLScale = eLTotalNodeH / eLActH;
+                    eLeftDels.forEach(function (d) { eLNH[d] *= eLScale; });
+
+                    // Right node heights
+                    var eRNH = {};
+                    var eRTotalNodeH = eUsable - Math.max(0, (eRightDels.length - 1)) * eGap;
+                    var eRTotW = eRightDels.reduce(function (s, d) { return s + eRFlow[d]; }, 0);
+                    eRightDels.forEach(function (d) { eRNH[d] = Math.max(18, (eRFlow[d] / eRTotW) * eRTotalNodeH); });
+                    var eRActH = eRightDels.reduce(function (s, d) { return s + eRNH[d]; }, 0);
+                    var eRScale = eRTotalNodeH / eRActH;
+                    eRightDels.forEach(function (d) { eRNH[d] *= eRScale; });
+
+                    // Y positions
+                    var eLY = {};
+                    var eCurL = ePad.top;
+                    eLeftDels.forEach(function (d) { eLY[d] = eCurL; eCurL += eLNH[d] + eGap; });
+
+                    var eRY = {};
+                    var eCurR = ePad.top;
+                    eRightDels.forEach(function (d) { eRY[d] = eCurR; eCurR += eRNH[d] + eGap; });
+
+                    // Pre-compute flow geometry
+                    var eFlowGeo = [];
+                    var eLS = {}, eRS = {};
+                    eLeftDels.forEach(function (d) { eLS[d] = 0; });
+                    eRightDels.forEach(function (d) { eRS[d] = 0; });
+                    var eMaxFlow = Math.max(eLMax, eRMax) || 1;
+                    top10.forEach(function (p, idx) {
+                        var fH = Math.max(4, (p.absR / eMaxFlow) * 35);
+                        var y1 = eLY[p.a] + eLS[p.a] + fH / 2; eLS[p.a] += fH + 1;
+                        var y2 = eRY[p.b] + eRS[p.b] + fH / 2; eRS[p.b] += fH + 1;
+                        eFlowGeo.push({ p: p, fH: fH, y1: y1, y2: y2, x1: eColL + eNodeW, x2: eColR, idx: idx });
+                    });
+
+                    function drawE() {
+                        eCtx.clearRect(0, 0, eW, eH);
+
+                        // Flows
+                        eFlowGeo.forEach(function (fg, fi) {
+                            var isHov = eHover === fi;
+                            var dimmed = eHover >= 0 && !isHov;
+                            var baseAlpha = 0.25 + fg.p.absR * 0.5;
+                            var alpha = dimmed ? 0.06 : isHov ? 0.95 : baseAlpha;
+                            var baseAlpha = 0.25 + fg.p.absR * 0.5;
+                            var alpha = dimmed ? 0.06 : isHov ? 0.95 : baseAlpha;
+
+                            // Dynamic 3-interval color logic (Red-Amber-Gray)
+                            // Top 10 min/max |r|
+                            var allAbs = top10.map(function (p) { return p.absR; });
+                            var minR = Math.min.apply(null, allAbs);
+                            var maxR = Math.max.apply(null, allAbs);
+                            var range = maxR - minR;
+                            var t1 = minR + range * 0.33;
+                            var t2 = minR + range * 0.66;
+
+                            var color;
+                            if (fg.p.absR > t2) {
+                                // Fuerte (+) -> Red
+                                color = 'rgba(220, 38, 38, ' + alpha + ')'; // #dc2626
+                            } else if (fg.p.absR > t1) {
+                                // Moderada -> Amber
+                                color = 'rgba(245, 158, 11, ' + alpha + ')'; // #f59e0b
+                            } else {
+                                // Débil -> Slate
+                                color = 'rgba(148, 163, 184, ' + alpha + ')'; // #94a3b8
+                            }
+
+                            var cpx = (fg.x1 + fg.x2) / 2;
+                            eCtx.beginPath();
+                            eCtx.moveTo(fg.x1, fg.y1 - fg.fH / 2);
+                            eCtx.bezierCurveTo(cpx, fg.y1 - fg.fH / 2, cpx, fg.y2 - fg.fH / 2, fg.x2, fg.y2 - fg.fH / 2);
+                            eCtx.lineTo(fg.x2, fg.y2 + fg.fH / 2);
+                            eCtx.bezierCurveTo(cpx, fg.y2 + fg.fH / 2, cpx, fg.y1 + fg.fH / 2, fg.x1, fg.y1 + fg.fH / 2);
+                            eCtx.closePath();
+                            eCtx.fillStyle = color;
+                            eCtx.fill();
+
+                            // Label on flow
+                            if (isHov || (!dimmed && fg.p.absR >= 0.5)) {
+                                var my = (fg.y1 + fg.y2) / 2;
+                                eCtx.fillStyle = isHov ? '#fff' : 'rgba(255,255,255,0.6)';
+                                eCtx.font = (isHov ? 'bold 11px' : '9px') + ' Outfit';
+                                eCtx.textAlign = 'center';
+                                eCtx.fillText('#' + (fg.idx + 1) + ' ' + (fg.p.r > 0 ? '+' : '') + fg.p.r.toFixed(2), (fg.x1 + fg.x2) / 2, my);
+                            }
+                        });
+
+                        // Nodes left (only sources)
+                        eLeftDels.forEach(function (d) {
+                            var grad = eCtx.createLinearGradient(eColL, eLY[d], eColL + eNodeW, eLY[d]);
+                            grad.addColorStop(0, '#3b82f6'); grad.addColorStop(1, '#60a5fa');
+                            eCtx.fillStyle = grad; eCtx.fillRect(eColL, eLY[d], eNodeW, eLNH[d]);
+                            var lbl = d.length > 18 ? d.substring(0, 16) + '…' : d;
+                            eCtx.fillStyle = '#e2e8f0'; eCtx.font = 'bold 10px Outfit';
+                            eCtx.textAlign = 'left'; eCtx.textBaseline = 'middle';
+                            eCtx.fillText(lbl, eColL + eNodeW + 6, eLY[d] + eLNH[d] / 2);
+                        });
+
+                        // Nodes right (only destinations)
+                        eRightDels.forEach(function (d) {
+                            var grad = eCtx.createLinearGradient(eColR, eRY[d], eColR + eNodeW, eRY[d]);
+                            grad.addColorStop(0, '#60a5fa'); grad.addColorStop(1, '#3b82f6');
+                            eCtx.fillStyle = grad; eCtx.fillRect(eColR, eRY[d], eNodeW, eRNH[d]);
+                            var lbl = d.length > 18 ? d.substring(0, 16) + '…' : d;
+                            eCtx.fillStyle = '#e2e8f0'; eCtx.font = 'bold 10px Outfit';
+                            eCtx.textAlign = 'right'; eCtx.textBaseline = 'middle';
+                            eCtx.fillText(lbl, eColR - 6, eRY[d] + eRNH[d] / 2);
+                        });
+
+                        // Tooltip
+                        if (eHover >= 0 && eFlowGeo[eHover]) {
+                            var hf = eFlowGeo[eHover];
+                            var tx = (hf.x1 + hf.x2) / 2;
+                            var ty = (hf.y1 + hf.y2) / 2 - 22;
+                            var dir = hf.p.r > 0 ? 'Co-movimiento' : 'Inverso';
+                            var str = hf.p.absR >= 0.7 ? 'Fuerte' : hf.p.absR >= 0.4 ? 'Moderada' : 'Débil';
+                            var ttxt = '#' + (hf.idx + 1) + '  ' + hf.p.a + ' ↔ ' + hf.p.b + '  |  r=' + hf.p.r.toFixed(3) + '  |  ' + str + ' · ' + dir;
+                            eCtx.font = 'bold 10px Outfit'; var tw = eCtx.measureText(ttxt).width + 18;
+                            var ttx = Math.max(tw / 2 + 4, Math.min(eW - tw / 2 - 4, tx));
+                            if (ty < 14) ty = (hf.y1 + hf.y2) / 2 + 22;
+                            eCtx.fillStyle = 'rgba(15,23,42,0.93)';
+                            eCtx.beginPath(); eCtx.roundRect(ttx - tw / 2, ty - 11, tw, 22, 6); eCtx.fill();
+                            eCtx.strokeStyle = '#334155'; eCtx.lineWidth = 1; eCtx.stroke();
+                            eCtx.fillStyle = '#fff'; eCtx.textAlign = 'center'; eCtx.textBaseline = 'middle';
+                            eCtx.fillText(ttxt, ttx, ty);
+                        }
+                    }
+                    drawE();
+
+                    // Hit test bezier flows
+                    function hitE(mx, my) {
+                        for (var fi = eFlowGeo.length - 1; fi >= 0; fi--) {
+                            var fg = eFlowGeo[fi];
+                            var cpx = (fg.x1 + fg.x2) / 2;
+                            for (var t = 0; t <= 1; t += 0.05) {
+                                var t2 = t * t, t3 = t2 * t;
+                                var bx = (1 - t) * (1 - t) * (1 - t) * fg.x1 + 3 * (1 - t) * (1 - t) * t * cpx + 3 * (1 - t) * t2 * cpx + t3 * fg.x2;
+                                var byT = (1 - t) * (1 - t) * (1 - t) * (fg.y1 - fg.fH / 2) + 3 * (1 - t) * (1 - t) * t * (fg.y1 - fg.fH / 2) + 3 * (1 - t) * t2 * (fg.y2 - fg.fH / 2) + t3 * (fg.y2 - fg.fH / 2);
+                                var byB = (1 - t) * (1 - t) * (1 - t) * (fg.y1 + fg.fH / 2) + 3 * (1 - t) * (1 - t) * t * (fg.y1 + fg.fH / 2) + 3 * (1 - t) * t2 * (fg.y2 + fg.fH / 2) + t3 * (fg.y2 + fg.fH / 2);
+                                if (Math.abs(mx - bx) < 20 && my >= byT - 4 && my <= byB + 4) return fi;
+                            }
+                        }
+                        return -1;
+                    }
+
+                    c6e.addEventListener('mousemove', function (e) {
+                        var r = c6e.getBoundingClientRect();
+                        var prev = eHover;
+                        eHover = hitE(e.clientX - r.left, e.clientY - r.top);
+                        if (eHover !== prev) drawE();
+                        c6e.style.cursor = eHover >= 0 ? 'pointer' : 'default';
+                    });
+                    c6e.addEventListener('mouseleave', function () {
+                        if (eHover >= 0) { eHover = -1; drawE(); }
+                        c6e.style.cursor = 'default';
+                    });
+                }
+
+                // Source footer
+                if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {
+                    var f = document.getElementById('chartSourceFooter6');
+                    if (f) f.innerHTML = ChartHelper.getSourceFooterHtml('STOP');
+                }
+
+                // AI Interpretation
+                if (typeof IAModule !== 'undefined') {
+                    IAModule.getInterpretation('vista6').then(function (text) {
+                        var el = document.getElementById('alertText6');
+                        if (el) el.innerHTML = text;
+                    });
+                }
+
+                console.log('✅ Vista 6 (Correlaciones Delictuales) cargada con éxito');
+            });
+        })();
+    </script>
