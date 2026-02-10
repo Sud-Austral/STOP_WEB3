@@ -217,11 +217,19 @@
 </div>
 
 <!-- Pregunta Guía -->
-<div class="description-box">
-    <i class="fa-solid fa-circle-question" style="color: var(--color-primary);"></i>
-    <strong>Pregunta Guía:</strong> ¿El problema está acelerando o desacelerando su crecimiento?
-    — Medición de la segunda derivada: no solo si sube/baja, sino si la velocidad de cambio está aumentando o
-    disminuyendo.
+<div class="question-section"
+    style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+    <h2
+        style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
+        ¿El problema está acelerando o desacelerando su crecimiento?
+    </h2>
+    <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Medición de la segunda derivada: no solo si
+        sube/baja, sino si la velocidad de cambio está aumentando o disminuyendo</p>
+</div>
+
+<!-- AI Interpretation -->
+<div class="alert alert--info" id="alertIA18">
+    <strong>🤖 Interpretación de IA:</strong> <span id="alertText18">Cargando análisis de aceleración...</span>
 </div>
 
 <!-- KPI Cards -->
@@ -594,6 +602,14 @@
             if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {
                 var f = document.getElementById('chartSourceFooter18');
                 if (f) f.innerHTML = ChartHelper.getSourceFooterHtml('STOP');
+            }
+
+            // AI Interpretation
+            if (typeof IAModule !== 'undefined') {
+                IAModule.getInterpretation('vista18').then(text => {
+                    const el = document.getElementById('alertText18');
+                    if (el) el.innerHTML = text;
+                });
             }
 
             console.log('✅ Vista 18 (Aceleración) cargada con éxito');

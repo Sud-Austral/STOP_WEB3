@@ -68,12 +68,12 @@ const App = {
         this.bindEvents();
         this.loadView(this.config.defaultView);
 
-        // Pre-load AI interpretations in background (after data loads)
+        // Pre-load AI interpretations in background (delay 30s to avoid rate-limiting)
         setTimeout(() => {
             if (typeof IAModule !== 'undefined' && window.STATE_DATA?.isLoaded) {
                 IAModule.generateAllInterpretations();
             }
-        }, 3000);
+        }, 30000);
     },
 
     /**

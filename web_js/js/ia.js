@@ -27,8 +27,11 @@ const IAModule = {
     // API Configuration (initialized in init())
     API_KEY: null,
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
-    // Probando: glm-4-air (versión ligera estándar)
     MODEL_NAME: "GLM-4.7-Flash",
+
+    // Cache Configuration
+    CACHE_PREFIX: 'ia_interp_',
+    CACHE_TTL_MS: 7 * 24 * 60 * 60 * 1000, // 7 días
 
     // State to store interpretations
     interpretations: {},
@@ -40,6 +43,72 @@ const IAModule = {
      */
     init() {
         this.API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf");
+    },
+
+    /**
+     * Build cache key based on codcom + semanaId
+     */
+    getCacheKey() {
+        const codcom = window.STATE_DATA?.codcom || 'default';
+        const semana = window.STATE_DATA?.semanaId || 'unknown';
+        return this.CACHE_PREFIX + codcom + '_' + semana;
+    },
+
+    /**
+     * Load interpretations from localStorage cache
+     * @returns {object|null} cached interpretations or null if expired/missing
+     */
+    loadFromCache() {
+        try {
+            const key = this.getCacheKey();
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+
+            const cached = JSON.parse(raw);
+            const age = Date.now() - (cached.timestamp || 0);
+
+            if (age > this.CACHE_TTL_MS) {
+                localStorage.removeItem(key);
+                console.log('[IA] Cache expirado, se renovará');
+                return null;
+            }
+
+            console.log(`[IA] Cache válido (${(age / 3600000).toFixed(1)}h de ${(this.CACHE_TTL_MS / 3600000)}h)`);
+            return cached.data;
+        } catch (e) {
+            console.warn('[IA] Error leyendo cache:', e);
+            return null;
+        }
+    },
+
+    /**
+     * Save interpretations to localStorage cache
+     */
+    saveToCache(data) {
+        try {
+            const key = this.getCacheKey();
+            const payload = JSON.stringify({ timestamp: Date.now(), data });
+            localStorage.setItem(key, payload);
+
+            // Limpiar caches antiguos de otras semanas/comunas
+            this.cleanOldCaches(key);
+        } catch (e) {
+            console.warn('[IA] Error guardando cache:', e);
+        }
+    },
+
+    /**
+     * Remove old cache entries to avoid localStorage bloat
+     */
+    cleanOldCaches(currentKey) {
+        try {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (k && k.startsWith(this.CACHE_PREFIX) && k !== currentKey) {
+                    localStorage.removeItem(k);
+                }
+            }
+        } catch (e) { /* silent */ }
     },
 
     /**
@@ -128,12 +197,26 @@ const IAModule = {
             }
         }
 
+        // Vista 3 - Comparativo Temporal
+        const promHist = currentWeekData.reduce((s, r) => s + (r[COLS.PROMEDIO_HIST] || 0), 0);
+        const varVsProm = promHist > 0 ? ((totalCasos - promHist) / promHist * 100).toFixed(1) : 0;
+
+        // Vista 19 - Z-Score Total
+        const totalRow = (window.STATE_DATA.allDataHistory_total || []).find(r => r[COLS.ID_SEMANA] === maxSemana);
+        const zScoreTotal = totalRow ? (totalRow[COLS.Z_SCORE] || 0) : 0;
+        const anomalias = currentWeekData.filter(r => Math.abs(r[COLS.Z_SCORE] || 0) > 1.5).length;
+
+        // Vista 18 - Aceleración (media móvil 4s vs 8s)
+        const mm4s = totalRow ? (totalRow[COLS.MEDIA_MOVIL_4S] || 0) : 0;
+        const mm8s = totalRow ? (totalRow[COLS.MEDIA_MOVIL_8S] || 0) : 0;
+        const aceleracion = mm8s > 0 ? ((mm4s - mm8s) / mm8s * 100).toFixed(1) : 0;
+
         return {
             comunaName,
             semanaId: maxSemana,
             totalCasos,
-            totalCasosAnt,      // Added for Vista 15
-            totalCasosYearAnt,  // Added for Vista 15
+            totalCasosAnt,
+            totalCasosYearAnt,
             varSemanal,
             varAnual,
             avgZScore: avgZScore.toFixed(2),
@@ -142,16 +225,25 @@ const IAModule = {
             alertasCriticas,
             highRiskDelitos,
             numDelitos: currentWeekData.length,
-            // Vista 15 specific derived data
             v15_risk: avgZScore > 1 ? 'ALTO' : (avgZScore > 0.5 ? 'MEDIO' : 'BAJO'),
-            // CEAD Context
+            // Vista 3
+            promHist: promHist.toFixed(0),
+            varVsProm,
+            // Vista 18
+            mm4s: mm4s.toFixed(1),
+            mm8s: mm8s.toFixed(1),
+            aceleracion,
+            // Vista 19
+            zScoreTotal: parseFloat(zScoreTotal).toFixed(2),
+            anomalias,
+            // CEAD
             ceadSummary,
             ceadTrend
         };
     },
 
     /**
-     * Generate all 13 interpretations in a single API call
+     * Generate all interpretations — uses localStorage cache (7 días / por semana+comuna)
      */
     async generateAllInterpretations() {
         if (this.isLoading) return;
@@ -162,13 +254,25 @@ const IAModule = {
         this.isLoading = true;
 
         try {
+            // 1. Intentar cargar desde cache
+            const cached = this.loadFromCache();
+            if (cached && Object.keys(cached).length > 0) {
+                this.interpretations = cached;
+                this.isLoaded = true;
+                this.isLoading = false;
+                console.log('[IA] ✅ Interpretaciones cargadas desde cache');
+                return this.interpretations;
+            }
+
+            // 2. Sin cache válido → llamar API
             const context = this.buildDataContext();
             if (!context) {
-                console.warn('No data available for AI interpretation');
+                console.warn('[IA] No data available for AI interpretation');
                 this.isLoading = false;
                 return this.getDefaultInterpretations();
             }
 
+            console.log('[IA] Cache vacío/expirado, consultando API...');
             const prompt = this.buildPrompt(context);
 
             const requestBody = {
@@ -198,7 +302,7 @@ const IAModule = {
 
             if (!response.ok) {
                 const errBody = await response.text();
-                console.error('API Error:', errBody);
+                console.error('[IA] API Error:', errBody);
                 throw new Error(`API Error: ${response.status} - ${errBody}`);
             }
 
@@ -209,8 +313,12 @@ const IAModule = {
             this.interpretations = this.parseAIResponse(content);
             this.isLoaded = true;
 
+            // 3. Guardar en cache para reutilizar durante la semana
+            this.saveToCache(this.interpretations);
+            console.log('[IA] ✅ Interpretaciones generadas y guardadas en cache');
+
         } catch (error) {
-            console.error('Error generating AI interpretations:', error);
+            console.error('[IA] Error generating AI interpretations:', error);
             this.interpretations = this.getDefaultInterpretations();
         }
 
@@ -237,6 +345,12 @@ DATOS ACTUALES:
 - Alertas críticas: ${context.alertasCriticas}
 - Top 5 delitos: ${context.topDelitos.join(', ')}
 - Delitos alto riesgo: ${context.highRiskDelitos.join(', ')}
+- Promedio histórico semanal: ${context.promHist}
+- Variación vs promedio histórico: ${context.varVsProm}%
+- Media Móvil 4S: ${context.mm4s}, Media Móvil 8S: ${context.mm8s}
+- Aceleración (4S vs 8S): ${context.aceleracion}%
+- Z-Score Total: ${context.zScoreTotal}
+- Anomalías (|Z|>1.5): ${context.anomalias}
 - Info CEAD: ${context.ceadSummary}, Tendencia: ${context.ceadTrend}
 
 Data para vista15 (Diagnóstico Inmediato):
@@ -254,7 +368,7 @@ Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser
 {
   "vista1": "Interpretación sobre la situación general de seguridad",
   "vista2": "Interpretación sobre alertas activas y anomalías detectadas",
-  "vista3": "Interpretación sobre si es un hecho aislado o tendencia sostenida",
+  "vista3": "COMPARATIVO TEMPORAL: Compara los ${context.totalCasos} casos actuales vs semana anterior (${context.totalCasosAnt}, Δ${context.varSemanal}%), vs misma semana año anterior (${context.totalCasosYearAnt}, Δ${context.varAnual}%), y vs promedio histórico (${context.promHist}, Δ${context.varVsProm}%). Diagnostica si hay alza consistente, baja o sin patrón claro.",
   "vista4": "Interpretación sobre la gravedad del perfil delictual (matriz de riesgo)",
   "vista5": "Interpretación sobre violencia vs delitos menores",
   "vista6": "Interpretación sobre comparación regional",
@@ -269,8 +383,8 @@ Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser
   "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo.",
   "vista16": "Interpretación sobre demografía y tasas delictuales por habitante",
   "vista17": "Interpretación sobre ranking regional y contexto geográfico",
-  "vista18": "Análisis táctico de rachas y patrones de repetición",
-  "vista19": "Análisis estadístico detallado de desviaciones y anomalías",
+  "vista18": "ACELERACIÓN DEL CRECIMIENTO: La media móvil 4S es ${context.mm4s} y la 8S es ${context.mm8s} (aceleración: ${context.aceleracion}%). Interpreta si el crecimiento delictual se está acelerando o desacelerando, y qué implica operativamente.",
+  "vista19": "NORMALIDAD ESTADÍSTICA Z-SCORE: El Z-Score total es ${context.zScoreTotal} con ${context.anomalias} anomalías detectadas (|Z|>1.5). Clasifica la semana (normal/atípica/extrema) e interpreta la probabilidad estadística de este nivel de delincuencia.",
   "vista20": "Resumen ejecutivo integral y estado de alertas críticas",
   "vista21": "Análisis de evolución mensual CEAD",
   "vista22": "Comparativa anual/mensual CEAD",
