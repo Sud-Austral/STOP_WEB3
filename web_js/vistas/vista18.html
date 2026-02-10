@@ -1,280 +1,602 @@
-﻿<!-- Vista 18: Tablero Táctico y Rachas -->
+﻿<!-- Vista 18: Tasa de Crecimiento (Aceleración) -->
 <style>
-    /* Vista compacta para PDF */
-    .badge-pill {
-        padding: 2px 6px;
-        border-radius: 99px;
-        font-size: 0.65rem;
-        font-weight: 600;
-        display: inline-block;
-        text-align: center;
-        min-width: 50px;
+    .performance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Outfit', sans-serif;
     }
 
-    .bg-soft-danger {
-        background: #fee2e2;
-        color: #dc2626;
-    }
-
-    .bg-soft-success {
-        background: #dcfce7;
-        color: #16a34a;
-    }
-
-    .bg-soft-warning {
-        background: #ffedd5;
-        color: #c2410c;
-    }
-
-    .bg-soft-gray {
-        background: #f3f4f6;
-        color: #4b5563;
-    }
-
-    .kpi-sub {
-        font-size: 0.65rem;
-        color: var(--color-text-muted);
-        margin-top: 2px;
-    }
-
-    /* Tabla compacta */
-    .data-table-compact th {
-        padding: 0.35rem 0.4rem;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        background: linear-gradient(180deg, #f8fafc, #f1f5f9);
-        border-bottom: 2px solid #3b82f6;
-    }
-
-    .data-table-compact td {
-        padding: 0.3rem 0.4rem;
-        font-size: 0.75rem;
-        line-height: 1.2;
-    }
-
-    .data-table-compact tr {
+    .performance-table tr {
         border-bottom: 1px solid #e2e8f0;
     }
 
-    .data-table-compact tbody tr:nth-child(odd) {
-        background-color: #f8fafc;
+    .performance-table td {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
     }
 
-    .data-table-compact tbody tr:nth-child(even) {
-        background-color: #fff;
-    }
-
-    /* Delito name compacto */
-    .delito-name {
+    .performance-table td:first-child {
         font-weight: 600;
-        font-size: 0.75rem;
         color: #1e293b;
+        background: #f8fafc;
+        width: 65%;
+    }
+
+    .performance-table td:last-child {
+        text-align: right;
+        font-weight: 700;
+        width: 35%;
+    }
+
+    .row-highlight-yellow td {
+        background: #fef3c7 !important;
+        color: #92400e;
+    }
+
+    .conclusion-row td {
+        background: linear-gradient(90deg, #fef3c7, #fde68a) !important;
+    }
+
+    .conclusion-row td:last-child {
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .conclusion-aumento {
+        color: #dc2626 !important;
+    }
+
+    .conclusion-disminucion {
+        color: #16a34a !important;
+    }
+
+    .conclusion-estable {
+        color: #64748b !important;
+    }
+
+    .description-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.6rem 0.8rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.75rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+
+    .description-box strong {
+        color: #dc2626;
+    }
+
+    .card-header {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+        border-left: 4px solid var(--color-primary);
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.6rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .card-header h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-text);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .indicator-card {
+        padding: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Vista 18 Specific */
+    .accel-alert {
+        border-radius: 8px;
+        padding: 0.65rem 1rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.78rem;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 0.5rem;
     }
 
-    .delito-name::before {
-        content: '';
-        width: 3px;
-        height: 12px;
-        background: #3b82f6;
-        border-radius: 2px;
-        flex-shrink: 0;
+    .accel-alert-danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
     }
 
-    .row-max .delito-name::before {
-        background: #f59e0b;
+    .accel-alert-success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #16a34a;
     }
 
-    /* KPIs compactos */
-    .kpi-grid-compact {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 0.75rem;
+    .accel-alert.hidden {
+        display: none;
     }
 
-    .kpi-card-compact {
-        background: var(--color-bg);
-        border-radius: 8px;
-        padding: 0.5rem 0.75rem;
-        text-align: center;
-        border: 1px solid var(--color-border);
+    .chart-wrap-18 {
+        position: relative;
+        height: 320px;
+        margin-top: 0.5rem;
     }
 
-    .kpi-card-compact .kpi-label {
+    .detail-table-18 {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .detail-table-18 thead th {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        padding: 0.5rem 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        text-align: left;
+        background: #f8fafc;
+    }
+
+    .detail-table-18 thead th:not(:first-child) {
+        text-align: right;
+    }
+
+    .detail-table-18 tbody td {
+        padding: 0.45rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .detail-table-18 tbody td:not(:first-child) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .detail-table-18 tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .pill-sm {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
         font-size: 0.65rem;
-        font-weight: 600;
-        color: var(--color-text-muted);
-        margin-bottom: 2px;
+        font-weight: 700;
     }
 
-    .kpi-card-compact .kpi-value {
-        font-size: 1.25rem;
-        font-weight: 800;
+    .pill-sm-danger {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .pill-sm-success {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .pill-sm-neutral {
+        background: #f1f5f9;
+        color: #64748b;
     }
 </style>
 
-<div class="card" style="padding: 0.75rem;">
-    <!-- Location/Week Row - Compacto -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <div style="font-size: 0.7rem; color: var(--color-primary); font-weight: 600;">
+<!-- Location/Week Header -->
+<div class="card" style="padding: 0.8rem; margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-            <span style="margin: 0 4px; color: #cbd5e1;">/</span>
+            <span style="margin: 0 6px; color: #cbd5e1;">/</span>
             <span class="semana-fill">--</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
+</div>
 
-    <!-- Header compacto -->
-    <div
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 3px solid var(--color-primary); padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; border-radius: 0 6px 6px 0;">
-        <h2 style="font-size: 1.1rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            Análisis Táctico y Rachas</h2>
-        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.75rem;">Identificación de patrones de
-            repetición y tendencias a corto plazo</p>
+<!-- Alert Strip -->
+<div class="accel-alert hidden" id="v18_alert">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span id="v18_alert_text"></span>
+</div>
+
+<!-- Pregunta Guía -->
+<div class="description-box">
+    <i class="fa-solid fa-circle-question" style="color: var(--color-primary);"></i>
+    <strong>Pregunta Guía:</strong> ¿El problema está acelerando o desacelerando su crecimiento?
+    — Medición de la segunda derivada: no solo si sube/baja, sino si la velocidad de cambio está aumentando o
+    disminuyendo.
+</div>
+
+<!-- KPI Cards -->
+<div class="cards-grid">
+    <!-- T31: Crecimiento 4 Semanas -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>31. Crecimiento Corto Plazo (4 Semanas)</h2>
+        </div>
+        <table class="performance-table">
+            <tr>
+                <td>Tasa Crecimiento 4S</td>
+                <td id="v18_crec4s">--</td>
+            </tr>
+            <tr>
+                <td>MM4S Actual</td>
+                <td id="v18_mm4s">--</td>
+            </tr>
+            <tr>
+                <td>MM4S Hace 4 Semanas</td>
+                <td id="v18_mm4s_lag4">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td>Conclusión</td>
+                <td id="v18_concl_cp">--</td>
+            </tr>
+        </table>
     </div>
 
-    <!-- KPIs Compactos -->
-    <div class="kpi-grid-compact">
-        <div class="kpi-card-compact">
-            <div class="kpi-label">Rachas Activas (>2 sem)</div>
-            <div class="kpi-value text-danger" id="v18_rachas">--</div>
-            <div class="kpi-sub">Focos persistentes</div>
+    <!-- Crecimiento 8 Semanas -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>18a. Crecimiento Medio Plazo (8 Semanas)</h2>
         </div>
-        <div class="kpi-card-compact">
-            <div class="kpi-label">Tendencia Predominante</div>
-            <div class="kpi-value" id="v18_tendencia">--</div>
-            <div class="kpi-sub">Corto Plazo</div>
-        </div>
-        <div class="kpi-card-compact">
-            <div class="kpi-label">Delta Neto Semanal</div>
-            <div class="kpi-value" id="v18_delta">--</div>
-            <div class="kpi-sub">Variación agregada</div>
-        </div>
+        <table class="performance-table">
+            <tr>
+                <td>Tasa Crecimiento 8S</td>
+                <td id="v18_crec8s">--</td>
+            </tr>
+            <tr>
+                <td>MM8S Actual</td>
+                <td id="v18_mm8s">--</td>
+            </tr>
+            <tr>
+                <td>MM8S Hace 8 Semanas</td>
+                <td id="v18_mm8s_lag8">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td>Conclusión</td>
+                <td id="v18_concl_mp">--</td>
+            </tr>
+        </table>
     </div>
 
-    <!-- Tabla compacta -->
-    <h4 style="font-size: 0.8rem; font-weight: 700; margin: 0.5rem 0 0.35rem 0; color: var(--color-text);">Detalle
-        Operativo por Delito</h4>
-    <div style="overflow-x: auto;">
-        <table class="data-table data-table-compact table-striped" style="width: 100%;">
+    <!-- Aceleración (Delta) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>18b. Δ entre Tasas (Aceleración)</h2>
+        </div>
+        <table class="performance-table">
+            <tr>
+                <td>Crec. 4S (Corto Plazo)</td>
+                <td id="v18_delta_cp">--</td>
+            </tr>
+            <tr>
+                <td>Crec. 8S (Medio Plazo)</td>
+                <td id="v18_delta_mp">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Δ Aceleración (CP − MP)</td>
+                <td id="v18_accel">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td>Momentum</td>
+                <td id="v18_momentum">--</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- T32: Crecimiento Estructural -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>32. Crecimiento Estructural (YTD)</h2>
+        </div>
+        <table class="performance-table">
+            <tr>
+                <td>Variación Acumulada Anual</td>
+                <td id="v18_ytd">--</td>
+            </tr>
+            <tr>
+                <td>Acumulado Año Actual</td>
+                <td id="v18_acum_actual">--</td>
+            </tr>
+            <tr>
+                <td>Acumulado Año Anterior</td>
+                <td id="v18_acum_ant">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td>Tendencia Estructural</td>
+                <td id="v18_concl_lp">--</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Chart: Gráfico de Velas -->
+<div class="card indicator-card" style="margin-top: 0.8rem;">
+    <div class="card-header">
+        <h2>18c. Aceleración Semanal (Últimas 26 Semanas)</h2>
+    </div>
+    <div class="description-box" style="margin-top: 0.5rem;">
+        <span style="color: #dc2626;">■</span> Rojo = Aceleración (crecimiento aumentando) &nbsp;
+        <span style="color: #16a34a;">■</span> Verde = Desaceleración (crecimiento disminuyendo) &nbsp;
+        <span style="color: #3b82f6;">---</span> Línea cero &nbsp;
+        <span style="color: #dc262680;">- -</span> Umbral ±5%
+    </div>
+    <div class="chart-wrap-18">
+        <canvas id="chartAcceleration18"></canvas>
+    </div>
+</div>
+
+<!-- Detail Table -->
+<div class="card indicator-card" style="margin-top: 0.8rem;">
+    <div class="card-header">
+        <h2>18d. Detalle Semanal (Últimas 12 Semanas)</h2>
+    </div>
+    <div style="overflow-x: auto; margin-top: 0.5rem;">
+        <table class="detail-table-18">
             <thead>
                 <tr>
-                    <th style="width: 38%; text-align: left;">Delito</th>
-                    <th style="text-align:center; width: 12%;">Racha (Sem)</th>
-                    <th style="text-align:center; width: 14%;">Tendencia</th>
-                    <th style="text-align:center; width: 10%;">Delta</th>
-                    <th style="text-align:center; width: 12%;">Estado</th>
+                    <th>Semana</th>
+                    <th>Casos</th>
+                    <th>MM 4S</th>
+                    <th>Crec. 4S</th>
+                    <th>Crec. YTD</th>
+                    <th>Aceleración</th>
+                    <th>Estado</th>
                 </tr>
             </thead>
-            <tbody id="v18_t_body">
+            <tbody id="v18_detail_body">
                 <tr>
-                    <td colspan="5" class="text-center text-muted">Cargando...</td>
+                    <td colspan="7" style="text-align:center; color: #94a3b8;">Cargando datos...</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <div id="chartSourceFooter18" style="margin-top: 0.25rem;"></div>
 </div>
 
+<!-- Source Footer -->
+<div id="chartSourceFooter18" style="margin-top: 0.5rem;"></div>
+
 <script>
-    (async function initVista18() {
-        const waitForData = () => new Promise(resolve => {
-            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
-            check();
-        });
-        await waitForData();
+    (function () {
+        function waitForData(cb) {
+            if (window.STATE_DATA && window.STATE_DATA.isLoaded) { cb(); return; }
+            window.addEventListener('dataLoaded', cb);
+        }
 
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
-        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
+        waitForData(() => {
+            const S = window.STATE_DATA;
+            const C = window.COLS;
 
-        const data = STATE_DATA.allDataHistory;
-        const maxWeek = Math.max(...data.map(r => r[COLS.ID_SEMANA]));
-        const currentData = data.filter(r => r[COLS.ID_SEMANA] === maxWeek);
+            // Fill comuna/semana
+            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName || 'Sin Comuna');
+            document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle || '--');
 
-        let rachaCount = 0;
-        let totalDelta = 0;
-        let trendMap = { 'ALZA': 0, 'BAJA': 0, 'ESTABLE': 0 };
+            // Helpers
+            const fD = v => (parseFloat(v) || 0).toFixed(1).replace('.', ',');
+            const fN = v => Math.round(v).toLocaleString('es-CL');
+            const fSign = v => { const n = parseFloat(v) || 0; return (n > 0 ? '+' : '') + fD(n); };
+            const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
 
-        const rows = currentData
-            .sort((a, b) => b[COLS.CASOS_ACTUAL] - a[COLS.CASOS_ACTUAL]);
-
-        // #15 - Find max cases for highlight
-        const maxCases = Math.max(...rows.map(r => r[COLS.CASOS_ACTUAL] || 0));
-
-        const tbody = document.getElementById('v18_t_body');
-        tbody.innerHTML = '';
-
-        rows.forEach(r => {
-            const racha = (typeof r[COLS.RACHA] === 'number') ? r[COLS.RACHA] : 0;
-            const delta = parseFloat(r[COLS.DELTA]) || 0;
-            const tendencia = r[COLS.TENDENCIA] || 'Estable';
-            const casos = r[COLS.CASOS_ACTUAL] || 0;
-
-            totalDelta += delta;
-
-            if (tendencia.toUpperCase().includes('ALZA') || delta > 0) trendMap['ALZA']++;
-            else if (tendencia.toUpperCase().includes('BAJA') || delta < 0) trendMap['BAJA']++;
-            else trendMap['ESTABLE']++;
-
-            // #13 - Variation colors
-            let rachaClass = 'var-neutral';
-            if (racha > 2) {
-                rachaCount++;
-                rachaClass = 'var-increase';
+            function setConc(id, opts) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (typeof opts === 'string') { el.textContent = opts; return; }
+                el.textContent = opts.text;
+                el.className = opts.cls || '';
             }
 
-            // Badges with semantic colors
-            let trendBadge = 'badge-pill bg-soft-gray';
-            if (tendencia.toUpperCase().includes('ALZA')) trendBadge = 'badge-pill bg-soft-danger';
-            if (tendencia.toUpperCase().includes('BAJA')) trendBadge = 'badge-pill bg-soft-success';
+            // Total history sorted
+            const totalHist = [...S.allDataHistory_total].sort((a, b) => a[C.ID_SEMANA] - b[C.ID_SEMANA]);
+            if (totalHist.length === 0) return;
 
-            // Status logic with consistent colors
-            let status = 'Normal';
-            let statusClass = 'var-neutral';
-            if (racha > 3 || delta > 5) { status = 'Crítico'; statusClass = 'var-increase'; }
-            else if (racha > 1 || delta > 0) { status = 'Atención'; statusClass = 'var-increase'; }
-            else if (delta < 0) { status = 'Mejora'; statusClass = 'var-decrease'; }
+            const curr = totalHist[totalHist.length - 1];
 
-            // #15 - Check if max row
-            const isMax = casos === maxCases;
+            // ─── KPI 1: Crecimiento 4S (T31) ───
+            const cagr4 = curr[C.T31_CAGR] || 0;
+            const mm4s = curr[C.MEDIA_MOVIL_4S] || 0;
+            const mm4sLag = curr[C.MM4S_LAG4] || 0;
 
-            const tr = document.createElement('tr');
-            tr.className = isMax ? 'row-max' : '';
-            tr.innerHTML = `
-                <td><span class="delito-name">${r[COLS.DELITO]}</span></td>
-                <td style="text-align:center;" class="${rachaClass}">${racha > 0 ? racha + ' sem' : '-'}</td>
-                <td style="text-align:center;">
-                    <span class="${trendBadge}">
-                        ${tendencia}
-                    </span>
-                </td>
-                <td style="text-align:center;" class="${delta >= 0 ? 'var-increase' : 'var-decrease'}">
-                    ${delta > 0 ? '+' : ''}${ChartHelper.formatNumber(delta)}
-                </td>
-                <td style="text-align:center;" class="${statusClass}" style="font-weight: 600;">${status}</td>
-            `;
-            tbody.appendChild(tr);
+            setEl('v18_crec4s', fSign(cagr4) + '%');
+            setEl('v18_mm4s', fD(mm4s));
+            setEl('v18_mm4s_lag4', fD(mm4sLag));
+            setConc('v18_concl_cp', cagr4 > 0
+                ? { text: 'Expansión Reciente', cls: 'conclusion-aumento' }
+                : cagr4 < 0
+                    ? { text: 'Contracción Reciente', cls: 'conclusion-disminucion' }
+                    : { text: 'Estable', cls: 'conclusion-estable' });
+
+            // ─── KPI 2: Crecimiento 8S ───
+            const mm8s = curr[C.MEDIA_MOVIL_8S] || 0;
+            const mm8sLag = totalHist.length >= 9 ? (totalHist[totalHist.length - 9][C.MEDIA_MOVIL_8S] || 0) : 0;
+            const cagr8 = mm8sLag > 0 ? ((mm8s / mm8sLag) - 1) * 100 : 0;
+
+            setEl('v18_crec8s', fSign(cagr8) + '%');
+            setEl('v18_mm8s', fD(mm8s));
+            setEl('v18_mm8s_lag8', fD(mm8sLag));
+            setConc('v18_concl_mp', cagr8 > 0
+                ? { text: 'Expansión Medio Plazo', cls: 'conclusion-aumento' }
+                : cagr8 < 0
+                    ? { text: 'Contracción Medio Plazo', cls: 'conclusion-disminucion' }
+                    : { text: 'Estable', cls: 'conclusion-estable' });
+
+            // ─── KPI 3: Aceleración ───
+            const accel = cagr4 - cagr8;
+            setEl('v18_delta_cp', fSign(cagr4) + '%');
+            setEl('v18_delta_mp', fSign(cagr8) + '%');
+            setEl('v18_accel', fSign(accel) + ' pp');
+
+            let momText, momCls;
+            if (accel > 2 && cagr4 > 0) {
+                momText = '▲▲ Expansión Acelerada';
+                momCls = 'conclusion-aumento';
+            } else if (accel < -2 && cagr4 < 0) {
+                momText = '▼▼ Desaceleración Sostenida';
+                momCls = 'conclusion-disminucion';
+            } else if (accel > 0) {
+                momText = '▲ Acelerando';
+                momCls = 'conclusion-aumento';
+            } else if (accel < 0) {
+                momText = '▼ Desacelerando';
+                momCls = 'conclusion-disminucion';
+            } else {
+                momText = '— Estable';
+                momCls = 'conclusion-estable';
+            }
+            setConc('v18_momentum', { text: momText, cls: momCls });
+
+            // ─── KPI 4: YTD (T32) ───
+            const cagrYTD = curr[C.T32_CAGR] || 0;
+            const acumActual = curr[C.ACUM_ANUAL] || 0;
+            const acumAnt = curr[C.ACUM_ANUAL_ANT] || 0;
+
+            setEl('v18_ytd', fSign(cagrYTD) + '%');
+            setEl('v18_acum_actual', fN(acumActual));
+            setEl('v18_acum_ant', fN(acumAnt));
+            setConc('v18_concl_lp', cagrYTD > 0
+                ? { text: 'Tendencia Estructural Alza', cls: 'conclusion-aumento' }
+                : cagrYTD < 0
+                    ? { text: 'Tendencia Estructural Baja', cls: 'conclusion-disminucion' }
+                    : { text: 'Estable', cls: 'conclusion-estable' });
+
+            // ─── Alert ───
+            const alertEl = document.getElementById('v18_alert');
+            const alertText = document.getElementById('v18_alert_text');
+            if (totalHist.length >= 3) {
+                const r1 = totalHist[totalHist.length - 1][C.T31_CAGR] || 0;
+                const r2 = totalHist[totalHist.length - 2][C.T31_CAGR] || 0;
+                if (r1 > 5 && r2 > 5) {
+                    alertEl.className = 'accel-alert accel-alert-danger';
+                    alertText.textContent = '⚠ ALERTA: Aceleración > +5% durante 2 semanas consecutivas (' + fSign(r2) + '% → ' + fSign(r1) + '%)';
+                } else if (r1 < -5 && r2 < -5) {
+                    alertEl.className = 'accel-alert accel-alert-success';
+                    alertText.textContent = '✓ Contracción sostenida 2 semanas consecutivas (' + fSign(r2) + '% → ' + fSign(r1) + '%)';
+                }
+            }
+
+            // ─── Chart ───
+            const ctx = document.getElementById('chartAcceleration18');
+            if (ctx) {
+                const last26 = totalHist.slice(-26);
+                const labels = last26.map(r => {
+                    const det = r[C.SEMANA_DETALLE] || '';
+                    const m = det.match(/SEMANA (\d+\/\d+)/i);
+                    return m ? 'S' + m[1] : 'W' + r[C.ID_SEMANA];
+                });
+                const vals = last26.map(r => r[C.T31_CAGR] || 0);
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Crec. 4S (%)',
+                            data: vals,
+                            backgroundColor: vals.map(v => v > 0 ? 'rgba(220, 38, 38, 0.6)' : 'rgba(22, 163, 74, 0.6)'),
+                            borderColor: vals.map(v => v > 0 ? '#dc2626' : '#16a34a'),
+                            borderWidth: 1,
+                            borderRadius: 3,
+                            barPercentage: 0.7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: { display: false },
+                            annotation: {
+                                annotations: {
+                                    zeroLine: {
+                                        type: 'line', yMin: 0, yMax: 0,
+                                        borderColor: 'rgba(59, 130, 246, 0.5)', borderWidth: 2, borderDash: [6, 3]
+                                    },
+                                    upperThresh: {
+                                        type: 'line', yMin: 5, yMax: 5,
+                                        borderColor: 'rgba(220, 38, 38, 0.25)', borderWidth: 1, borderDash: [4, 4],
+                                        label: { content: '+5%', display: true, position: 'end', font: { size: 9 }, color: '#dc2626', backgroundColor: 'rgba(254, 242, 242, 0.8)' }
+                                    },
+                                    lowerThresh: {
+                                        type: 'line', yMin: -5, yMax: -5,
+                                        borderColor: 'rgba(22, 163, 74, 0.25)', borderWidth: 1, borderDash: [4, 4],
+                                        label: { content: '-5%', display: true, position: 'end', font: { size: 9 }, color: '#16a34a', backgroundColor: 'rgba(240, 253, 244, 0.8)' }
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#cbd5e1',
+                                borderColor: '#334155', borderWidth: 1, cornerRadius: 8, padding: 10,
+                                callbacks: { label: c => 'Crecimiento: ' + (c.parsed.y > 0 ? '+' : '') + c.parsed.y.toFixed(1) + '%' }
+                            }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#64748b', font: { size: 9 }, maxRotation: 45 }, grid: { display: false } },
+                            y: { ticks: { color: '#64748b', font: { size: 10 }, callback: v => v + '%' }, grid: { color: '#f1f5f9' } }
+                        }
+                    }
+                });
+            }
+
+            // ─── Detail Table ───
+            const tbody = document.getElementById('v18_detail_body');
+            if (tbody) {
+                const last12 = totalHist.slice(-12).reverse();
+                let html = '';
+                last12.forEach(r => {
+                    const det = r[C.SEMANA_DETALLE] || ('Sem ' + r[C.ID_SEMANA]);
+                    const shortSem = det.replace(/SEMANA /i, 'S').replace(/\(del.*?\)/g, '').trim();
+                    const casos = r[C.FRECUENCIA] || 0;
+                    const mm4 = r[C.MEDIA_MOVIL_4S] || 0;
+                    const crec4 = r[C.T31_CAGR] || 0;
+                    const crecY = r[C.T32_CAGR] || 0;
+
+                    // Accel per row
+                    const idx = totalHist.indexOf(r);
+                    const rMM8 = r[C.MEDIA_MOVIL_8S] || 0;
+                    const rMM8L = idx >= 8 ? (totalHist[idx - 8][C.MEDIA_MOVIL_8S] || 0) : 0;
+                    const rC8 = rMM8L > 0 ? ((rMM8 / rMM8L) - 1) * 100 : 0;
+                    const rAcc = crec4 - rC8;
+
+                    const pillCls = rAcc > 2 ? 'pill-sm-danger' : rAcc < -2 ? 'pill-sm-success' : 'pill-sm-neutral';
+                    const pillLbl = rAcc > 2 ? 'Acelera' : rAcc < -2 ? 'Desacelera' : 'Estable';
+
+                    html += '<tr>'
+                        + '<td style="font-weight:600; color:#1e293b;">' + shortSem + '</td>'
+                        + '<td>' + casos.toLocaleString('es-CL') + '</td>'
+                        + '<td>' + fD(mm4) + '</td>'
+                        + '<td style="color:' + (crec4 > 0 ? '#dc2626' : '#16a34a') + '; font-weight:600;">' + fSign(crec4) + '%</td>'
+                        + '<td style="color:' + (crecY > 0 ? '#dc2626' : '#16a34a') + ';">' + fSign(crecY) + '%</td>'
+                        + '<td style="color:' + (rAcc > 0 ? '#dc2626' : '#16a34a') + ';">' + fSign(rAcc) + ' pp</td>'
+                        + '<td><span class="pill-sm ' + pillCls + '">' + pillLbl + '</span></td>'
+                        + '</tr>';
+                });
+                tbody.innerHTML = html;
+            }
+
+            // Source footer
+            if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {
+                var f = document.getElementById('chartSourceFooter18');
+                if (f) f.innerHTML = ChartHelper.getSourceFooterHtml('STOP');
+            }
+
+            console.log('✅ Vista 18 (Aceleración) cargada con éxito');
         });
-
-        // KPIs with #21 Chilean format
-        document.getElementById('v18_rachas').textContent = ChartHelper.formatNumber(rachaCount);
-
-        const mainTrend = Object.keys(trendMap).reduce((a, b) => trendMap[a] >= trendMap[b] ? a : b);
-        const trendEl = document.getElementById('v18_tendencia');
-        trendEl.textContent = mainTrend;
-        trendEl.className = `kpi-value ${mainTrend === 'ALZA' ? 'text-danger' : 'text-success'}`;
-
-        const deltaEl = document.getElementById('v18_delta');
-        deltaEl.textContent = ChartHelper.formatPercent(totalDelta);
-        deltaEl.className = `kpi-value ${totalDelta > 0 ? 'text-danger' : 'text-success'}`;
-
-        // #10 - Add source footer
-        document.getElementById('chartSourceFooter18').innerHTML = ChartHelper.getSourceFooterHtml('STOP');
-
     })();
 </script>

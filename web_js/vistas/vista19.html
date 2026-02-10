@@ -1,194 +1,719 @@
-﻿<!-- Vista 19: Análisis de Anomalías Estadísticas (Z-Score) -->
+﻿<!-- Vista 19: Normalidad Estadística (Z-Score) -->
 <style>
-    .grid-2-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.5rem;
+    .performance-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Outfit', sans-serif;
     }
 
-    @media(max-width: 768px) {
-        .grid-2-col {
+    .performance-table tr {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .performance-table td {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .performance-table td:first-child {
+        font-weight: 600;
+        color: #1e293b;
+        background: #f8fafc;
+        width: 65%;
+    }
+
+    .performance-table td:last-child {
+        text-align: right;
+        font-weight: 700;
+        width: 35%;
+    }
+
+    .row-highlight-yellow td {
+        background: #fef3c7 !important;
+        color: #92400e;
+    }
+
+    .conclusion-row td {
+        background: linear-gradient(90deg, #fef3c7, #fde68a) !important;
+    }
+
+    .conclusion-row td:last-child {
+        font-size: 0.95rem;
+        font-weight: 800;
+    }
+
+    .conclusion-aumento {
+        color: #dc2626 !important;
+    }
+
+    .conclusion-disminucion {
+        color: #16a34a !important;
+    }
+
+    .conclusion-estable {
+        color: #64748b !important;
+    }
+
+    .description-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.6rem 0.8rem;
+        margin-bottom: 0.75rem;
+        font-size: 0.75rem;
+        color: #475569;
+        line-height: 1.4;
+    }
+
+    .description-box strong {
+        color: #dc2626;
+    }
+
+    .card-header {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+        border-left: 4px solid var(--color-primary);
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.6rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .card-header h2 {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-text);
+        margin: 0;
+        letter-spacing: -0.02em;
+    }
+
+    .indicator-card {
+        padding: 0.8rem;
+        margin-top: 0.8rem;
+    }
+
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+    }
+
+    @media (max-width: 768px) {
+        .cards-grid {
             grid-template-columns: 1fr;
         }
     }
 
-    .text-center {
-        text-align: center;
+    /* Semáforo Z-Score */
+    .semaforo-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
     }
 
-    .font-bold {
-        font-weight: 600;
+    .semaforo-light {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 3px solid #e2e8f0;
+        transition: all 0.3s;
     }
 
-    .text-danger-v19 {
+    .semaforo-light.active {
+        border-color: transparent;
+        box-shadow: 0 0 10px currentColor;
+    }
+
+    .semaforo-light.green {
+        background: #22c55e;
+        color: #22c55e;
+    }
+
+    .semaforo-light.yellow {
+        background: #f59e0b;
+        color: #f59e0b;
+    }
+
+    .semaforo-light.red {
+        background: #ef4444;
         color: #ef4444;
     }
 
-    .text-success-v19 {
-        color: #10b981;
+    .semaforo-light:not(.active) {
+        opacity: 0.2;
     }
 
-    .text-warning-v19 {
-        color: #f59e0b;
+    .semaforo-label {
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
+    /* Interpretive text box */
+    .interp-box {
+        background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        margin-top: 0.75rem;
+        font-size: 0.82rem;
+        color: #1e40af;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .interp-box.interp-warning {
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        border-color: #fde68a;
+        color: #92400e;
+    }
+
+    .interp-box.interp-danger {
+        background: linear-gradient(135deg, #fef2f2, #fecaca);
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+
+    .chart-wrap-19 {
+        position: relative;
+        height: 280px;
+        margin-top: 0.5rem;
+    }
+
+    .detail-table-19 {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.75rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .detail-table-19 thead th {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+        padding: 0.5rem 0.5rem;
+        border-bottom: 2px solid #e2e8f0;
+        text-align: left;
+        background: #f8fafc;
+    }
+
+    .detail-table-19 thead th:not(:first-child) {
+        text-align: right;
+    }
+
+    .detail-table-19 thead th:last-child {
+        text-align: center;
+    }
+
+    .detail-table-19 tbody td {
+        padding: 0.45rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+    }
+
+    .detail-table-19 tbody td:not(:first-child) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .detail-table-19 tbody td:last-child {
+        text-align: center;
+    }
+
+    .detail-table-19 tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .pill-sm {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.65rem;
+        font-weight: 700;
+    }
+
+    .pill-sm-danger {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .pill-sm-success {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .pill-sm-warning {
+        background: #fffbeb;
+        color: #d97706;
+    }
+
+    .pill-sm-neutral {
+        background: #f1f5f9;
+        color: #64748b;
     }
 </style>
 
-<div class="card">
-    <!-- Location/Week and Source Row -->
-    <div class="location-source-row"
-        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
-        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+<!-- Location/Week Header -->
+<div class="card" style="padding: 0.8rem; margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600;">
             <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
-            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span style="margin: 0 6px; color: #cbd5e1;">/</span>
             <span class="semana-fill">--</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
+</div>
 
-    <div class="question-section"
-        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); border-left: 4px solid var(--color-primary); padding: 1rem 1.25rem; margin-top: -2rem; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
-        <h2
-            style="font-size: 1.5rem; font-weight: 800; color: var(--color-text); margin: 0 0 0.25rem 0; letter-spacing: -0.02em;">
-            Detector de Anomalías (Z-Score)</h2>
-        <p style="color: var(--color-text-muted); margin: 0; font-size: 0.9rem;">Identificación estadística de
-            comportamientos inusuales (>1.5 desviaciones)</p>
+<!-- Pregunta Guía -->
+<div class="description-box">
+    <i class="fa-solid fa-circle-question" style="color: var(--color-primary);"></i>
+    <strong>Pregunta Guía:</strong> ¿Esta semana representa un evento extraordinario o está dentro de lo esperable
+    históricamente?
+    — Evaluación de rareza estadística mediante Z-Score: mide cuántas desviaciones estándar se aleja del comportamiento
+    histórico normal.
+</div>
+
+<!-- KPI Cards -->
+<div class="cards-grid">
+    <!-- Z-Score Semanal + Semáforo -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>19a. Z-Score Semanal (Total)</h2>
+        </div>
+        <table class="performance-table">
+            <tr>
+                <td>Z-Score Semana Actual</td>
+                <td id="v19_zscore">--</td>
+            </tr>
+            <tr>
+                <td>Promedio Histórico Semanal</td>
+                <td id="v19_prom_hist">--</td>
+            </tr>
+            <tr>
+                <td>Desviación Estándar Histórica</td>
+                <td id="v19_std_hist">--</td>
+            </tr>
+            <tr>
+                <td>Casos Semana Actual</td>
+                <td id="v19_casos">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td>Clasificación</td>
+                <td id="v19_clasif">--</td>
+            </tr>
+        </table>
+        <!-- Semáforo -->
+        <div class="semaforo-wrap" style="margin-top: 0.75rem;">
+            <div class="semaforo-light green" id="v19_sem_green"></div>
+            <div class="semaforo-light yellow" id="v19_sem_yellow"></div>
+            <div class="semaforo-light red" id="v19_sem_red"></div>
+            <span class="semaforo-label" id="v19_sem_label">|Z| &lt; 1 → Normal | 1-2 → Atípico | &gt; 2 →
+                Extremo</span>
+        </div>
     </div>
 
-    <!-- Z-Score KPIs -->
-    <div class="kpi-grid mb-xl">
-        <div class="kpi-card">
-            <div class="kpi-label">Anomalías Graves</div>
-            <div class="kpi-value text-warning-v19" id="v19_anomalies">--</div>
-            <div class="kpi-sub">Z-Score > 1.5 (Alzacrimen)</div>
+    <!-- Límites y Probabilidad -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>19b. Límites de Normalidad (±1.96σ)</h2>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Mayor Desviación</div>
-            <div class="kpi-value" id="v19_max_z">--</div>
-            <div class="kpi-sub" id="v19_max_z_name">--</div>
+        <table class="performance-table">
+            <tr>
+                <td>Límite Inferior (−1.96σ)</td>
+                <td id="v19_lim_inf">--</td>
+            </tr>
+            <tr>
+                <td>Promedio Histórico</td>
+                <td id="v19_prom2">--</td>
+            </tr>
+            <tr>
+                <td>Límite Superior (+1.96σ)</td>
+                <td id="v19_lim_sup">--</td>
+            </tr>
+            <tr>
+                <td>Casos Actuales vs Rango</td>
+                <td id="v19_rango_pos">--</td>
+            </tr>
+            <tr class="row-highlight-yellow">
+                <td>Probabilidad Asociada</td>
+                <td id="v19_prob">--</td>
+            </tr>
+            <tr class="conclusion-row">
+                <td>Diagnóstico</td>
+                <td id="v19_diag">--</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Interpretive Text -->
+<div class="interp-box" id="v19_interp">
+    <i class="fa-solid fa-brain"></i>
+    <span id="v19_interp_text">Calculando interpretación...</span>
+</div>
+
+<!-- Charts Row -->
+<div class="cards-grid" style="margin-top: 0.8rem;">
+    <!-- Gaussian Distribution -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>19c. Distribución Normal — Posición Semana Actual</h2>
         </div>
-        <div class="kpi-card">
-            <div class="kpi-label">Diagnóstico Estadístico</div>
-            <div class="kpi-value" id="v19_global_status">--</div>
-            <div class="kpi-change" id="v19_global_desc">--</div>
+        <div class="chart-wrap-19">
+            <canvas id="chartGaussian19"></canvas>
         </div>
     </div>
 
-    <div class="grid-2-col">
-        <!-- Chart: Z-Score Horizontal Bar -->
-        <div>
-            <h3 class="section-title mb-lg">Distribución de Anomalías</h3>
-            <div class="chart-wrapper chart-wrapper--md">
-                <canvas id="chartZScore"></canvas>
-            </div>
+    <!-- Z-Score by Crime Type -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>19d. Z-Score por Delito (Semana Actual)</h2>
         </div>
-
-        <!-- Detail Table -->
-        <div class="table-container">
-            <h3 class="section-title mb-lg">Detalle de Alertas Significativas</h3>
-            <table class="data-table data-table-bordered table-striped" style="font-size: 0.85rem;">
-                <thead>
-                    <tr>
-                        <th>Delito</th>
-                        <th class="text-center">Z-Score</th>
-                        <th>Conclusión</th>
-                        <th class="text-center">Casos</th>
-                    </tr>
-                </thead>
-                <tbody id="v19_t_body">
-                    <tr>
-                        <td colspan="4" class="text-center">--</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="chart-wrap-19">
+            <canvas id="chartZBar19"></canvas>
         </div>
     </div>
 </div>
 
+<!-- Detail Table -->
+<div class="card indicator-card" style="margin-top: 0.8rem;">
+    <div class="card-header">
+        <h2>19e. Detalle de Anomalías por Delito</h2>
+    </div>
+    <div style="overflow-x: auto; margin-top: 0.5rem;">
+        <table class="detail-table-19">
+            <thead>
+                <tr>
+                    <th>Delito</th>
+                    <th>Casos</th>
+                    <th>Promedio</th>
+                    <th>Desv. Est.</th>
+                    <th>Z-Score</th>
+                    <th>Probabilidad</th>
+                    <th>Clasificación</th>
+                </tr>
+            </thead>
+            <tbody id="v19_detail_body">
+                <tr>
+                    <td colspan="7" style="text-align:center; color: #94a3b8;">Cargando datos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Source Footer -->
+<div id="chartSourceFooter19" style="margin-top: 0.5rem;"></div>
+
 <script>
-    (async function initVista19() {
-        const waitForData = () => new Promise(resolve => {
-            const check = () => (typeof STATE_DATA !== 'undefined' && STATE_DATA.allDataHistory?.length > 0) ? resolve() : setTimeout(check, 100);
-            check();
-        });
-        await waitForData();
-
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = STATE_DATA.comunaName.toUpperCase());
-        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = STATE_DATA.semanaDetalle);
-
-        const data = STATE_DATA.allDataHistory;
-        const maxWeek = Math.max(...data.map(r => r[COLS.ID_SEMANA]));
-        const currentData = data.filter(r => r[COLS.ID_SEMANA] === maxWeek);
-
-        // 1. Process Anomalies
-        const deviations = currentData
-            .map(r => ({ ...r, absZ: Math.abs(parseFloat(r[COLS.Z_SCORE]) || 0) }))
-            .sort((a, b) => b.absZ - a.absZ);
-
-        const significant = deviations.filter(r => r.absZ > 1.5);
-        const maxDev = deviations[0] || { [COLS.Z_SCORE]: 0, [COLS.DELITO]: 'Ninguno' };
-
-        document.getElementById('v19_anomalies').textContent = significant.length;
-        document.getElementById('v19_max_z').textContent = parseFloat(maxDev[COLS.Z_SCORE]).toFixed(2);
-        document.getElementById('v19_max_z_name').textContent = maxDev[COLS.DELITO];
-
-        const isUnstable = significant.length > 2;
-        const statusEl = document.getElementById('v19_global_status');
-        statusEl.textContent = isUnstable ? 'Inestable' : 'Estable';
-        statusEl.className = `kpi-value ${isUnstable ? 'text-danger-v19' : 'text-success-v19'}`;
-        document.getElementById('v19_global_desc').textContent = `${significant.length} focos detectados`;
-
-        // 2. Table
-        const tbody = document.getElementById('v19_t_body');
-        tbody.innerHTML = '';
-        if (significant.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:2rem;">No hay anomalías estadísticas significativas (> 1.5σ)</td></tr>';
-        } else {
-            significant.slice(0, 6).forEach(r => {
-                const z = parseFloat(r[COLS.Z_SCORE]);
-                const conclusion = r[COLS.Z_CONCL] || (Math.abs(z) > 2 ? 'Muy Inusual' : 'Inusual');
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="font-bold">${r[COLS.DELITO]}</td>
-                    <td class="text-center ${z > 0 ? 'text-danger-v19' : 'text-success-v19'} font-bold">${z > 0 ? '+' : ''}${z.toFixed(2)}</td>
-                    <td>${conclusion}</td>
-                    <td class="text-center">${r[COLS.CASOS_ACTUAL]}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+    (function () {
+        function waitForData(cb) {
+            if (window.STATE_DATA && window.STATE_DATA.isLoaded) { cb(); return; }
+            window.addEventListener('dataLoaded', cb);
         }
 
-        // 3. Chart
-        const top10 = deviations.slice(0, 10);
-        const ctx = document.getElementById('chartZScore').getContext('2d');
-        if (window.chart19) window.chart19.destroy();
+        waitForData(function () {
+            var S = window.STATE_DATA;
+            var C = window.COLS;
 
-        window.chart19 = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: top10.map(r => r[COLS.DELITO]),
-                datasets: [{
-                    label: 'Desviación Estándar (σ)',
-                    data: top10.map(r => r[COLS.Z_SCORE]),
-                    backgroundColor: top10.map(r => r[COLS.Z_SCORE] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
-                    borderColor: top10.map(r => r[COLS.Z_SCORE] > 0 ? '#ef4444' : '#10b981'),
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        grid: { color: '#f1f5f9' },
-                        title: { display: true, text: 'Z-Score (0 = Promedio Histórico)' },
-                        suggestedMin: -2, suggestedMax: 2
-                    }
-                },
-                plugins: { legend: { display: true, position: 'top' } }
+            // Fill comuna/semana
+            document.querySelectorAll('.comuna-fill').forEach(function (el) { el.textContent = S.comunaName || 'Sin Comuna'; });
+            document.querySelectorAll('.semana-fill').forEach(function (el) { el.textContent = S.semanaDetalle || '--'; });
+
+            // Helpers
+            var fD = function (v) { return (parseFloat(v) || 0).toFixed(1).replace('.', ','); };
+            var fD2 = function (v) { return (parseFloat(v) || 0).toFixed(2).replace('.', ','); };
+            var setEl = function (id, val) { var e = document.getElementById(id); if (e) e.textContent = val; };
+
+            function setConc(id, opts) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = opts.text;
+                if (opts.cls) el.className = opts.cls;
             }
-        });
 
+            // CDF approximation for standard normal
+            function normCDF(z) {
+                var a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
+                var p = 0.3275911;
+                var sign = z < 0 ? -1 : 1;
+                z = Math.abs(z) / Math.sqrt(2);
+                var t = 1.0 / (1.0 + p * z);
+                var y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-z * z);
+                return 0.5 * (1.0 + sign * y);
+            }
+
+            // Percentile from Z-Score (how many historical weeks are below this)
+            function zToPercentile(z) {
+                return (normCDF(z) * 100).toFixed(0);
+            }
+
+            // Classify Z-Score
+            function classify(absZ) {
+                if (absZ < 1) return { text: 'Normal', cls: 'conclusion-disminucion', pill: 'pill-sm-success' };
+                if (absZ < 2) return { text: 'Atípico', cls: 'conclusion-aumento', pill: 'pill-sm-warning' };
+                return { text: 'Extremo', cls: 'conclusion-aumento', pill: 'pill-sm-danger' };
+            }
+
+            // Get current week data
+            var data = S.allDataHistory;
+            var totalData = S.allDataHistory_total;
+            var maxWeek = Math.max.apply(null, data.map(function (r) { return r[C.ID_SEMANA]; }));
+            var currentIndiv = data.filter(function (r) { return r[C.ID_SEMANA] === maxWeek; });
+
+            // Total row current week
+            var totalRow = totalData.find(function (r) { return r[C.ID_SEMANA] === maxWeek; });
+            if (!totalRow) return;
+
+            var zTotal = parseFloat(totalRow[C.Z_SCORE]) || 0;
+            var absZ = Math.abs(zTotal);
+            var promHist = parseFloat(totalRow[C.PROMEDIO_HIST]) || 0;
+            var stdHist = parseFloat(totalRow[C.STD_HIST]) || 0;
+            var casosActual = parseFloat(totalRow[C.CASOS_ACTUAL] || totalRow[C.FRECUENCIA]) || 0;
+            var clasif = classify(absZ);
+
+            // ─── KPI 1: Z-Score + Semáforo ───
+            setEl('v19_zscore', (zTotal > 0 ? '+' : '') + fD2(zTotal));
+            setEl('v19_prom_hist', fD(promHist));
+            setEl('v19_std_hist', fD(stdHist));
+            setEl('v19_casos', Math.round(casosActual).toLocaleString('es-CL'));
+            setConc('v19_clasif', clasif);
+
+            // Semáforo
+            var semGreen = document.getElementById('v19_sem_green');
+            var semYellow = document.getElementById('v19_sem_yellow');
+            var semRed = document.getElementById('v19_sem_red');
+
+            semGreen.className = 'semaforo-light green' + (absZ < 1 ? ' active' : '');
+            semYellow.className = 'semaforo-light yellow' + (absZ >= 1 && absZ < 2 ? ' active' : '');
+            semRed.className = 'semaforo-light red' + (absZ >= 2 ? ' active' : '');
+
+            // ─── KPI 2: Límites + Probabilidad ───
+            var limInf = promHist - 1.96 * stdHist;
+            var limSup = promHist + 1.96 * stdHist;
+            setEl('v19_lim_inf', fD(Math.max(0, limInf)));
+            setEl('v19_prom2', fD(promHist));
+            setEl('v19_lim_sup', fD(limSup));
+
+            var dentroRango = casosActual >= limInf && casosActual <= limSup;
+            setEl('v19_rango_pos', dentroRango ? 'Dentro del rango' : (casosActual > limSup ? 'Sobre límite' : 'Bajo límite'));
+
+            var pct = zToPercentile(zTotal);
+            setEl('v19_prob', pct + '% de semanas');
+
+            var diagText = absZ < 1 ? 'Comportamiento Normal' : absZ < 2 ? 'Comportamiento Atípico' : 'Evento Extremo';
+            var diagCls = absZ < 1 ? 'conclusion-disminucion' : 'conclusion-aumento';
+            setConc('v19_diag', { text: diagText, cls: diagCls });
+
+            // ─── Interpretive Text ───
+            var interpEl = document.getElementById('v19_interp');
+            var interpText = document.getElementById('v19_interp_text');
+
+            var interpStr = 'Z=' + fD2(zTotal) + ' → ';
+            if (absZ < 1) {
+                interpStr += 'Dentro de rango normal (' + pct + '% de semanas históricas son iguales o menores)';
+                interpEl.className = 'interp-box';
+            } else if (absZ < 2) {
+                interpStr += 'Comportamiento atípico. Solo el ' + (100 - parseInt(pct)) + '% de semanas históricas superan este nivel';
+                interpEl.className = 'interp-box interp-warning';
+            } else {
+                interpStr += 'Evento estadísticamente extremo. Menos del ' + (100 - parseInt(pct)) + '% de semanas históricas alcanzaron este valor';
+                interpEl.className = 'interp-box interp-danger';
+            }
+            interpText.textContent = interpStr;
+
+            // ─── Chart 1: Gaussian ───
+            var ctxG = document.getElementById('chartGaussian19');
+            if (ctxG) {
+                var gLabels = [];
+                var gData = [];
+                for (var xi = -3.5; xi <= 3.5; xi += 0.1) {
+                    gLabels.push(xi.toFixed(1));
+                    gData.push(Math.exp(-0.5 * xi * xi) / Math.sqrt(2 * Math.PI));
+                }
+
+                // Find closest index to current Z
+                var closestIdx = 0;
+                var minDist = Infinity;
+                for (var gi = 0; gi < gLabels.length; gi++) {
+                    var dist = Math.abs(parseFloat(gLabels[gi]) - zTotal);
+                    if (dist < minDist) { minDist = dist; closestIdx = gi; }
+                }
+
+                // Fill colors
+                var fillColors = gData.map(function (v, i) {
+                    var x = parseFloat(gLabels[i]);
+                    if (Math.abs(x) > 1.96) return 'rgba(239, 68, 68, 0.3)';
+                    if (Math.abs(x) > 1) return 'rgba(245, 158, 11, 0.15)';
+                    return 'rgba(34, 197, 94, 0.15)';
+                });
+
+                if (window.chart19g) window.chart19g.destroy();
+                window.chart19g = new Chart(ctxG, {
+                    type: 'bar',
+                    data: {
+                        labels: gLabels,
+                        datasets: [{
+                            label: 'Densidad',
+                            data: gData,
+                            backgroundColor: fillColors,
+                            borderColor: 'rgba(99, 102, 241, 0.3)',
+                            borderWidth: 0,
+                            barPercentage: 1.0,
+                            categoryPercentage: 1.0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: { display: false },
+                            annotation: {
+                                annotations: {
+                                    currentZ: {
+                                        type: 'line',
+                                        xMin: closestIdx, xMax: closestIdx,
+                                        borderColor: '#1e40af', borderWidth: 3,
+                                        label: {
+                                            content: 'Z=' + fD2(zTotal),
+                                            display: true,
+                                            position: 'start',
+                                            backgroundColor: '#1e40af',
+                                            color: '#fff',
+                                            font: { size: 11, weight: 'bold' },
+                                            padding: 4
+                                        }
+                                    },
+                                    limLeft: {
+                                        type: 'line',
+                                        xMin: 15, xMax: 15,
+                                        borderColor: 'rgba(239, 68, 68, 0.4)', borderWidth: 1, borderDash: [4, 4],
+                                        label: { content: '-1.96σ', display: true, position: 'end', font: { size: 8 }, color: '#ef4444', backgroundColor: 'rgba(254,242,242,0.8)' }
+                                    },
+                                    limRight: {
+                                        type: 'line',
+                                        xMin: 54, xMax: 54,
+                                        borderColor: 'rgba(239, 68, 68, 0.4)', borderWidth: 1, borderDash: [4, 4],
+                                        label: { content: '+1.96σ', display: true, position: 'end', font: { size: 8 }, color: '#ef4444', backgroundColor: 'rgba(254,242,242,0.8)' }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#94a3b8', font: { size: 8 }, maxRotation: 0,
+                                    callback: function (val, idx) {
+                                        var label = gLabels[idx];
+                                        return [-3, -2, -1, 0, 1, 2, 3].indexOf(parseFloat(label)) !== -1 ? label + 'σ' : '';
+                                    }
+                                },
+                                grid: { display: false }
+                            },
+                            y: {
+                                display: false,
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ─── Chart 2: Z-Score Bar by Crime ───
+            var ctxB = document.getElementById('chartZBar19');
+            if (ctxB) {
+                var sorted = currentIndiv.slice().sort(function (a, b) {
+                    return Math.abs(b[C.Z_SCORE] || 0) - Math.abs(a[C.Z_SCORE] || 0);
+                });
+                var top10 = sorted.slice(0, 10);
+
+                if (window.chart19b) window.chart19b.destroy();
+                window.chart19b = new Chart(ctxB, {
+                    type: 'bar',
+                    data: {
+                        labels: top10.map(function (r) { return r[C.DELITO]; }),
+                        datasets: [{
+                            label: 'Z-Score (σ)',
+                            data: top10.map(function (r) { return r[C.Z_SCORE] || 0; }),
+                            backgroundColor: top10.map(function (r) {
+                                var z = r[C.Z_SCORE] || 0;
+                                return z > 0 ? 'rgba(220, 38, 38, 0.6)' : 'rgba(22, 163, 74, 0.6)';
+                            }),
+                            borderColor: top10.map(function (r) {
+                                return (r[C.Z_SCORE] || 0) > 0 ? '#dc2626' : '#16a34a';
+                            }),
+                            borderWidth: 1,
+                            borderRadius: 3
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: { display: false },
+                            annotation: {
+                                annotations: {
+                                    zero: { type: 'line', xMin: 0, xMax: 0, borderColor: 'rgba(59,130,246,0.4)', borderWidth: 2, borderDash: [4, 3] }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#64748b', font: { size: 9 }, callback: function (v) { return v + 'σ'; } },
+                                grid: { color: '#f1f5f9' },
+                                suggestedMin: -3, suggestedMax: 3
+                            },
+                            y: {
+                                ticks: { color: '#334155', font: { size: 9 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ─── Detail Table ───
+            var tbody = document.getElementById('v19_detail_body');
+            if (tbody) {
+                var sorted2 = currentIndiv.slice().sort(function (a, b) {
+                    return Math.abs(b[C.Z_SCORE] || 0) - Math.abs(a[C.Z_SCORE] || 0);
+                });
+                var html = '';
+                sorted2.forEach(function (r) {
+                    var z = parseFloat(r[C.Z_SCORE]) || 0;
+                    var az = Math.abs(z);
+                    var cl = classify(az);
+                    var prob = zToPercentile(z);
+                    var prom = parseFloat(r[C.PROMEDIO_HIST]) || 0;
+                    var std = parseFloat(r[C.STD_HIST]) || 0;
+                    var casos = r[C.CASOS_ACTUAL] || r[C.FRECUENCIA] || 0;
+
+                    html += '<tr>'
+                        + '<td style="font-weight:600; color:#1e293b;">' + r[C.DELITO] + '</td>'
+                        + '<td>' + (typeof casos === 'number' ? casos.toLocaleString('es-CL') : casos) + '</td>'
+                        + '<td>' + fD(prom) + '</td>'
+                        + '<td>' + fD(std) + '</td>'
+                        + '<td style="color:' + (z > 0 ? '#dc2626' : '#16a34a') + '; font-weight:700;">' + (z > 0 ? '+' : '') + fD2(z) + '</td>'
+                        + '<td>' + prob + '%</td>'
+                        + '<td><span class="pill-sm ' + cl.pill + '">' + cl.text + '</span></td>'
+                        + '</tr>';
+                });
+                tbody.innerHTML = html;
+            }
+
+            // Source footer
+            if (typeof ChartHelper !== 'undefined' && ChartHelper.getSourceFooterHtml) {
+                var f = document.getElementById('chartSourceFooter19');
+                if (f) f.innerHTML = ChartHelper.getSourceFooterHtml('STOP');
+            }
+
+            console.log('✅ Vista 19 (Z-Score / Normalidad) cargada con éxito');
+        });
     })();
 </script>
