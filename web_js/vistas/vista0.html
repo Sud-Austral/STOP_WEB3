@@ -787,15 +787,33 @@
         </table>
     </div>
 
-    <!-- Tarjeta 22: Correlación (Largo Plazo) [Placeholder] -->
+    <!-- Tarjeta 22: Estacionalidad Histórica Crítica -->
     <div class="card indicator-card">
         <div class="card-header">
-            <h2>22. Correlación (Largo Plazo)</h2>
+            <h2>22. Estacionalidad Histórica Crítica</h2>
         </div>
-        <div class="description-box">Patrones de asociación histórica (3 años).</div>
-        <div class="text-center py-4 text-muted fst-italic">
-            En desarrollo
-        </div>
+        <div class="description-box">Identifica el mes y trimestre con mayor frecuencia de casos históricamente.
+            Permite la planificación preventiva y la asignación de vacaciones o refuerzos del personal.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr class="row-highlight-yellow">
+                    <td>Mes con Mayor Frecuencia (Histórico)</td>
+                    <td id="v0_t22_mes" style="font-weight: 700;">--</td>
+                </tr>
+                <tr>
+                    <td>Proporción sobre Promedio Mensual</td>
+                    <td id="v0_t22_mes_pct">--</td>
+                </tr>
+                <tr class="row-highlight-yellow">
+                    <td>Trimestre con Mayor Frecuencia (Histórico)</td>
+                    <td id="v0_t22_trim" style="font-weight: 700;">--</td>
+                </tr>
+                <tr>
+                    <td>Proporción sobre Promedio Trimestral</td>
+                    <td id="v0_t22_trim_pct">--</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Tarjeta 23: Correlación Corto Plazo -->
@@ -823,6 +841,36 @@
                 <tr class="conclusion-row">
                     <td>Interpretación</td>
                     <td id="v0_t23_concl" class="conclusion-estable">--</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tarjeta 24: Correlación de Factores (Tendencia Largo Plazo) -->
+    <div class="card indicator-card">
+        <div class="card-header">
+            <h2>24. Correlación de Factores (Largo Plazo)</h2>
+        </div>
+        <div class="description-box">Evalúa si las relaciones entre tipos delictuales son estructurales o
+            circunstanciales mediante análisis de toda la historia disponible. Base para políticas públicas de
+            prevención de largo aliento.</div>
+        <table class="performance-table">
+            <tbody>
+                <tr class="row-highlight-yellow">
+                    <td id="v0_t24_pair1_label">1. --</td>
+                    <td id="v0_t24_pair1_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t24_pair2_label">2. --</td>
+                    <td id="v0_t24_pair2_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t24_pair3_label">3. --</td>
+                    <td id="v0_t24_pair3_val">--</td>
+                </tr>
+                <tr>
+                    <td id="v0_t24_pair4_label">4. --</td>
+                    <td id="v0_t24_pair4_val">--</td>
                 </tr>
             </tbody>
         </table>
@@ -1434,6 +1482,31 @@
             t23_val > 0.5 ? { text: 'Fuerte', cls: 'conclusion-disminucion' } :
                 t23_val > 0.3 ? { text: 'Moderada', cls: 'conclusion-estable' } :
                     { text: 'Debil/Nula', cls: 'conclusion-estable' });
+
+        // =====================
+        // TARJETA 22: Estacionalidad Histórica Crítica
+        // =====================
+        setEl('v0_t22_mes', d[COLS.T22_MES_NOMBRE] || 'N/D');
+        setEl('v0_t22_mes_pct', (d[COLS.T22_MES_PCT] || 0) > 0 ? '+' + fD(d[COLS.T22_MES_PCT]) + '%' : fD(d[COLS.T22_MES_PCT] || 0) + '%');
+        setEl('v0_t22_trim', d[COLS.T22_TRIMESTRE_NOMBRE] || 'N/D');
+        setEl('v0_t22_trim_pct', (d[COLS.T22_TRIMESTRE_PCT] || 0) > 0 ? '+' + fD(d[COLS.T22_TRIMESTRE_PCT]) + '%' : fD(d[COLS.T22_TRIMESTRE_PCT] || 0) + '%');
+
+        // =====================
+        // TARJETA 24: Correlación de Factores (Largo Plazo)
+        // =====================
+        for (let i = 1; i <= 4; i++) {
+            const d1 = d[COLS[`T24_D${i}_1`]] || '-';
+            const d2 = d[COLS[`T24_D${i}_2`]] || '-';
+            const val = d[COLS[`T24_V${i}`]] || 0;
+            const labelEl = document.getElementById(`v0_t24_pair${i}_label`);
+            const valEl = document.getElementById(`v0_t24_pair${i}_val`);
+            if (labelEl) labelEl.textContent = `${i}. ${d1} → ${d2}`;
+            if (valEl) {
+                valEl.textContent = val > 0 ? fD(val) : 'N/D';
+                valEl.style.color = val > 0.7 ? '#dc2626' : val > 0.5 ? '#f59e0b' : val > 0.3 ? '#3b82f6' : '#64748b';
+                valEl.style.fontWeight = '700';
+            }
+        }
 
         // =====================
         // TARJETA 25: Aporte Comunal a Región

@@ -1,6 +1,6 @@
 /**
  * CEAD Data Layer
- * Handles data loading for CEAD cases
+ * Handles data loading for CEAD monthly crime statistics
  */
 
 // Global State for CEAD
@@ -8,49 +8,233 @@ window.STATE_DATA_CEAD = {
     codcom: 13101,
     allData: [],
     allDataHistory: [],
+    allDataHistory_total: [],
     stats: {},
     comunaName: 'Sin Comuna',
-    warning: "",
+    regionName: 'Sin Región',
+    periodoId: null,
+    periodoDetalle: '',
+    warning: '',
     isLoaded: false,
-    lastMonth: null, // To store the latest available month/year
+    lastMonth: null,
     lastYear: null
 };
 
-// CEAD Column Indices
+// CEAD Column Keys - Mapped to proceso_cead.py output (orient='records')
 window.COLS_CEAD = {
-    CODCOM: 0,
-    DESCRIPCION: 1,
-    NIVEL: 2,
-    MES: 3,
-    FRECUENCIA: 4,
-    MES_NUM: 5,
-    FECHA: 6,
-    ANIO: 7,
-    PROVINCIA: 8,
-    COMUNA: 9,
-    REGION: 10,
-    CODREG: 11,
-    CASOS_MES_ACTUAL: 12,
-    CASOS_MES_ANTERIOR: 13,
-    CASOS_MISMO_MES_ANIO_ANTERIOR: 14,
-    ACUMULADO_MENSUAL: 15,
-    ACUMULADO_ANUAL: 16,
-    ACUMULADO_ANUAL_ANIO_ANTERIOR: 17,
-    MEDIA_MOVIL_4M: 18,
-    MEDIA_MOVIL_4M_ANIO_ANTERIOR: 19,
-    PROMEDIO_HIST: 20,
-    MAX_HIST: 21,
-    STD_HIST: 22,
-    VAR_PCT_VS_MES_ANTERIOR: 23,
-    VAR_PCT_VS_ANIO_ANTERIOR: 24,
-    DELTA: 25,
-    TENDENCIA_CORTO_PLAZO: 26,
-    RACHA: 27,
-    Z_SCORE: 28,
-    CONCLUSION_Z: 29,
-    ALERTA_AUMENTO_CRITICO: 30,
-    RANKING_COMUNAL_REGIONAL: 31,
-    RANKING_COMUNAL_REGIONAL_MES_ANTERIOR: 32
+    // Identificadores Base
+    CODCOM: 'codcom',
+    ANIO: 'año',
+    TIPO_VAL_COD: 'tipoValCod',
+    TIPO_VAL: 'tipoVal',
+    CODIGO: 'CODIGO',
+    DELITO: 'delito',
+    NIVEL: 'Nivel',
+    MES_NOMBRE: 'mes_nombre',
+    MES: 'mes',
+    ID_PERIODO: 'id_periodo',
+    FECHA: 'fecha',
+    PERIODO_DETALLE: 'periodo_detalle',
+
+    // Métricas Base
+    FRECUENCIA: 'frecuencia',
+    CASOS_ACTUAL: 'casos_mes_actual',
+    CASOS_ANT: 'casos_mes_anterior',
+    DELTA: 'delta',
+
+    // Acumulados
+    ACUM_ANUAL: 'acumulado_anual',
+    ACUM_TOTAL: 'acumulado_total',
+    ACUM_ANUAL_ANT: 'acumulado_anual_anterior',
+
+    // Medias Móviles
+    MEDIA_MOVIL_3M: 'media_movil_3m',
+    MEDIA_MOVIL_6M: 'media_movil_6m',
+
+    // Históricos
+    PROMEDIO_HIST: 'promedio_hist',
+    STD_HIST: 'std_hist',
+    MAX_HIST: 'max_hist',
+    PROMEDIO_HIST_ANUAL: 'promedio_hist_anual',
+    STD_HIST_ANUAL: 'std_hist_anual',
+    MAX_HIST_ANUAL: 'max_hist_anual',
+
+    // Tendencias y Rachas
+    TENDENCIA: 'tendencia_corto_plazo',
+    RACHA_ALZA: 'racha_alza',
+    RACHA_BAJA: 'racha_baja',
+    RACHA: 'racha',
+
+    // Z-Score y Variaciones
+    VAR_PCT_MES: 'var_pct_vs_mes_anterior',
+    Z_SCORE: 'z_score',
+    Z_SCORE_YEAR_ANT: 'z_score_vs_año_anterior',
+    Z_CONCL: 'conclusion_z',
+
+    // Geografía y Población
+    PROVINCIA: 'Provincia',
+    COMUNA: 'Comuna',
+    REGION: 'Región',
+    CODREG: 'Codreg',
+    POBLACION_CLASE: 'poblacion_clase',
+    CLASE_POBLACION: 'clase_poblacion',
+    POBLACION: 'poblacion',
+    FACTOR_POBLACION: 'factor_poblacion',
+
+    // Rankings
+    RANKING: 'ranking_comunal_regional',
+    RANKING_ANT: 'ranking_comunal_regional_mes_anterior',
+    RANK_NAC_MES: 'ranking_nacional_mensual',
+    RANK_NAC_MES_ANT: 'ranking_nacional_mensual_anterior',
+    RANK_REG_PROY: 'ranking_regional_proy_anual',
+    RANK_REG_PROY_ANT: 'ranking_regional_proy_anual_anterior',
+    RANK_NAC_PROY: 'ranking_nacional_proy_anual',
+    RANK_NAC_PROY_ANT: 'ranking_nacional_proy_anual_anterior',
+    RANK_CLUSTER_PROY: 'ranking_cluster_proy_anual',
+    RANK_CLUSTER_PROY_ANT: 'ranking_cluster_proy_anual_anterior',
+    RANK_CLUSTER_MES: 'ranking_cluster_mensual',
+    RANK_CLUSTER_MES_ANT: 'ranking_cluster_mensual_anterior',
+
+    // Alertas y Récords
+    ID_PERIODO_MAX_HIST: 'id_periodo_max_hist',
+    PERIODO_DETALLE_MAX_HIST: 'periodo_detalle_max_hist',
+    ALERTA: 'alerta_aumento_critico',
+    ALERTA_YEAR_ANT: 'alerta_vs_año_anterior',
+    CASOS_MISMO_MES_YEAR_ANT: 'casos_mismo_mes_año_anterior',
+
+    // Proyecciones
+    FACTOR_EXPANSION_ANUAL: 'factor_expansion_anual',
+    PROYECCION_ANUAL: 'proyeccion_anual',
+    TASA_MENSUAL: 'tasa_mensual',
+    TASA_PROY_ANUAL: 'tasa_proyectada_anual',
+
+    // Diagnósticos (T19-T20)
+    T19_DELITO: 't19_delito',
+    T19_RANK: 't19_rank',
+    T20_DELITO: 't20_delito',
+    T20_RANK: 't20_rank',
+
+    // Aportes
+    CASOS_REGIONAL: 'casos_regional',
+    APORTE_PCT: 'aporte_pct_region',
+    APORTE_PCT_ANT: 'aporte_pct_region_ant',
+
+    // Correlaciones (T23)
+    T23_D1: 't23_d1',
+    T23_D2: 't23_d2',
+    T23_VAL: 't23_val',
+
+    // Pareto (T21)
+    T21_DELITO_1: 't21_delito_1',
+    T21_DELITO_2: 't21_delito_2',
+    T21_DELITO_3: 't21_delito_3',
+    T21_VAL_1: 't21_val_1',
+    T21_VAL_2: 't21_val_2',
+    T21_VAL_3: 't21_val_3',
+
+    // Crecimiento
+    MM3M_LAG3: 'mm3m_lag3',
+    CAGR_3M: 'cagr_3m',
+    CAGR_ANUAL: 'cagr_anual',
+
+    // ─── Backward-Compatible Aliases (for existing vista scripts) ───
+    // Old COLS_CEAD keys → new column names
+    MES_NUM: 'mes',                          // was separate from MES
+    DESCRIPCION: 'delito',                   // old name for DELITO
+    CASOS_MES_ACTUAL: 'casos_mes_actual',    // alias for CASOS_ACTUAL
+    CASOS_MES_ANTERIOR: 'casos_mes_anterior',// alias for CASOS_ANT
+    CASOS_MISMO_MES_ANIO_ANTERIOR: 'casos_mismo_mes_año_anterior',
+    ACUMULADO_MENSUAL: 'acumulado_anual',    // monthly accumulation → annual
+    ACUMULADO_ANUAL: 'acumulado_anual',
+    ACUMULADO_ANUAL_ANIO_ANTERIOR: 'acumulado_anual_anterior',
+    MEDIA_MOVIL_4M: 'media_movil_3m',       // closest equivalent
+    VAR_PCT_VS_MES_ANTERIOR: 'var_pct_vs_mes_anterior',
+    VAR_PCT_VS_ANIO_ANTERIOR: 'z_score_vs_año_anterior',
+    RANKING_COMUNAL_REGIONAL: 'ranking_comunal_regional',
+    RANKING_COMUNAL_REGIONAL_MES_ANTERIOR: 'ranking_comunal_regional_mes_anterior',
+    ALERTA_AUMENTO_CRITICO: 'alerta_aumento_critico',
+
+    // STOP-compatible aliases (for views that use STOP key names with CEAD data)
+    ID_SEMANA: 'id_periodo',                 // period identifier
+    SEMANA_DETALLE: 'periodo_detalle',
+    SEMANA: 'mes',
+    CASOS_YEAR_ANT: 'casos_mismo_mes_año_anterior',
+    MEDIA_MOVIL_4S: 'media_movil_3m',
+    MEDIA_MOVIL_8S: 'media_movil_6m',
+    VAR_PCT_SEM: 'var_pct_vs_mes_anterior',
+    SEMANA_MAX_HIST: 'id_periodo_max_hist',
+    SEMANA_DETALLE_MAX_HIST: 'periodo_detalle_max_hist',
+    ALERTA: 'alerta_aumento_critico',
+    ALERTA_YEAR_ANT: 'alerta_vs_año_anterior',
+    RANK_NAC_SEM: 'ranking_nacional_mensual',
+    RANK_NAC_SEM_ANT: 'ranking_nacional_mensual_anterior',
+    RANK_CLUSTER_SEM: 'ranking_cluster_mensual',
+    RANK_CLUSTER_SEM_ANT: 'ranking_cluster_mensual_anterior',
+    CASOS_SEM_REG: 'casos_regional',
+    TASA_SEMANAL: 'tasa_mensual',
+
+    // Additional STOP aliases for vista0 compatibility
+    SEMANA_SAFE: 'mes',
+    CASOS_MES_YEAR_ANT: 'casos_mismo_mes_año_anterior',
+    PROY_MES: 'proyeccion_anual',            // CEAD no tiene proy mensual, usa anual
+    TASA_PROY_REGIONAL: '_na_tasa_proy_reg',  // No existe en CEAD
+    TASA_PROY_NACIONAL: '_na_tasa_proy_nac',
+    TASA_PROY_CLUSTER: '_na_tasa_proy_clus',
+    CASOS_SEM_REG_ANT: '_na_casos_reg_ant',
+    PRIORIDAD_VAL: '_na_prioridad',
+    ES_RACHA_NEG: '_na_racha_neg',
+    ES_RACHA_POS: '_na_racha_pos',
+
+    // IDI (no calculado en CEAD — graceful fallback a 0)
+    IDI_PESO: '_na_idi_peso',
+    IDI_PROY_MES: '_na_idi_proy_mes',
+    IDI_MES_ANT_YEAR: '_na_idi_ant_year',
+    IDI_MES_ANTERIOR: '_na_idi_mes_ant',
+    IDI_PROY_ANUAL: '_na_idi_proy_anual',
+    IDI_ANUAL_ANT: '_na_idi_anual_ant',
+    IDI_REGIONAL: '_na_idi_reg',
+    IDI_NACIONAL: '_na_idi_nac',
+    IDI_CLUSTER: '_na_idi_clus',
+
+    // Rachas Top 3 (no calculado en CEAD)
+    RACHA_NEG_DELITO_1: '_na_t29_d1',
+    RACHA_NEG_DELITO_2: '_na_t29_d2',
+    RACHA_NEG_DELITO_3: '_na_t29_d3',
+    RACHA_NEG_SEM_1: '_na_t29_s1',
+    RACHA_NEG_SEM_2: '_na_t29_s2',
+    RACHA_NEG_SEM_3: '_na_t29_s3',
+    RACHA_POS_DELITO_1: '_na_t30_d1',
+    RACHA_POS_DELITO_2: '_na_t30_d2',
+    RACHA_POS_DELITO_3: '_na_t30_d3',
+    RACHA_POS_SEM_1: '_na_t30_s1',
+    RACHA_POS_SEM_2: '_na_t30_s2',
+    RACHA_POS_SEM_3: '_na_t30_s3',
+
+    // Crecimiento aliases
+    T31_CAGR: 'cagr_3m',
+    T32_CAGR: 'cagr_anual',
+    MM4S_LAG4: 'mm3m_lag3',
+    CASOS_SEM1: '_na_casos_sem1',
+
+    // T22 Estacionalidad Histórica
+    T22_MES_NOMBRE: 't22_mes_nombre',
+    T22_MES_PCT: 't22_mes_pct',
+    T22_TRIMESTRE_NOMBRE: 't22_trimestre_nombre',
+    T22_TRIMESTRE_PCT: 't22_trimestre_pct',
+
+    // T24 Correlación Largo Plazo (Top 4 pares)
+    T24_D1_1: 't24_d1_1',
+    T24_D1_2: 't24_d1_2',
+    T24_V1: 't24_v1',
+    T24_D2_1: 't24_d2_1',
+    T24_D2_2: 't24_d2_2',
+    T24_V2: 't24_v2',
+    T24_D3_1: 't24_d3_1',
+    T24_D3_2: 't24_d3_2',
+    T24_V3: 't24_v3',
+    T24_D4_1: 't24_d4_1',
+    T24_D4_2: 't24_d4_2',
+    T24_V4: 't24_v4'
 };
 
 // Parse URL parameters
@@ -61,56 +245,87 @@ const codcom_url_cead = paramsCead.get('codcom');
  * CEAD Data Loader
  */
 const dataLoaderCead = {
+    _loadingInProgress: false,
+    _hasLoaded: false,
+
     async load() {
+        // Guard: Avoid multiple loads
+        if (this._loadingInProgress || this._hasLoaded) {
+            console.warn('⚠️ CEAD DataLoader: Load already in progress or completed');
+            return;
+        }
+        this._loadingInProgress = true;
+
         try {
             console.log('📊 Loading CEAD data...');
 
-            // Determine target CODCOM first to know which file to load
             const targetCod = codcom_url_cead ? parseInt(codcom_url_cead) : 13101;
             STATE_DATA_CEAD.codcom = targetCod;
 
             console.log(`📊 Loading CEAD data for comuna ${targetCod}...`);
 
-            // Use the split data file for the specific comuna
-            const fileUrl = `data/cead_split/${targetCod}.json`;
+            const fileUrl = `data/cead_split/${targetCod}`;
 
             const response = await fetch(fileUrl);
             if (!response.ok) {
-                // If specific file not found, maybe fallback or error
                 if (response.status === 404) {
-                    console.warn(`Data file for ${targetCod} not found. Using empty dataset.`);
+                    console.warn(`CEAD data for ${targetCod} not found. Using empty dataset.`);
                     STATE_DATA_CEAD.allData = [];
                 } else {
                     throw new Error(`Failed to load ${fileUrl}: ${response.status} ${response.statusText}`);
                 }
             } else {
-                STATE_DATA_CEAD.allData = await response.json();
+                // Decompress gzip
+                const ds = new DecompressionStream('gzip');
+                const decompressed = new Response(response.body.pipeThrough(ds));
+                const rawData = await decompressed.json();
+
+                console.log('🔍 CEAD Raw Data Sample:', rawData[0]);
+                console.log('🔍 CEAD Total rows loaded:', rawData.length);
+
+                // Separate 'Total' from individual delitos
+                STATE_DATA_CEAD.allDataHistory = rawData.filter(
+                    row => row[COLS_CEAD.DELITO] !== 'Total' && row[COLS_CEAD.DELITO] !== 'TOTAL');
+                STATE_DATA_CEAD.allDataHistory_total = rawData.filter(
+                    row => row[COLS_CEAD.DELITO] === 'Total' || row[COLS_CEAD.DELITO] === 'TOTAL');
+
+                console.log('📊 CEAD Delitos individuales:', STATE_DATA_CEAD.allDataHistory.length);
+                console.log('📊 CEAD Filas Total:', STATE_DATA_CEAD.allDataHistory_total.length);
+
+                STATE_DATA_CEAD.allData = STATE_DATA_CEAD.allDataHistory;
             }
 
-            // allDataHistory is same as allData here
-            STATE_DATA_CEAD.allDataHistory = [...STATE_DATA_CEAD.allData];
+            if (STATE_DATA_CEAD.allDataHistory_total.length > 0) {
+                // Get max ID_PERIODO
+                const allPeriodos = STATE_DATA_CEAD.allDataHistory_total
+                    .map(row => row[COLS_CEAD.ID_PERIODO])
+                    .filter(p => p != null);
+                const maxPeriodo = allPeriodos.length > 0 ? Math.max(...allPeriodos) : 0;
 
-            if (STATE_DATA_CEAD.allData.length > 0) {
-                // Determine latest date (max FECHA or ANIO/MES)
-                // Sort to find the latest "current" state
-                STATE_DATA_CEAD.allData.sort((a, b) => {
-                    // Sort by year desc, then month_num desc
-                    if (b[COLS_CEAD.ANIO] !== a[COLS_CEAD.ANIO]) {
-                        return b[COLS_CEAD.ANIO] - a[COLS_CEAD.ANIO];
-                    }
-                    return b[COLS_CEAD.MES_NUM] - a[COLS_CEAD.MES_NUM];
-                });
+                STATE_DATA_CEAD.periodoId = maxPeriodo;
 
-                const latestRow = STATE_DATA_CEAD.allData[0];
-                STATE_DATA_CEAD.comunaName = latestRow[COLS_CEAD.COMUNA];
-                STATE_DATA_CEAD.lastMonth = latestRow[COLS_CEAD.MES];
-                STATE_DATA_CEAD.lastYear = latestRow[COLS_CEAD.ANIO];
-                STATE_DATA_CEAD.warning = latestRow[COLS_CEAD.ALERTA_AUMENTO_CRITICO];
+                const latestRow = STATE_DATA_CEAD.allDataHistory_total.find(
+                    row => row[COLS_CEAD.ID_PERIODO] === maxPeriodo);
+
+                if (latestRow) {
+                    STATE_DATA_CEAD.comunaName = String(latestRow[COLS_CEAD.COMUNA] || 'Sin Comuna');
+                    STATE_DATA_CEAD.regionName = String(latestRow[COLS_CEAD.REGION] || 'Sin Región');
+                    STATE_DATA_CEAD.periodoDetalle = latestRow[COLS_CEAD.PERIODO_DETALLE] || '';
+                    STATE_DATA_CEAD.lastMonth = latestRow[COLS_CEAD.MES];
+                    STATE_DATA_CEAD.lastYear = latestRow[COLS_CEAD.ANIO];
+                    STATE_DATA_CEAD.warning = latestRow[COLS_CEAD.ALERTA];
+                }
             }
 
             STATE_DATA_CEAD.isLoaded = true;
+            this._hasLoaded = true;
+            this._loadingInProgress = false;
 
             console.log(`✅ Loaded ${STATE_DATA_CEAD.allData.length} CEAD records for ${STATE_DATA_CEAD.comunaName}`);
+            console.log(`📅 Periodo: ${STATE_DATA_CEAD.periodoDetalle} (${STATE_DATA_CEAD.periodoId})`);
+
+            // Update header if elements exist
+            this.updateHeader();
 
             // Dispatch event
             window.dispatchEvent(new CustomEvent('dataCeadLoaded', { detail: STATE_DATA_CEAD }));
@@ -118,12 +333,24 @@ const dataLoaderCead = {
         } catch (error) {
             console.error("❌ Critical Error loading CEAD data:", error);
             STATE_DATA_CEAD.isLoaded = false;
+            this._loadingInProgress = false;
+        }
+    },
+
+    updateHeader() {
+        const subtitle = document.getElementById('headerSubtitleCead');
+        if (subtitle) {
+            subtitle.innerHTML = `${STATE_DATA_CEAD.periodoDetalle || 'Período Actual'}`;
+        }
+
+        const comunaBtn = document.getElementById('btnComunaTextCead');
+        if (comunaBtn) {
+            comunaBtn.textContent = STATE_DATA_CEAD.comunaName || 'Santiago';
         }
     }
 };
 
 // Load data immediately
-// Load data immediately (IIFE to avoid top-level await issues)
 (async () => {
     await dataLoaderCead.load();
 })();
