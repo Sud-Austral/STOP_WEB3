@@ -127,19 +127,19 @@
     <!-- Tarjeta 1: Desempeño Semanal Inmediato -->
     <div class="card indicator-card">
         <div class="card-header">
-            <h2>1. Desempeño Semanal Inmediato</h2>
+            <h2>1. Desempeño Mensual Inmediato</h2>
         </div>
-        <div class="description-box">Compara los casos de esta semana versus la anterior. *Ejemplo: "Si sube un +20%,
+        <div class="description-box">Compara los casos de este mes versus el anterior. *Ejemplo: "Si sube un +20%,
             significa que hubo un repunte inmediato de actividad delictual reciente."*
         </div>
         <table class="performance-table">
             <tbody>
                 <tr>
-                    <td>Casos Semana Actual</td>
+                    <td>Casos Mes Actual</td>
                     <td id="v0_t1_actual">--</td>
                 </tr>
                 <tr>
-                    <td>Casos Semana Anterior</td>
+                    <td>Casos Mes Anterior</td>
                     <td id="v0_t1_anterior">--</td>
                 </tr>
                 <tr class="row-highlight-yellow">
@@ -163,17 +163,17 @@
         <div class="card-header">
             <h2>2. Comparativa Interanual Puntual</h2>
         </div>
-        <div class="description-box">Comparación exacta con la misma semana del año pasado para eliminar el factor
-            estacional. *Ejemplo: "¿Estamos mejor o peor que en esta misma fecha exacta del 2024?"*
+        <div class="description-box">Comparación exacta con el mismo mes del año pasado para eliminar el factor
+            estacional. *Ejemplo: "¿Estamos mejor o peor que en esta misma fecha del 2024?"*
         </div>
         <table class="performance-table">
             <tbody>
                 <tr>
-                    <td>Casos Semana Actual</td>
+                    <td>Casos Mes Actual</td>
                     <td id="v0_t2_actual">--</td>
                 </tr>
                 <tr>
-                    <td>Casos Misma Semana Año Ant.</td>
+                    <td>Casos Mismo Mes Año Ant.</td>
                     <td id="v0_t2_anterior">--</td>
                 </tr>
                 <tr class="row-highlight-yellow">
@@ -206,7 +206,7 @@
                     <td id="v0_t3_actual">--</td>
                 </tr>
                 <tr>
-                    <td>Acumulado Año Anterior (misma sem)</td>
+                    <td>Acumulado Año Anterior (mismo mes)</td>
                     <td id="v0_t3_anterior">--</td>
                 </tr>
                 <tr class="row-highlight-yellow">
@@ -1366,11 +1366,13 @@
         setEl('v0_t12_proy_nacional', fD(t11_nacional));
 
         // =====================
-        // TARJETA 13: Ranking Regional Semanal
+        // TARJETA 13: Ranking Regional Mensual
         // =====================
         const t13_actual = d[COLS.RANKING] || 0;
         const t13_anterior = d[COLS.RANKING_ANT] || 0;
         const t13_diff = t13_anterior - t13_actual; // Negativo = mejora (subió de número)
+
+        setEl('v0_t1_actual', fN(t1_actual)); // Dummy reference to force key check if needed
 
         setEl('v0_t13_actual', 'Pos. ' + fR(t13_actual));
         setEl('v0_t13_anterior', 'Pos. ' + fR(t13_anterior));
