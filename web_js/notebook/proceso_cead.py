@@ -122,12 +122,15 @@ df = df_raw.melt(
 df['mes'] = df['mes_nombre'].map(MES_NUM)
 df['frecuencia'] = pd.to_numeric(df['frecuencia'], errors='coerce').fillna(0).astype(int)
 
-# Renombrar para consistencia con proceso.py
+# Renombrar y sanitizar nombres de delitos
 df.rename(columns={
     'Codcom': 'codcom',
     'Año': 'año',
     'Descripcion': 'delito'
 }, inplace=True)
+
+# Sanitización de nombres (remover espacios extra y caracteres no deseados)
+df['delito'] = df['delito'].str.strip()
 
 # Crear id_periodo (año*100 + mes) como equivalente a id_semana
 df['id_periodo'] = df['año'] * 100 + df['mes']
@@ -540,6 +543,7 @@ def calc_estacionalidad(group):
     
     prom_mensual = por_mes.mean()
     mes_max = por_mes.idxmax()
+    # Guard contra división por cero o promedios nulos
     mes_pct = ((por_mes[mes_max] - prom_mensual) / prom_mensual * 100) if prom_mensual > 0 else 0
     
     # Sumar por trimestre
@@ -547,6 +551,13 @@ def calc_estacionalidad(group):
     total_rows_q['trimestre'] = ((total_rows_q['mes'] - 1) // 3) + 1
     por_trim = total_rows_q.groupby('trimestre')['frecuencia'].sum()
     prom_trim = por_trim.mean()
+    if por_trim.empty or prom_trim == 0:
+        return pd.Series({
+            't22_mes_nombre': MESES_CORTOS.get(mes_max, str(mes_max)),
+            't22_mes_pct': round(mes_pct, 1),
+            't22_trimestre_nombre': 'N/D', 't22_trimestre_pct': 0.0
+        })
+        
     trim_max = por_trim.idxmax()
     trim_pct = ((por_trim[trim_max] - prom_trim) / prom_trim * 100) if prom_trim > 0 else 0
     

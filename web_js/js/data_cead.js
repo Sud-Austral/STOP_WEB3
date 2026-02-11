@@ -321,19 +321,13 @@ const dataLoaderCead = {
             this._hasLoaded = true;
             this._loadingInProgress = false;
 
-            console.log(`✅ Loaded ${STATE_DATA_CEAD.allData.length} CEAD records for ${STATE_DATA_CEAD.comunaName}`);
-            console.log(`📅 Periodo: ${STATE_DATA_CEAD.periodoDetalle} (${STATE_DATA_CEAD.periodoId})`);
-
-            // Update header if elements exist
-            this.updateHeader();
-
-            // Dispatch event
             window.dispatchEvent(new CustomEvent('dataCeadLoaded', { detail: STATE_DATA_CEAD }));
 
         } catch (error) {
             console.error("❌ Critical Error loading CEAD data:", error);
             STATE_DATA_CEAD.isLoaded = false;
             this._loadingInProgress = false;
+            this._hasLoaded = false;
         }
     },
 
