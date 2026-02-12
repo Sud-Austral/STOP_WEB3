@@ -5,6 +5,21 @@ import warnings
 import numpy as np
 import os
 import sys
+from datetime import datetime
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+# =========================================
+# 0. CONFIGURACIÓN DE PREDICCIÓN (SARIMA)
+# =========================================
+# Definir rango de relleno de datos faltantes
+START_FILL = "2025-10-01"  # Inicio del periodo a rellenar
+END_FILL = "2025-12-01"    # Fin del periodo a rellenar (incluyente)
+LIMIT_DATE = "2025-09-01"  # Último mes con datos reales (Septiembre)
+
+# Helper para cálculos de fechas
+FILL_PERIODS = pd.date_range(start=START_FILL, end=END_FILL, freq='MS')
+def date_to_id(dt): return dt.year * 100 + dt.month
+FILL_IDS = [date_to_id(d) for d in FILL_PERIODS]
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -73,10 +88,16 @@ if not os.path.exists(url):
 print("Cargando datos CEAD...")
 df_raw = pd.read_csv(url,compression="xz",sep="\t")
 df_raw = df_raw[df_raw["tipoValCod"] == "1,2"]
-#df_raw = df_raw[df_raw["Codcom"] == 13101]
-print(f"   > Filas cargadas: {len(df_raw):,}")
+
+# FILTRO DE GRANULARIDAD: Usar solo códigos > 10000 para evitar duplicación por niveles (Familia/Grupo)
+print("\nFiltrando por granularidad (CODIGO > 10000)...")
+lineas_antes_gran = len(df_raw)
+df_raw = df_raw[df_raw["CODIGO"] > 10000].copy()
+print(f"   > Filas eliminadas (niveles agregados): {lineas_antes_gran - len(df_raw):,}")
+
+print(f"   > Filas para proceso: {len(df_raw):,}")
 print(f"   > Columnas: {list(df_raw.columns)}")
-print(f"   > Niveles disponibles: {df_raw['Nivel'].unique()}")
+print(f"   > Niveles granulares disponibles: {df_raw['Nivel'].unique()}")
 print(f"   > Tipos disponibles: {df_raw[['tipoValCod','tipoVal']].drop_duplicates().to_string(index=False)}")
 
 # =========================================
@@ -134,39 +155,125 @@ df['delito'] = df['delito'].str.strip()
 
 # Crear id_periodo (año*100 + mes) como equivalente a id_semana
 df['id_periodo'] = df['año'] * 100 + df['mes']
-# Crear fecha (primer día del mes)
+
+# Crear fecha (primer día del mes) necesaria para SARIMA
 df['fecha'] = pd.to_datetime(df['año'].astype(str) + '-' + df['mes'].astype(str) + '-01', errors='coerce')
 # Detalle período legible
 df['periodo_detalle'] = df['mes_nombre'] + ' ' + df['año'].astype(str)
 
-# Ordenar
+# Guardar metadatos para predicciones (Mapeo único de Delito -> Atributos)
+# Usamos .drop_duplicates('delito') para asegurar que cada delito tenga una única configuración asignada
+delitos_config = df[['delito', 'Nivel', 'nivel_original', 'CODIGO']].drop_duplicates('delito')
+
+# =========================================
+# 4. MOTOR DE PREDICCIÓN SARIMA (Completar Oct–Dic 2025)
+# =========================================
+print(f"\nIniciando Motor de Predicción SARIMA ({START_FILL} hasta {END_FILL})...")
+
+def predecir_sarima(serie):
+    """Aplica SARIMA y devuelve N pasos de predicción."""
+    if len(serie) < 24: # Necesitamos al menos 2 años de historia
+        # Fallback: Media de los últimos 3 meses si no hay datos para SARIMA
+        last_val = serie.iloc[-3:].mean() if len(serie) >= 3 else serie.mean()
+        return [max(0, round(last_val))] * len(FILL_PERIODS)
+    
+    try:
+        model = SARIMAX(
+            serie,
+            order=(1, 1, 1),
+            seasonal_order=(1, 1, 1, 12),
+            enforce_stationarity=False,
+            enforce_invertibility=False
+        )
+        result = model.fit(disp=False)
+        forecast = result.get_forecast(steps=len(FILL_PERIODS))
+        return [max(0, round(v)) for v in forecast.predicted_mean]
+    except:
+        return [max(0, round(serie.iloc[-1]))] * len(FILL_PERIODS)
+
+# Filtrar datos de entrenamiento (solo hasta Septiembre 2025 y asegurar que no hay ceros espurios)
+limit_id = date_to_id(pd.to_datetime(LIMIT_DATE))
+df_train = df[df['id_periodo'] <= limit_id].copy()
+
+# Agrupar por Comuna, Tipo de Valor y Delito
+grupos = df_train[df_train['delito'] != 'Total'].groupby(['codcom', 'tipoValCod', 'delito'])
+preds_list = []
+
+print(f"   > Procesando {len(grupos)} series temporales...")
+count = 0
+for (com, tipo, delit), group in grupos:
+    count += 1
+    if count % 500 == 0: print(f"     - {count} series procesadas...")
+    
+    # Preparar serie: Agrupar por fecha por si hay duplicados en el origen, y establecer frecuencia mensual
+    serie_temp = group.groupby('fecha')['frecuencia'].sum().sort_index()
+    serie_temp = serie_temp.asfreq('MS').fillna(0)
+    
+    # IMPORTANTE: Si los últimos meses de entrenamiento son 0 y el usuario dice que el dato llega hasta Septiembre,
+    # debemos confiar en el histórico real y no en los ceros placeholders.
+    # Eliminamos ceros al final de la serie de entrenamiento
+    serie_train = serie_temp.replace(0, np.nan).dropna()
+    if serie_train.empty: serie_train = serie_temp # Si todo es cero, nada que hacer
+    
+    # Obtener predicciones
+    vals_pred = predecir_sarima(serie_train)
+    
+    # Crear filas nuevas
+    for i, date_f in enumerate(FILL_PERIODS):
+        preds_list.append({
+            'codcom': com,
+            'tipoValCod': tipo,
+            'delito': delit,
+            'año': date_f.year,
+            'mes': date_f.month,
+            'id_periodo': date_to_id(date_f),
+            'fecha': date_f,
+            'frecuencia': vals_pred[i],
+            'tipoVal': group['tipoVal'].iloc[0],
+            'mes_nombre': date_f.strftime('%B').capitalize(), # Requiere locale o map, usaremos map después
+            'periodo_detalle': f"{date_f.strftime('%B').capitalize()} {date_f.year}"
+        })
+
+df_preds = pd.DataFrame(preds_list)
+
+# Unir con metadatos de niveles
+df_preds = df_preds.merge(delitos_config, on='delito', how='left')
+
+# Localización de nombres de meses en español para las predicciones
+df_preds['mes_nombre'] = df_preds['mes'].map(MESES_CORTOS) # Usar el dict existente
+df_preds['periodo_detalle'] = df_preds['mes_nombre'] + ' ' + df_preds['año'].astype(str)
+
+# Concatenar predicciones al dataframe original
+df = pd.concat([df_train, df_preds], ignore_index=True)
+
+# Re-ordenar id_periodo
 df = df.sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
-print(f"   > Filas formato largo (todos niveles): {len(df):,}")
-print(f"   > Filas Familia: {len(df[df['Nivel'] == 'Familia']):,}")
-print(f"   > Filas Delito/Otro: {len(df[df['Nivel'] != 'Familia']):,}")
+
+print(f"   > Predicciones integradas: {len(df_preds)} nuevas filas.")
 
 # =========================================
-# 4. CALCULAR TOTALES (suma SOLO de Familia para evitar doble conteo)
+# 5. RE-CALCULAR TOTALES (Suma de Familia post-predicción)
 # =========================================
-print("\nCalculando Totales (sumando solo Nivel == 'Familia')...")
-lineas_inicio = len(df)
+print("\nRecalculando Totales y Familias con predicciones integradas...")
+# IMPORTANTE: Eliminamos los totales viejos y recalculamos todo para que las predicciones cuadren
+df = df[df['delito'] != 'Total']
 
-# Total = suma de filas Familia únicamente (ya son subtotales correctos del origen)
-df_familia = df[df['Nivel'] == 'Familia']
-totales = df_familia.groupby(['codcom', 'id_periodo', 'tipoValCod', 'tipoVal'], as_index=False)['frecuencia'].sum()
+# Calcular Gran Total (Suma de todos los delitos granulares filtrados)
+totales = df.groupby(['codcom', 'id_periodo', 'tipoValCod', 'tipoVal'], as_index=False)['frecuencia'].sum()
 totales['delito'] = 'Total'
 totales['CODIGO'] = 0
 totales['Nivel'] = 'Total'
 totales['nivel_original'] = 'Total'
-totales['mes_nombre'] = df.groupby('id_periodo')['mes_nombre'].first().reindex(totales['id_periodo']).values
-totales['mes'] = totales['id_periodo'] % 100
-totales['año'] = totales['id_periodo'] // 100
-totales['fecha'] = pd.to_datetime(totales['año'].astype(str) + '-' + totales['mes'].astype(str) + '-01', errors='coerce')
-totales['periodo_detalle'] = totales['mes_nombre'] + ' ' + totales['año'].astype(str)
+
+# Agregar metadatos de tiempo a los totales
+time_meta = df[['id_periodo', 'año', 'mes', 'fecha', 'mes_nombre', 'periodo_detalle']].drop_duplicates()
+totales = totales.merge(time_meta, on='id_periodo', how='left')
 
 df = pd.concat([df, totales], ignore_index=True)
 df = df.sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
-verificar_integridad(df, pd.DataFrame(index=range(lineas_inicio)), "Concatenar Totales", debe_crecer=True)
+
+print(f"   > Dataset final completo: {len(df):,} filas.")
+
 
 # =========================================
 # 5. VARIABLES BASE
