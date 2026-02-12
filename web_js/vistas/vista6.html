@@ -122,10 +122,11 @@
         background: #f8fafc;
         text-align: center;
         border-bottom: 2px solid #e2e8f0;
-        white-space: nowrap;
+        white-space: normal;
         max-width: 70px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.1;
+        font-size: 0.6rem;
+        vertical-align: bottom;
     }
 
     .heatmap-table th:first-child {
@@ -153,10 +154,11 @@
         position: sticky;
         left: 0;
         z-index: 1;
-        white-space: nowrap;
-        max-width: 90px;
+        white-space: normal;
+        max-width: 100px;
         overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.1;
+        font-size: 0.65rem;
     }
 
     .heatmap-table tbody tr:hover td {
@@ -490,7 +492,11 @@
                 var hmEl = document.getElementById('v6_heatmap');
                 if (hmEl) {
                     var shortNames = delitos.map(function (d) {
-                        return d.length > 12 ? d.substring(0, 10) + '…' : d;
+                        if (d.length <= 15) return d;
+                        var parts = d.split(' ');
+                        if (parts.length === 1) return d.substring(0, 10) + '<br>' + d.substring(10);
+                        var mid = Math.floor(parts.length / 2);
+                        return parts.slice(0, mid + 1).join(' ') + '<br>' + parts.slice(mid + 1).join(' ');
                     });
 
                     var hmHtml = '<thead><tr><th></th>';
