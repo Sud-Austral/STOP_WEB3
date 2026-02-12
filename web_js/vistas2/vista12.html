@@ -1,0 +1,162 @@
+<!-- Vista 12: Comparativo Nacional (STOP) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-flag"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>CONTEXTO NACIONAL</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(31, 41, 55, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #1f2937; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Cuál es nuestra posición en el contexto nacional?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Ranking nacional semanal y
+            proyección anual frente al total de 346 comunas del país.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: center;">
+
+        <!-- National Ranking Pyramid -->
+        <div
+            style="position: relative; height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <svg viewBox="0 0 400 350"
+                style="width: 100%; height: 100%; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
+                <!-- Level 3: Bajo (Base) -->
+                <path d="M 50 330 L 350 330 L 300 220 L 100 220 Z" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="2"
+                    id="pyr_low" />
+                <!-- Level 2: Medio -->
+                <path d="M 100 220 L 300 220 L 250 110 L 150 110 Z" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="2"
+                    id="pyr_med" />
+                <!-- Level 1: Alto -->
+                <path d="M 150 110 L 250 110 L 200 10 Z" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="2"
+                    id="pyr_high" />
+
+                <text x="200" y="310" text-anchor="middle" font-family="Outfit" font-size="12" fill="#94a3b8"
+                    font-weight="700">TERCIO INFERIOR</text>
+                <text x="200" y="180" text-anchor="middle" font-family="Outfit" font-size="12" fill="#94a3b8"
+                    font-weight="700">TERCIO MEDIO</text>
+                <text x="200" y="80" text-anchor="middle" font-family="Outfit" font-size="12" fill="#94a3b8"
+                    font-weight="700">TOP CRÍTICO</text>
+            </svg>
+            <div id="v12_indicator"
+                style="position: absolute; width: 20px; height: 20px; background: #ef4444; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); transition: all 1s ease-in-out;">
+            </div>
+        </div>
+
+        <!-- National Metrics Card -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div class="card"
+                style="padding: 2rem; border-left: 8px solid #334155; position: relative; overflow: hidden;">
+                <div
+                    style="font-size: 0.8rem; font-weight: 800; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                    Ranking Semanal Nacional</div>
+                <div style="display: flex; align-items: flex-end; gap: 10px;">
+                    <span id="v12_rank_val"
+                        style="font-size: 4.5rem; font-weight: 950; color: #1e293b; line-height: 1;">--</span>
+                    <span style="font-size: 1.5rem; font-weight: 800; color: #94a3b8; margin-bottom: 12px;">de
+                        346</span>
+                </div>
+                <div id="v12_percentile_val"
+                    style="margin-top: 1rem; font-size: 1.1rem; font-weight: 700; color: #475569;">
+                    Percentil -- (P--)
+                </div>
+                <div style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; color: rgba(0,0,0,0.03); transform: rotate(-15deg); font-weight: 900;"
+                    id="v12_bg_num">--</div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="card" style="padding: 1.25rem; text-align: center;">
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TASA COMUNAL
+                    </div>
+                    <div id="v12_tasa_com" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+                </div>
+                <div class="card" style="padding: 1.25rem; text-align: center;">
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TASA PAÍS
+                    </div>
+                    <div id="v12_tasa_nac" style="font-size: 1.8rem; font-weight: 900; color: #94a3b8;">--</div>
+                </div>
+            </div>
+
+            <div id="v12_status_box" style="padding: 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (async function initVista12_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const rank = totalRow[C.RANK_NAC_SEM] || 50; // Fallback for DEMO
+        const totalNac = 346;
+        const ptil = ((totalNac - rank + 1) / totalNac * 100);
+
+        document.getElementById('v12_rank_val').textContent = rank;
+        document.getElementById('v12_bg_num').textContent = rank;
+        document.getElementById('v12_percentile_val').textContent = `Posición ${rank} de 346 (Percentil ${ptil.toFixed(1)})`;
+
+        // Tasa comparison
+        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
+        const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob).toFixed(1);
+        const tasaNac = (S.tasaNacionalAvg || 42.5); // Fallback
+
+        document.getElementById('v12_tasa_com').textContent = tasaCom;
+        document.getElementById('v12_tasa_nac').textContent = tasaNac;
+
+        // Pyramid and Indicator Logic
+        const indicator = document.getElementById('v12_indicator');
+        const statusBox = document.getElementById('v12_status_box');
+
+        if (rank <= 50) {
+            // High Risk
+            indicator.style.top = '60px';
+            indicator.style.left = '200px';
+            document.getElementById('pyr_high').setAttribute('fill', 'rgba(239, 68, 68, 0.2)');
+            document.getElementById('pyr_high').setAttribute('stroke', '#ef4444');
+            statusBox.style.background = '#fef2f2';
+            statusBox.style.color = '#991b1b';
+            statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ALERTA NACIONAL: La comuna se encuentra en el estrato de mayor riesgo delitual del país.';
+        } else if (rank <= 150) {
+            // Medium Risk
+            indicator.style.top = '165px';
+            indicator.style.left = '200px';
+            document.getElementById('pyr_med').setAttribute('fill', 'rgba(245, 158, 11, 0.2)');
+            document.getElementById('pyr_med').setAttribute('stroke', '#f59e0b');
+            statusBox.style.background = '#fffbeb';
+            statusBox.style.color = '#92400e';
+            statusBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> CONTEXTO MEDIO: La comuna mantiene una posición intermedia en el ranking nacional.';
+        } else {
+            // Low Risk
+            indicator.style.top = '275px';
+            indicator.style.left = '200px';
+            document.getElementById('pyr_low').setAttribute('fill', 'rgba(16, 185, 129, 0.2)');
+            document.getElementById('pyr_low').setAttribute('stroke', '#10b981');
+            statusBox.style.background = '#f0fdf4';
+            statusBox.style.color = '#065f46';
+            statusBox.innerHTML = '<i class="fa-solid fa-check-circle"></i> SITUACIÓN FAVORABLE: La comuna se posiciona en el tercio de mejor desempeño nacional.';
+        }
+
+    })();
+</script>

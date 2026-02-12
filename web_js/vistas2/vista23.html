@@ -1,0 +1,153 @@
+<!-- Vista 23: Matriz de Decisiones Operativas (Toma de Acciones) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-screwdriver-wrench"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>GESTIÓN TÁCTICA OPERATIVA</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #10b981; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué acciones debemos tomar ante estos datos?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Traducción de hallazgos
+            estadísticos en recomendaciones tácticas para la mesa de seguridad comunal.</p>
+    </div>
+
+    <!-- Decision Matrix Table -->
+    <div class="card"
+        style="padding: 0; overflow: hidden; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 2rem;">
+        <table style="width: 100%; border-collapse: collapse; font-family: 'Outfit';">
+            <thead style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                <tr>
+                    <th
+                        style="padding: 1.25rem; text-align: left; font-size: 0.75rem; color: #64748b; font-weight: 800; text-transform: uppercase;">
+                        Estado del Indicador</th>
+                    <th
+                        style="padding: 1.25rem; text-align: left; font-size: 0.75rem; color: #64748b; font-weight: 800; text-transform: uppercase;">
+                        Interpretación Estratégica</th>
+                    <th
+                        style="padding: 1.25rem; text-align: left; font-size: 0.75rem; color: #64748b; font-weight: 800; text-transform: uppercase;">
+                        Acción Operativa Recomendada</th>
+                </tr>
+            </thead>
+            <tbody style="font-size: 0.85rem;">
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1.25rem; width: 25%;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444;"></div>
+                            <span style="font-weight: 800; color: #991b1b;">ALZA CRÍTICA (Z > 1.5)</span>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem; color: #475569; line-height: 1.5;">Desbordamiento de la capacidad de
+                        contención local. Anomalía severa.</td>
+                    <td style="padding: 1.25rem;">
+                        <ul style="margin: 0; padding-left: 1.25rem; color: #1e293b; font-weight: 600;">
+                            <li>Saturación policial en focos (puntos calientes).</li>
+                            <li>Coordinación con Prefectura para refuerzo externo.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b;"></div>
+                            <span style="font-weight: 800; color: #92400e;">ALERTA DE RACHA</span>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem; color: #475569; line-height: 1.5;">Tendencia de crecimiento sostenido
+                        (3+ semanas). Consolidación de amenaza.</td>
+                    <td style="padding: 1.25rem;">
+                        <ul style="margin: 0; padding-left: 1.25rem; color: #1e293b; font-weight: 600;">
+                            <li>Auditoría de patrullaje preventivo.</li>
+                            <li>Revisión de cámaras y luminarias en zonas afectadas.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #3b82f6;"></div>
+                            <span style="font-weight: 800; color: #1e40af;">VOLUMEN ESTABLE</span>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem; color: #475569; line-height: 1.5;">Situación de control operativo sin
+                        cambios significativos.</td>
+                    <td style="padding: 1.25rem;">
+                        <ul style="margin: 0; padding-left: 1.25rem; color: #1e293b; font-weight: 600;">
+                            <li>Mantener patrullaje por cuadrante estándar.</li>
+                            <li>Focalización en prevención comunitaria.</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
+                            <span style="font-weight: 800; color: #065f46;">ZONA DE ÉXITO</span>
+                        </div>
+                    </td>
+                    <td style="padding: 1.25rem; color: #475569; line-height: 1.5;">Disminución persistente. Validación
+                        de táctica anterior.</td>
+                    <td style="padding: 1.25rem;">
+                        <ul style="margin: 0; padding-left: 1.25rem; color: #1e293b; font-weight: 600;">
+                            <li>Liberación gradual de recursos hacia zonas críticas.</li>
+                            <li>Documentación de buena práctica para réplica.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div
+        style="background: #1e293b; border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 20px;">
+        <div style="font-size: 2.5rem; color: #f59e0b;"><i class="fa-solid fa-gavel"></i></div>
+        <div>
+            <h4 style="margin: 0; color: #fff; font-size: 1rem; font-weight: 800;">RECOMENDACIÓN DE MANDO</h4>
+            <p id="v23_command_advice" style="margin: 5px 0 0 0; color: #94a3b8; font-size: 0.9rem;">Analizando el
+                estado global para sugerir la acción de mando prioritaria...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista23_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Simple Global Logic for Command Advice
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const cases = totalRow[C.CASOS_ACTUAL] || 0;
+        const prev = totalRow[C.CASOS_ANT] || 0;
+        const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
+
+        const advice = document.getElementById('v23_command_advice');
+        if (delta > 10) {
+            advice.innerHTML = "Se observa una aceleración delictual del <strong>" + delta.toFixed(1) + "%</strong>. Se recomienda convocar a <strong>Mesa de Crisis</strong> para re-asignar cuadrantes de forma inmediata.";
+        } else if (delta < -5) {
+            advice.innerHTML = "Situación de control favorable. Se recomienda <strong>reforzar comunicación de éxitos</strong> a la comunidad y mantener presencia disuasiva en zonas de afluencia.";
+        } else {
+            advice.innerHTML = "Comportamiento alineado a la base histórica. Se sugiere mantener <strong>Patrullaje Preventivo Ordinario</strong> y foco en micro-territorios críticos reportados.";
+        }
+
+    })();
+</script>

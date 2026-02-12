@@ -1,0 +1,200 @@
+<!-- Vista 3: Comparativo Temporal Múltiple -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Estamos mejor o peor que en periodos anteriores?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Triple comparación: semana
+            anterior (corto plazo), misma semana año anterior (estacionalidad) y promedio histórico (contexto
+            estructural).</p>
+    </div>
+
+    <!-- Triple Comparison Cards -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="kpi-card" id="v3_card_prev" style="text-align: center; padding: 1.5rem;">
+            <div
+                style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+                Vs Semana Anterior</div>
+            <div id="v3_prev_delta" style="font-size: 2.2rem; font-weight: 900;">--%</div>
+            <div id="v3_prev_abs" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">-- casos ant.</div>
+        </div>
+        <div class="kpi-card" id="v3_card_year" style="text-align: center; padding: 1.5rem;">
+            <div
+                style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+                Vs Año Anterior</div>
+            <div id="v3_year_delta" style="font-size: 2.2rem; font-weight: 900;">--%</div>
+            <div id="v3_year_abs" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">-- casos ant.</div>
+        </div>
+        <div class="kpi-card" id="v3_card_m" style="text-align: center; padding: 1.5rem;">
+            <div
+                style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
+                Vs Promedio Histórico</div>
+            <div id="v3_m_delta" style="font-size: 2.2rem; font-weight: 900;">--%</div>
+            <div id="v3_m_abs" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">μ = -- casos</div>
+        </div>
+    </div>
+
+    <!-- Absolute Values Table -->
+    <div style="margin-bottom: 2rem;">
+        <h4
+            style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+            Resumen de Valores Absolutos</h4>
+        <table style="width: 100%; border-collapse: collapse; font-family: 'Outfit';">
+            <thead>
+                <tr style="text-align: left; font-size: 0.75rem; color: #64748b; border-bottom: 2px solid #f1f5f9;">
+                    <th style="padding: 0.5rem;">Periodo de Comparación</th>
+                    <th style="padding: 0.5rem; text-align: right;">Casos</th>
+                    <th style="padding: 0.5rem; text-align: right;">Diferencia Neta</th>
+                    <th style="padding: 0.5rem; text-align: right;">Estado</th>
+                </tr>
+            </thead>
+            <tbody id="v3_table_body" style="font-size: 0.85rem;">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Sparkline Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+        <h4 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin: 0;">Perspectiva Anual (52 Semanas)</h4>
+        <div style="font-size: 0.7rem; color: #64748b; font-weight: 600;">
+            <span style="color: var(--color-primary);">■</span> Semana Actual destacada
+        </div>
+    </div>
+
+    <!-- Sparkline Container -->
+    <div class="chart-wrapper"
+        style="height: 120px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">
+        <canvas id="v3_sparkline"></canvas>
+    </div>
+</div>
+
+<script>
+    (async function initVista3_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        // Comuna y Semana
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        // Total data
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const casos = totalRow[C.CASOS_ACTUAL] || 0;
+        const casosAnt = totalRow[C.CASOS_ANT] || 0;
+        const casosYearAnt = totalRow[C.CASOS_YEAR_ANT] || 0;
+        const promHist = totalRow[C.PROMEDIO_HIST] || 0;
+
+        // Helper calculations
+        const getDelta = (act, ant) => ant > 0 ? ((act - ant) / ant * 100) : 0;
+        const d_prev = getDelta(casos, casosAnt);
+        const d_year = getDelta(casos, casosYearAnt);
+        const d_hist = getDelta(casos, promHist);
+
+        const updateCard = (idPrefix, delta, absVal, absPrefix = '') => {
+            const vDelta = document.getElementById(`v3_${idPrefix}_delta`);
+            const vAbs = document.getElementById(`v3_${idPrefix}_abs`);
+            const vCard = document.getElementById(`v3_card_${idPrefix.split('_')[0]}`);
+
+            if (!vDelta || !vAbs) return; // Safety check
+
+            vDelta.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%`;
+            vAbs.textContent = `${absPrefix}${absVal} casos`;
+
+            if (delta > 5) {
+                vDelta.style.color = '#ef4444';
+                vCard.style.borderTop = '4px solid #ef4444';
+            } else if (delta < -5) {
+                vDelta.style.color = '#10b981';
+                vCard.style.borderTop = '4px solid #10b981';
+            } else {
+                vDelta.style.color = '#64748b';
+                vCard.style.borderTop = '4px solid #cbd5e1';
+            }
+        };
+
+        updateCard('prev', d_prev, ChartHelper.formatNumber(casosAnt));
+        updateCard('year', d_year, ChartHelper.formatNumber(casosYearAnt));
+        updateCard('m', d_hist, ChartHelper.formatNumber(promHist.toFixed(1)), 'μ = ');
+
+        // Table
+        const tbody = document.getElementById('v3_table_body');
+        const rows = [
+            { label: 'Semana Actual', val: casos, ref: null, color: '#1e293b' },
+            { label: 'Semana Anterior', val: casosAnt, ref: casos, diff: casos - casosAnt },
+            { label: 'Misma Semana Año Ant.', val: casosYearAnt, ref: casos, diff: casos - casosYearAnt },
+            { label: 'Promedio Histórico', val: promHist, ref: casos, diff: casos - promHist }
+        ];
+
+        tbody.innerHTML = rows.map(r => `
+            <tr style="border-bottom: 1px solid #f8fafc; height: 35px;">
+                <td style="font-weight:600; color: ${r.color || '#475569'};">${r.label}</td>
+                <td style="text-align: right; font-weight: 700;">${ChartHelper.formatNumber(Math.round(r.val))}</td>
+                <td style="text-align: right; color: ${r.diff > 0 ? '#ef4444' : r.diff < 0 ? '#10b981' : '#64748b'}; font-weight: 700;">
+                    ${r.diff !== undefined ? (r.diff > 0 ? '+' : '') + Math.round(r.diff) : '—'}
+                </td>
+                <td style="text-align: right;">
+                    ${r.diff === undefined ? '<span class="pill-sm pill-sm-neutral">BASE</span>' :
+                r.diff > 0 ? '<span class="pill-sm pill-sm-danger">AUMENTE</span>' : '<span class="pill-sm pill-sm-success">MEJORA</span>'}
+                </td>
+            </tr>
+        `).join('');
+
+        // Sparkline 52 weeks
+        const weeks52 = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 52).reverse();
+        const sparkData = weeks52.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id)?.[C.CASOS_ACTUAL] || 0);
+
+        // Uses getDateLabel if available, otherwise fallback
+        const sparkLabels = weeks52.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id % 100}`);
+
+        const sparkCtx = document.getElementById('v3_sparkline').getContext('2d');
+        new Chart(sparkCtx, {
+            type: 'line',
+            data: {
+                labels: sparkLabels,
+                datasets: [{
+                    data: sparkData,
+                    borderColor: '#94a3b8',
+                    borderWidth: 1.5,
+                    pointRadius: sparkData.map((v, i) => i === sparkData.length - 1 ? 5 : 0),
+                    pointBackgroundColor: '#3b82f6',
+                    fill: false,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                scales: {
+                    y: { display: false, beginAtZero: false },
+                    x: { display: false }
+                }
+            }
+        });
+
+    })();
+</script>

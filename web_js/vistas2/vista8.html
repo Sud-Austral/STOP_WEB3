@@ -1,0 +1,163 @@
+<!-- Vista 8: Correlaciones Delictuales (STOP) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #4f46e5; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué delitos suelen moverse juntos?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Detección de patrones de
+            asociación estadística (Correlación de Pearson) entre tipologías delictuales en las últimas 12 semanas.</p>
+    </div>
+
+    <!-- Main Heatmap Container -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem; position: relative; overflow-x: auto;">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+            <i class="fa-solid fa-table-cells" style="color: #4f46e5;"></i> Matriz de Correlación Delictual
+        </h3>
+        <table id="v8_heatmap" style="width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 600px;">
+            <thead>
+                <tr id="v8_head"></tr>
+            </thead>
+            <tbody id="v8_body"></tbody>
+        </table>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <!-- Top Associations -->
+        <div class="card" style="padding: 1.5rem; background: #f8fafc;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-link" style="color: #4f46e5;"></i> Principales Asociaciones
+            </h4>
+            <div id="v8_associations_list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Interpretation -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="background: #eef2ff; border: 1px solid #e0e7ff; padding: 1.25rem; border-radius: 12px;">
+                <h4 style="margin: 0 0 8px 0; color: #3730a3; font-size: 0.85rem; font-weight: 800;">NOTAS DE
+                    INTELIGENCIA</h4>
+                <p style="margin: 0; font-size: 0.85rem; color: #4338ca; line-height: 1.5;">Una correlación alta
+                    (<strong>> 0.80</strong>) sugiere que ambos delitos podrían compartir los mismos factores de riesgo
+                    sociales o territoriales, o que están siendo ejecutados por las mismas bandas delictuales.</p>
+            </div>
+
+            <div
+                style="display: flex; gap: 10px; align-items: center; font-size: 0.75rem; color: #64748b; font-weight: 600; padding: 0.5rem;">
+                <span>LEYENDA:</span>
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #6366f1; border-radius: 2px;"></span>
+                Fuerte
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #c7d2fe; border-radius: 2px;"></span>
+                Media
+                <span
+                    style="display: inline-block; width: 15px; height: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 2px;"></span>
+                Nula
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista8_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        // --- Correlation Logic ---
+        const last12Weeks = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
+        const topDelitos = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
+            .map(d => ({ name: d, total: S.allDataHistory.filter(r => r[C.DELITO] === d && r[C.ID_SEMANA] === S.currentSemana).reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0) }))
+            .sort((a, b) => b.total - a.total).slice(0, 8).map(d => d.name);
+
+        const series = topDelitos.map(delito => {
+            return last12Weeks.map(id => {
+                const row = S.allDataHistory.find(r => r[C.DELITO] === delito && r[C.ID_SEMANA] === id);
+                return row ? (row[C.CASOS_ACTUAL] || 0) : 0;
+            });
+        });
+
+        const pearson = (x, y) => {
+            const n = x.length;
+            const mx = x.reduce((a, b) => a + b, 0) / n, my = y.reduce((a, b) => a + b, 0) / n;
+            const num = x.reduce((s, _, i) => s + (x[i] - mx) * (y[i] - my), 0);
+            const den = Math.sqrt(x.reduce((s, v) => s + Math.pow(v - mx, 2), 0)) * Math.sqrt(y.reduce((s, v) => s + Math.pow(v - my, 2), 0));
+            return den === 0 ? 0 : num / den;
+        };
+
+        const matrix = series.map((s1, i) => series.map((s2, j) => i === j ? 1 : pearson(s1, s2)));
+
+        // --- Render Heatmap ---
+        const head = document.getElementById('v8_head');
+        const body = document.getElementById('v8_body');
+
+        const shortNames = topDelitos.map(n => n.length > 8 ? n.substring(0, 8) + '...' : n);
+
+        head.innerHTML = '<th></th>' + shortNames.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 4px; border: 1px solid #f1f5f9; background: #f8fafc; transform: rotate(-15deg); height: 50px;">${n}</th>`).join('');
+
+        const getColor = (v) => {
+            const val = Math.abs(v);
+            if (v >= 0.8) return { bg: '#4f46e5', text: 'white' };
+            if (v >= 0.6) return { bg: '#818cf8', text: 'white' };
+            if (v >= 0.4) return { bg: '#c7d2fe', text: '#3730a3' };
+            if (v >= 0.2) return { bg: '#e0e7ff', text: '#3730a3' };
+            return { bg: '#f8fafc', text: '#94a3b8' };
+        };
+
+        body.innerHTML = matrix.map((row, i) => `
+            <tr>
+                <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc;">${shortNames[i]}</td>
+                ${row.map(v => {
+            const c = getColor(v);
+            return `<td style="background: ${c.bg}; color: ${c.text}; font-size: 0.7rem; font-weight: 800; text-align: center; border: 1px solid #fff; cursor: help;" title="${v.toFixed(3)}">${v.toFixed(1)}</td>`
+        }).join('')}
+            </tr>
+        `).join('');
+
+        // --- Top Associations List ---
+        const associations = [];
+        for (let i = 0; i < matrix.length; i++) {
+            for (let j = i + 1; j < matrix.length; j++) {
+                if (matrix[i][j] > 0.5) associations.push({ d1: topDelitos[i], d2: topDelitos[j], val: matrix[i][j] });
+            }
+        }
+        associations.sort((a, b) => b.val - a.val);
+
+        const list = document.getElementById('v8_associations_list');
+        list.innerHTML = associations.slice(0, 4).map(a => `
+            <div style="display: flex; gap: 10px; align-items: center; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #4f46e5;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #475569; flex: 1;">
+                    ${a.d1} + ${a.d2}
+                </div>
+                <div style="text-align: right; font-weight: 900; color: #4f46e5;">r = ${a.val.toFixed(2)}</div>
+            </div>
+        `).join('') || '<div class="text-muted" style="font-size:0.8rem; padding:10px;">No se detectan asociaciones fuertes esta semana.</div>';
+
+    })();
+</script>

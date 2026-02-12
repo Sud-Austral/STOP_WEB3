@@ -1,0 +1,217 @@
+<!-- Vista 5: Distribución por Delito (Análisis de Pareto) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(31, 41, 55, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #1f2937; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué delitos concentran la mayor parte del problema?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis 80/20:
+            identificación de los delitos que generan la mayor carga operativa para priorizar intervenciones
+            focalizadas.</p>
+    </div>
+
+    <!-- Alert Concentration -->
+    <div id="v5_concentration_alert" style="margin-bottom: 1.5rem; display: none;">
+        <div
+            style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 12px; padding: 1.25rem; display: flex; align-items: center; gap: 15px;">
+            <div
+                style="width: 48px; height: 48px; background: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4rem;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0; color: #991b1b; font-size: 1rem; font-weight: 800;">ALTA CONCENTRACIÓN DELICTUAL
+                </h4>
+                <p style="margin: 0; color: #b91c1c; font-size: 0.85rem;" id="v5_alert_text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+            <i class="fa-solid fa-chart-bar" style="color: var(--color-primary);"></i> Diagrama de Pareto (Frecuencia vs
+            Acumulado)
+        </h3>
+        <div class="chart-wrapper" style="height: 400px;">
+            <canvas id="v5_chart_pareto"></canvas>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card" style="padding: 1.5rem;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+                Top 5 Delitos Críticos</h4>
+            <div id="v5_top_table" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="card"
+                style="background: #f8fafc; padding: 1.5rem; border: 1px dashed #cbd5e1; text-align: center;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">ÍNDICE DE
+                    CONCENTRACIÓN PARETO</div>
+                <div id="v5_concentration_val" style="font-size: 2.8rem; font-weight: 950; color: #1e293b;">--%</div>
+                <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">Participación de los 3 delitos
+                    principales</div>
+            </div>
+
+            <div
+                style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.8rem; color: #475569; line-height: 1.5;">
+                <i class="fa-solid fa-lightbulb" style="color: #f59e0b;"></i> <strong>Dato Clave:</strong> Si el 20% de
+                las tipologías explica más del 70% de los casos, la estrategia debe ser
+                <strong>hiper-focalizada</strong> en esos puntos específicos.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista5_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        // Header
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        // Data processing
+        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
+            .sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0));
+
+        const totalCases = currentData.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+
+        let cumulative = 0;
+        const paretoData = currentData.map(r => {
+            const val = r[C.CASOS_ACTUAL] || 0;
+            cumulative += val;
+            return {
+                delito: r[C.DELITO],
+                casos: val,
+                casosAnt: r[C.CASOS_ANT] || 0,
+                accumPct: (cumulative / totalCases * 100)
+            };
+        });
+
+        // Top 3 Concentration
+        const top3Pct = paretoData.length >= 3 ? paretoData[2].accumPct : 100;
+        const vConcVal = document.getElementById('v5_concentration_val');
+        vConcVal.textContent = `${top3Pct.toFixed(1)}%`;
+
+        if (top3Pct > 70) {
+            document.getElementById('v5_concentration_alert').style.display = 'block';
+            document.getElementById('v5_alert_text').textContent = `Solo 3 delitos concentran el ${top3Pct.toFixed(1)}% de la criminalidad total. Se requiere una estrategia de saturación en focos específicos.`;
+            vConcVal.style.color = '#ef4444';
+        }
+
+        // Table
+        const tableContainer = document.getElementById('v5_top_table');
+        tableContainer.innerHTML = paretoData.slice(0, 5).map((d, i) => {
+            const delta = d.casosAnt > 0 ? ((d.casos - d.casosAnt) / d.casosAnt * 100) : 0;
+            return `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: ${i % 2 === 0 ? '#f8fafc' : '#fff'}; border-radius: 6px;">
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">${d.delito}</div>
+                        <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">${d.accumPct.toFixed(1)}% del acumulado total</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 800; color: #1e293b;">${ChartHelper.formatNumber(d.casos)}</div>
+                        <div style="font-size: 0.7rem; font-weight: 700; color: ${delta > 0 ? '#ef4444' : delta < 0 ? '#10b981' : '#64748b'};">
+                            ${delta >= 0 ? '▲' : '▼'} ${Math.abs(delta).toFixed(1)}%
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // --- Pareto Chart ---
+        const ctx = document.getElementById('v5_chart_pareto').getContext('2d');
+        const labels = paretoData.slice(0, 12).map(d => d.delito.length > 20 ? d.delito.substring(0, 20) + '...' : d.delito);
+
+        new Chart(ctx, {
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        type: 'line',
+                        label: '% Acumulado',
+                        data: paretoData.slice(0, 12).map(d => d.accumPct),
+                        borderColor: '#fbbf24',
+                        backgroundColor: '#fbbf24',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        yAxisID: 'yAcum',
+                        zIndex: 10
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Número de Casos',
+                        data: paretoData.slice(0, 12).map(d => d.casos),
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderRadius: 4,
+                        yAxisID: 'yCasos'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { font: { family: 'Outfit', weight: '600' } } },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { family: 'Outfit' }
+                    }
+                },
+                scales: {
+                    yCasos: {
+                        type: 'linear',
+                        position: 'left',
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Casos', font: { family: 'Outfit', weight: '700' } }
+                    },
+                    yAcum: {
+                        type: 'linear',
+                        position: 'right',
+                        max: 100,
+                        min: 0,
+                        grid: { display: false },
+                        title: { display: true, text: '% Acumulado', font: { family: 'Outfit', weight: '700' } },
+                        ticks: { callback: v => v + '%' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Outfit', size: 10 } }
+                    }
+                }
+            }
+        });
+
+    })();
+</script>

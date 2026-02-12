@@ -1,0 +1,159 @@
+<!-- Vista 18: Evolución de Factores de Riesgo (Tipologías Críticas) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-biohazard"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>BALANCE DE VIOLENCIA</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #ef4444; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Está aumentando la violencia en los delitos?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis de la composición
+            cualitativa del delito: Violentos vs Contra la Propiedad. La peligrosidad es más crítica que el volumen.</p>
+    </div>
+
+    <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <!-- Pie Balance -->
+        <div class="card" style="padding: 1.5rem; text-align: center;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase;">
+                Balance de Peligrosidad (Semana Actual)</h4>
+            <div class="chart-wrapper" style="height: 250px;">
+                <canvas id="v18_chart_pie"></canvas>
+            </div>
+            <div id="v18_violence_index" style="margin-top: 1rem; font-size: 1.5rem; font-weight: 900; color: #ef4444;">
+                --% Violencia</div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="card" style="padding: 1.5rem;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 800; color: #64748b; text-transform: uppercase;">
+                Evolución del Índice de Violencia (12 Sem)</h4>
+            <div class="chart-wrapper" style="height: 250px;">
+                <canvas id="v18_chart_trend"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Factors Summary -->
+    <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 5px;">FACTOR ARMAS</div>
+            <div style="font-size: 1.1rem; font-weight: 900; color: #ef4444;"><i class="fa-solid fa-gun"></i> <span
+                    id="v18_f_weapons">REDUCIDO</span></div>
+        </div>
+        <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 5px;">RIESGO HOMICIDIO
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 900; color: #f59e0b;"><i class="fa-solid fa-skull"></i> <span
+                    id="v18_f_homicide">MODERADO</span></div>
+        </div>
+        <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 5px;">VIOLENCIA DE GÉNERO
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 900; color: #3b82f6;"><i
+                    class="fa-solid fa-person-breastfeeding"></i> <span id="v18_f_gender">MONITOREO</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista18_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Classification of crimes by "Violence Factor"
+        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
+
+        const classify = (delito) => {
+            const d = delito.toUpperCase();
+            if (d.includes('ROBO CON VIOLENCIA') || d.includes('INTIMIDACIÓN') || d.includes('HOMICIDIO') || d.includes('VIOLACIÓN') || d.includes('LESIONES')) return 'VIOLENTO';
+            if (d.includes('ROBO EN LUGAR') || d.includes('HURTO') || d.includes('ROBO DE VEHÍCULO')) return 'PROPIEDAD';
+            return 'OTROS';
+        };
+
+        const sums = currentData.reduce((acc, r) => {
+            const cat = classify(r[C.DELITO]);
+            acc[cat] = (acc[cat] || 0) + (r[C.CASOS_ACTUAL] || 0);
+            return acc;
+        }, { VIOLENTO: 0, PROPIEDAD: 0, OTROS: 0 });
+
+        const total = sums.VIOLENTO + sums.PROPIEDAD + sums.OTROS;
+        const vPct = total > 0 ? (sums.VIOLENTO / total * 100) : 0;
+
+        document.getElementById('v18_violence_index').textContent = `${vPct.toFixed(1)}% Índice Violencia`;
+
+        // --- Pie Chart ---
+        const pieCtx = document.getElementById('v18_chart_pie').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Violentos', 'Propiedad', 'Otros'],
+                datasets: [{
+                    data: [sums.VIOLENTO, sums.PROPIEDAD, sums.OTROS],
+                    backgroundColor: ['#ef4444', '#3b82f6', '#94a3b8'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+
+        // --- Trend 12 weeks ---
+        const last12 = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
+        const trendData = last12.map(id => {
+            const rows = S.allDataHistory.filter(r => r[C.ID_SEMANA] === id);
+            const v = rows.filter(r => classify(r[C.DELITO]) === 'VIOLENTO').reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
+            const t = rows.reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
+            return t > 0 ? (v / t * 100).toFixed(1) : 0;
+        });
+
+        const lineCtx = document.getElementById('v18_chart_trend').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: last12.map(id => `S${id % 100}`),
+                datasets: [{
+                    label: '% Violencia',
+                    data: trendData,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+            }
+        });
+
+    })();
+</script>

@@ -1,0 +1,135 @@
+<!-- Vista 17: Gestión de Casos vs Población (Análisis de Eficiencia) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-chart-line"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>EFICIENCIA OPERATIVA</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Nuestra carga delictual es proporcional a nuestra población?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis de cuadrantes:
+            frecuencia absoluta vs tamaño poblacional. Permite distinguir comunas con "sobredosis" de delito respecto a
+            su capacidad estructural.</p>
+    </div>
+
+    <!-- Main Bubble Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-circle-nodes" style="color: var(--color-primary);"></i> Matriz de Eficiencia
+                (Carga vs Población)</span>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tamaño de burbuja = Tasa por 100k</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 450px;">
+            <canvas id="v17_chart_bubble"></canvas>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        <div class="card" style="padding: 1rem; border-top: 4px solid #ef4444; background: #fff1f2;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: #991b1b;">ZONA CRÍTICA</div>
+            <div style="font-size: 0.75rem; color: #be123c; margin-top: 4px;">Alta frecuencia en baja población.</div>
+        </div>
+        <div class="card" style="padding: 1rem; border-top: 4px solid #f59e0b; background: #fffbeb;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: #92400e;">VOLUMEN ALTO</div>
+            <div style="font-size: 0.75rem; color: #b45309; margin-top: 4px;">Carga esperada por tamaño.</div>
+        </div>
+        <div class="card" style="padding: 1rem; border-top: 4px solid #3b82f6; background: #eff6ff;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: #1e40af;">SUB-CARGA</div>
+            <div style="font-size: 0.75rem; color: #1d4ed8; margin-top: 4px;">Baja frecuencia en alta población.</div>
+        </div>
+        <div class="card" style="padding: 1rem; border-top: 4px solid #10b981; background: #f0fdf4;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: #065f46;">ZONA SEGURA</div>
+            <div style="font-size: 0.75rem; color: #15803d; margin-top: 4px;">Baja frecuencia y baja tasa.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista17_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // --- Data Generation ---
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 2.5;
+        const myCases = totalRow[C.CASOS_ACTUAL] || 150;
+        const myPob = Math.round(factorPob * 100000);
+        const myTasa = (myCases / factorPob);
+
+        // Simulated Neighbors
+        const neighbors = Array.from({ length: 15 }, () => {
+            const p = 50000 + Math.random() * 400000;
+            const t = 20 + Math.random() * 60;
+            return { x: p, y: Math.round(p / 100000 * t), r: t / 3 };
+        });
+
+        // --- Bubble Chart ---
+        const ctx = document.getElementById('v17_chart_bubble').getContext('2d');
+        new Chart(ctx, {
+            type: 'bubble',
+            data: {
+                datasets: [
+                    {
+                        label: 'Otras Comunas',
+                        data: neighbors,
+                        backgroundColor: 'rgba(148, 163, 184, 0.4)',
+                        borderColor: '#94a3b8'
+                    },
+                    {
+                        label: S.comunaName,
+                        data: [{ x: myPob, y: myCases, r: myTasa / 3 }],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: '#1e40af',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (c) => ` ${S.comunaName}: ${c.raw.y} casos | Tasa: ${(c.raw.r * 3).toFixed(1)}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Población Total', font: { weight: '800' } },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    y: {
+                        title: { display: true, text: 'N° Casos Semanales', font: { weight: '800' } },
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
+
+    })();
+</script>

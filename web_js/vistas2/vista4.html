@@ -1,0 +1,195 @@
+<!-- Vista 4: Estacionalidad Mensual Histórica (CEAD) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-calendar-check"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="periodo-fill">HISTÓRICO 2005-2025</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #f59e0b; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿En qué meses del año históricamente se presenta mayor delincuencia?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Patrón estacional promedio
+            (Índice Estacional %) que permite anticipar picos predecibles.</p>
+    </div>
+
+    <div class="cards-grid" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 1.5rem;">
+        <div class="card chart-card" style="padding: 1.5rem;">
+            <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+                <i class="fa-solid fa-spider" style="color: #f59e0b;"></i> Radar de Estacionalidad Mensual
+            </h3>
+            <div class="chart-wrapper" style="height: 400px;">
+                <canvas id="v4_chart_radar"></canvas>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Predictive Alert -->
+            <div id="v4_alert"
+                style="padding: 1.5rem; border-radius: 12px; border: 1px solid #fdf2f2; background: #fffaf0; display: flex; gap: 15px; align-items: flex-start;">
+                <div
+                    style="width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #92400e;">Alerta
+                        Predictiva</h4>
+                    <p id="v4_prediction_text" style="margin: 0; font-size: 0.85rem; color: #b45309; line-height: 1.4;">
+                        Analizando patrones estacionales...</p>
+                </div>
+            </div>
+
+            <div class="card" style="flex: 1; padding: 1.5rem;">
+                <h4
+                    style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+                    Meses más Críticos</h4>
+                <div id="v4_top_months" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <div
+                style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; line-height: 1.4;">
+                <i class="fa-solid fa-circle-info"></i> El <strong>Índice Estacional</strong> indica cuánto se aleja el
+                mes del promedio anual (100%). Un valor de 125% significa que ese mes es un 25% más violento que el
+                promedio.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista4_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Group by month and calculate average
+        const monthGroups = Array.from({ length: 12 }, (_, i) => ({ mes: i + 1, sum: 0, count: 0 }));
+
+        S.allDataHistory_total.forEach(r => {
+            const m = r[C.MES];
+            const val = r[C.CASOS_ACTUAL] || 0;
+            if (m >= 1 && m <= 12) {
+                monthGroups[m - 1].sum += val;
+                monthGroups[m - 1].count++;
+            }
+        });
+
+        const monthAvg = monthGroups.map(g => g.count > 0 ? (g.sum / g.count) : 0);
+        const totalAvg = monthAvg.reduce((a, b) => a + b, 0) / 12;
+
+        // Calculate Seasonal Index (%)
+        const seasonalIndex = monthAvg.map(m => totalAvg > 0 ? (m / totalAvg * 100) : 0);
+
+        const monthNames = ['En', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+        // --- Top Months ---
+        const sortedMonths = seasonalIndex.map((idx, i) => ({ name: monthNames[i], idx }))
+            .sort((a, b) => b.idx - a.idx);
+
+        const container = document.getElementById('v4_top_months');
+        container.innerHTML = sortedMonths.slice(0, 3).map((m, i) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: ${i === 0 ? '#fffbeb' : '#f8fafc'}; border: 1px solid ${i === 0 ? '#fef3c7' : '#e2e8f0'}; border-radius: 8px;">
+                <div style="display: flex; align-items:center; gap: 8px;">
+                    <span style="font-size: 0.9rem; font-weight: 800; color: #1e293b;">${m.name}</span>
+                    <span style="font-size: 0.7rem; font-weight: 600; color: #64748b; padding: 2px 6px; background: #fff; border-radius: 4px; border: 1px solid #e2e8f0;">${i + 1}º PICO</span>
+                </div>
+                <div style="font-weight: 900; color: ${m.idx > 110 ? '#ef4444' : '#1e293b'}; font-size: 1rem;">${m.idx.toFixed(1)}%</div>
+            </div>
+        `).join('');
+
+        // --- Alert Text ---
+        const nextMonth = (new Date().getMonth() + 1) % 12;
+        const nextIdx = seasonalIndex[nextMonth];
+        const nextMonthName = monthNames[nextMonth];
+        const predText = document.getElementById('v4_prediction_text');
+
+        if (nextIdx > 115) {
+            predText.innerHTML = `<strong>${nextMonthName} (+${(nextIdx - 100).toFixed(0)}% sobre media)</strong> → Históricamente es un mes crítico. Se recomienda reforzar patrullajes preventivos.`;
+        } else if (nextIdx < 85) {
+            predText.innerHTML = `<strong>${nextMonthName} (${(100 - nextIdx).toFixed(0)}% bajo media)</strong> → Periodo de calma estacional. Ideal para mantenimiento de equipos y capacitación.`;
+        } else {
+            predText.innerHTML = `<strong>${nextMonthName} (Normalidad)</strong> → Se proyecta un comportamiento alineado al promedio histórico sin desviaciones extremas.`;
+        }
+
+        // --- Chart ---
+        const ctx = document.getElementById('v4_chart_radar').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: monthNames,
+                datasets: [
+                    {
+                        label: 'Índice Estacional (%)',
+                        data: seasonalIndex,
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: '#f59e0b',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#f59e0b',
+                        pointHoverBackgroundColor: '#f59e0b',
+                        pointRadius: 4,
+                        fill: true
+                    },
+                    {
+                        label: 'Referencia Media (100%)',
+                        data: Array(12).fill(100),
+                        borderColor: 'rgba(148, 163, 184, 0.6)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: Math.max(...seasonalIndex, 100) + 20,
+                        ticks: {
+                            display: false,
+                            stepSize: 20
+                        },
+                        grid: {
+                            color: '#e2e8f0'
+                        },
+                        angleLines: {
+                            color: '#e2e8f0'
+                        },
+                        pointLabels: {
+                            font: { family: 'Outfit', size: 12, weight: '700' },
+                            color: '#64748b'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } }
+                }
+            }
+        });
+
+    })();
+</script>

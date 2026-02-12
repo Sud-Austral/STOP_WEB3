@@ -349,6 +349,9 @@ const dataLoaderCead = {
 };
 
 // Load data immediately
+/*
 (async () => {
     await dataLoaderCead.load();
 })();
+*/
+// DISABLED: Using Unified DataManager

@@ -297,4 +297,4 @@ const dataLoader = {
 };
 
 // Load data on module init
-await dataLoader.load();
+// await dataLoader.load(); // DISABLED: Using Unified DataManager

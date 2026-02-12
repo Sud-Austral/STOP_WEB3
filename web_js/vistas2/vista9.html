@@ -1,0 +1,136 @@
+<!-- Vista 9: Tipologías Críticas por Comparativo -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #ef4444; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿En qué delitos específicos somos críticos?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Identificación de delitos
+            donde la comuna ocupa los peores rankings regionales o nacionales, independientemente del volumen total de
+            casos.</p>
+    </div>
+
+    <!-- Bottom 3 (Critical Rankings) -->
+    <div id="v9_critical_container"
+        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <!-- Filled by JS -->
+    </div>
+
+    <div class="card chart-card" style="padding: 1.5rem;">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
+            <i class="fa-solid fa-chart-column" style="color: #ef4444;"></i> Histograma Comparativo de Tasas (Comuna vs
+            Región vs País)
+        </h3>
+        <div class="chart-wrapper" style="height: 350px;">
+            <canvas id="v9_chart_comparative"></canvas>
+        </div>
+    </div>
+
+    <div
+        style="margin-top: 1.5rem; padding: 1rem; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; display: flex; gap: 10px; align-items: flex-start;">
+        <i class="fa-solid fa-circle-exclamation" style="color: #e11d48; margin-top: 3px;"></i>
+        <div style="font-size: 0.85rem; color: #9f1239; line-height: 1.5;">
+            <strong>Nota de Alerta:</strong> Los rankings se calculan en base a la tasa por cada 100.000 habitantes. Si
+            una tipología aparece con un ranking regional menor a 5, se considera un <strong>punto débil
+                estructural</strong> que requiere coordinación con delegaciones provinciales o ministeriales.
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista9_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
+        const factorPob = currentData[0]?.[C.FACTOR_POBLACION] || 1;
+
+        // Get Top 3 Critical by Ranking (Regional or National)
+        const critical = currentData
+            .filter(r => (r[C.RANK_NAC_SEM] || 346) < 30 || (r[C.RANK_REG_PROY] || S.totalComunasReg) < 5)
+            .sort((a, b) => (a[C.RANK_NAC_SEM] || 346) - (b[C.RANK_NAC_SEM] || 346))
+            .slice(0, 3);
+
+        const container = document.getElementById('v9_critical_container');
+        if (critical.length > 0) {
+            container.innerHTML = critical.map(d => `
+                <div style="background: white; border: 1px solid #fee2e2; border-radius: 12px; padding: 1.25rem; border-top: 6px solid #ef4444; position: relative;">
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #ef4444; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.05em;">PUNTO CRÍTICO</div>
+                    <div style="font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; min-height: 2.4rem; line-height: 1.2;">${d[C.DELITO]}</div>
+                    <div style="display: flex; align-items: flex-end; gap: 5px;">
+                        <span style="font-size: 1.8rem; font-weight: 950; color: #1e293b; line-height: 1;">${d[C.RANK_NAC_SEM] || '--'}</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">RANK NACIONAL</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Posición regional: <strong>${d[C.RANK_REG_PROY] || '--'}</strong></div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<div class="text-muted" style="grid-column: 1/-1; padding: 2rem; border: 2px dashed #f1f5f9; border-radius: 12px; text-align: center;">No se registran tipologías en rangos críticos regionales o nacionales esta semana.</div>';
+        }
+
+        // --- Histogram Chart ---
+        const top3ForChart = currentData.sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0)).slice(0, 3);
+        const labels = top3ForChart.map(d => d[C.DELITO].length > 15 ? d[C.DELITO].substring(0, 15) + '...' : d[C.DELITO]);
+
+        const ctx = document.getElementById('v9_chart_comparative').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Comuna (Tasa)',
+                        data: top3ForChart.map(d => ((d[C.CASOS_ACTUAL] || 0) / factorPob).toFixed(1)),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Referencia Región',
+                        data: top3ForChart.map(d => ((d[C.CASOS_SEM_REG] || 0) / (S.totalPobReg || 1000000) * 100000).toFixed(1)),
+                        backgroundColor: '#fca5a5',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { font: { family: 'Outfit', weight: '600' } } }
+                },
+                scales: {
+                    y: {
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Casos x 100k hab.', font: { family: 'Outfit' } }
+                    },
+                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '700', size: 11 } } }
+                }
+            }
+        });
+
+    })();
+</script>

@@ -1,0 +1,146 @@
+<!-- Vista 11: Benchmark Histórico Multianual (2005-2025) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-ranking-star"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>EVOLUCIÓN ESTRATÉGICA 20 AÑOS</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #f59e0b; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Nuestra posición relativa ha mejorado o empeorado en la década?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evolución del ranking
+            regional año a año para distinguir mejoras de gestión real frente a variaciones sistémicas del entorno.</p>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-chart-line" style="color: #f59e0b;"></i> Trayectoria Histórica de Ranking
+                (Anual)</span>
+            <div id="v11_trajectory_badge"
+                style="background: #1e293b; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
+                CALCULANDO TRAYECTORIA...</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 380px;">
+            <canvas id="v11_chart_ranking"></canvas>
+        </div>
+    </div>
+
+    <!-- Annual Heatmap summary -->
+    <div class="card" style="padding: 1.5rem;">
+        <h4
+            style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
+            <span>Matriz de Riesgo Histórica por Posición</span>
+            <span style="font-size: 0.7rem; font-weight: 600; color: #64748b;">COLOR = POSICIÓN EN RANKING</span>
+        </h4>
+        <div id="v11_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista11_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Process Ranking by Year
+        const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
+        const rankings = years.map(yr => {
+            const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0]; // Get last month of that year or avg
+            return row ? (row[C.RANKING] || 25) : 25;
+        });
+
+        // Trajectory Logic
+        const badge = document.getElementById('v11_trajectory_badge');
+        const first = rankings[0], last = rankings[rankings.length - 1];
+        const diff = first - last; // if 10 -> 15 (diff = -5) improved? No, rank 1 is worst.
+        // Actually usually rank 1 = worst cases. 
+        // If rank 10 -> 20 (increased number) = improvement in safety rank.
+        if (diff < -3) { badge.textContent = 'MEJORA SOSTENIDA'; badge.style.background = '#10b981'; }
+        else if (diff > 3) { badge.textContent = 'DETERIORO RELATIVO'; badge.style.background = '#ef4444'; }
+        else { badge.textContent = 'ESTABILIDAD ESTRUCTURAL'; badge.style.background = '#64748b'; }
+
+        // --- Chart ---
+        const ctx = document.getElementById('v11_chart_ranking').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Ranking Regional (1 = Mayor n° casos)',
+                    data: rankings,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 3,
+                    borderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        reverse: true, // Position 1 is "top" but "worst"
+                        min: 1,
+                        max: 52,
+                        ticks: { stepSize: 10, font: { family: 'Outfit' } },
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Posición en el Ranking', font: { weight: '800' } }
+                    },
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        callbacks: {
+                            label: (c) => ` Posición: ${c.raw} de 52 comunas`
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- Heatmap Years ---
+        const heatmap = document.getElementById('v11_heatmap_years');
+        heatmap.innerHTML = years.map((yr, i) => {
+            const rank = rankings[i];
+            const color = rank <= 10 ? '#ef4444' : rank <= 25 ? '#f59e0b' : '#10b981';
+            return `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <div style="width: 38px; height: 38px; background: ${color}; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.2);">
+                        ${rank}
+                    </div>
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
+                </div>
+            `;
+        }).join('');
+
+    })();
+</script>

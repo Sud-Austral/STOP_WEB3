@@ -1,0 +1,203 @@
+<!-- Vista 1: Situación General Semanal (Resumen Ejecutivo) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-location-dot"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span class="semana-fill">--</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Cuál es el estado actual de seguridad en la comuna esta semana?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Indicadores clave de
+            volumen, variación y nivel de riesgo normalizado.</p>
+    </div>
+
+    <div class="kpi-grid">
+        <div class="kpi-card" style="position: relative; overflow: hidden;">
+            <div class="kpi-label">Casos Totales</div>
+            <div class="kpi-value" id="v1_casos">--</div>
+            <div class="kpi-change" id="v1_casos_delta">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Variación Interanual</div>
+            <div class="kpi-value" id="v1_var_anual">--</div>
+            <div class="kpi-change" id="v1_var_anual_label">vs misma semana año anterior</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Tasa x 100k hab.</div>
+            <div class="kpi-value" id="v1_tasa">--</div>
+            <div class="kpi-change kpi-change--neutral">Frecuencia poblacional</div>
+        </div>
+        <div class="kpi-card" id="v1_risk_card">
+            <div class="kpi-label">Nivel de Riesgo</div>
+            <div class="kpi-value" id="v1_risk_level">--</div>
+            <div class="kpi-change kpi-change--neutral" id="v1_zscore">Z-Score: --</div>
+        </div>
+    </div>
+</div>
+
+<div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <div class="card chart-card">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-ranking-star" style="color: var(--color-primary);"></i> Top 5 Delitos con Mayor
+            Volumen
+        </h3>
+        <div class="chart-wrapper" style="height: 320px;">
+            <canvas id="v1_chart_bar"></canvas>
+        </div>
+    </div>
+    <div class="card chart-card">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-chart-line" style="color: var(--color-primary);"></i> Línea de Tendencia (Últimas 8
+            Semanas)
+        </h3>
+        <div class="chart-wrapper" style="height: 320px;">
+            <canvas id="v1_chart_trend"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="alert alert--info" style="margin-top: 1.5rem;">
+    <strong>🤖 Análisis de Situación:</strong> <span id="v1_ia_analysis">Analizando el comportamiento delictual de la
+        semana...</span>
+</div>
+
+<script>
+    (async function initVista1_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        // Comuna y Semana
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const casos = totalRow[C.CASOS_ACTUAL] || 0;
+        const casosAnt = totalRow[C.CASOS_ANT] || 0;
+        const casosYearAnt = totalRow[C.CASOS_YEAR_ANT] || 0;
+        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
+
+        // KPIs
+        const vCasos = document.getElementById('v1_casos');
+        const vDelta = document.getElementById('v1_casos_delta');
+        const vVarAnual = document.getElementById('v1_var_anual');
+        const vTasa = document.getElementById('v1_tasa');
+        const vRisk = document.getElementById('v1_risk_level');
+        const vRiskCard = document.getElementById('v1_risk_card');
+        const vZ = document.getElementById('v1_zscore');
+
+        vCasos.textContent = ChartHelper.formatNumber(casos);
+        const varSem = casosAnt > 0 ? ((casos - casosAnt) / casosAnt * 100) : 0;
+        vDelta.innerHTML = `${varSem >= 0 ? '▲' : '▼'} ${Math.abs(varSem).toFixed(1)}% vs sem. ant.`;
+        vDelta.className = `kpi-change ${varSem > 0 ? 'kpi-change--negative' : 'kpi-change--positive'}`;
+
+        const varAnu = casosYearAnt > 0 ? ((casos - casosYearAnt) / casosYearAnt * 100) : 0;
+        vVarAnual.textContent = `${varAnu > 0 ? '+' : ''}${varAnu.toFixed(1)}%`;
+        vVarAnual.style.color = varAnu > 0 ? 'var(--color-danger)' : 'var(--color-success)';
+
+        vTasa.textContent = (casos / factorPob).toFixed(1);
+
+        // Z-Score y Riesgo
+        let zSum = 0, zCount = 0;
+        S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana).forEach(r => {
+            zSum += (r[C.Z_SCORE] || 0);
+            zCount++;
+        });
+        const avgZ = zCount > 0 ? (zSum / zCount) : 0;
+        vZ.textContent = `Z-Score: ${avgZ.toFixed(2)}`;
+
+        let riskLevel = 'BAJO', riskColor = '#10b981', bg = 'rgba(16, 185, 129, 0.1)';
+        if (avgZ > 1.5) { riskLevel = 'ALTO'; riskColor = '#ef4444'; bg = 'rgba(239, 68, 68, 0.1)'; }
+        else if (avgZ > 0.5) { riskLevel = 'MEDIO'; riskColor = '#f59e0b'; bg = 'rgba(245, 158, 11, 0.1)'; }
+        vRisk.textContent = riskLevel;
+        vRisk.style.color = riskColor;
+        vRiskCard.style.background = bg;
+        vRiskCard.style.borderColor = riskColor;
+
+        // --- Gráfico de Barras: Top 5 ---
+        const top5Data = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
+            .sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0))
+            .slice(0, 5);
+
+        new Chart(document.getElementById('v1_chart_bar'), {
+            type: 'bar',
+            data: {
+                labels: top5Data.map(d => d[C.DELITO].length > 15 ? d[C.DELITO].substring(0, 15) + '...' : d[C.DELITO]),
+                datasets: [{
+                    label: 'Casos',
+                    data: top5Data.map(d => d[C.CASOS_ACTUAL]),
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } },
+                    y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600' } } }
+                }
+            }
+        });
+
+        // --- Gráfico de Tendencia: 8 Semanas ---
+        const last8_IDs = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 8).reverse();
+        const trendData = last8_IDs.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id)?.[C.CASOS_ACTUAL] || 0);
+        const trendLabels = last8_IDs.map(id => `S${id % 100}`);
+
+        new Chart(document.getElementById('v1_chart_trend'), {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Total Delitos',
+                    data: trendData,
+                    borderColor: 'var(--color-primary)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } },
+                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } }
+                }
+            }
+        });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista1').then(txt => {
+                document.getElementById('v1_ia_analysis').innerHTML = txt;
+            });
+        }
+    })();
+</script>

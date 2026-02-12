@@ -1,0 +1,196 @@
+<!-- Vista 7: Evolución Estructural del Mix Delictual (2005-2025) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-timeline"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>PERSPECTIVA HISTÓRICA 20 AÑOS</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #f59e0b; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Cómo ha cambiado la "huella delictual" en los últimos 20 años?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Transformación del
+            portafolio delictual: delitos que han emergido o cambiado de peso relativo en las últimas dos décadas.</p>
+    </div>
+
+    <!-- Main Streamgraph (Simulated with Stacked Area) -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-layer-group" style="color: #f59e0b;"></i> Mix Delictual (% de Participación
+                Anual)</span>
+            <span style="font-size: 0.75rem; color: #64748b; font-weight: 500;">Drogas, Robos, Hurtos y más</span>
+        </h3>
+        <div class="chart-wrapper" style="height: 400px;">
+            <canvas id="v7_chart_stream"></canvas>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <!-- Winners/Losers Table -->
+        <div class="card" style="padding: 1.5rem;">
+            <h4
+                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
+                Cambio Estructural (2005-2025)</h4>
+            <div id="v7_stats_table" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- Long Term Insight -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div id="v7_insight_card"
+                style="background: #1e293b; color: #e2e8f0; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
+                <i class="fa-solid fa-quote-left"
+                    style="position: absolute; top: -10px; right: 10px; font-size: 4rem; color: rgba(255,255,255,0.05); pointer-events: none;"></i>
+                <h4
+                    style="margin: 0 0 10px 0; color: #f59e0b; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;">
+                    Análisis de Transformación</h4>
+                <p id="v7_transformation_text"
+                    style="margin: 0; font-size: 0.9rem; line-height: 1.6; font-style: italic;">Identificando cambios en
+                    la composición delictual histórica...</p>
+            </div>
+
+            <div
+                style="padding: 1rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; font-size: 0.8rem; color: #92400e;">
+                <i class="fa-solid fa-triangle-exclamation"></i> <strong>Nota Metodológica:</strong> El gráfico muestra
+                el peso porcentual de cada delito sobre el total anual. Esto permite distinguir si un delito sube porque
+                hay "más inseguridad general" o porque está ganando protagonismo frente a otros.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista7_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Process data by year and crime Group
+        const years = [...new Set(S.allDataHistory.map(r => r[C.ANIO]))].sort();
+        const topDelitos = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
+            .map(delito => {
+                const total = S.allDataHistory.filter(r => r[C.DELITO] === delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                return { delito, total };
+            })
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 8); // Top 8 structural crimes
+
+        const datasets = topDelitos.map((d, i) => {
+            const dataPct = years.map(yr => {
+                const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
+                const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                const dRow = yrRows.filter(r => r[C.DELITO] === d.delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                return yrTotal > 0 ? (dRow / yrTotal * 100) : 0;
+            });
+            return {
+                label: d.delito,
+                data: dataPct,
+                backgroundColor: ChartHelper.colors.categorical[i % ChartHelper.colors.categorical.length],
+                borderColor: 'white',
+                borderWidth: 0.5,
+                fill: true,
+                pointRadius: 0
+            };
+        });
+
+        // Add "Others"
+        const othersData = years.map(yr => {
+            const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
+            const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+            const topNames = topDelitos.map(t => t.delito);
+            const othersTotal = yrRows.filter(r => !topNames.includes(r[C.DELITO])).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+            return yrTotal > 0 ? (othersTotal / yrTotal * 100) : 0;
+        });
+        datasets.push({
+            label: 'Otros Delitos',
+            data: othersData,
+            backgroundColor: '#cbd5e1',
+            borderColor: 'white',
+            borderWidth: 0.5,
+            fill: true,
+            pointRadius: 0
+        });
+
+        // --- Transformation Table ---
+        const table = document.getElementById('v7_stats_table');
+        const firstYr = years[0];
+        const lastYr = years[years.length - 1];
+
+        const structuralChanges = topDelitos.slice(0, 5).map(d => {
+            const getPct = (yr) => {
+                const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
+                const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                const dRow = yrRows.filter(r => r[C.DELITO] === d.delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                return yrTotal > 0 ? (dRow / yrTotal * 100) : 0;
+            };
+            const p1 = getPct(firstYr);
+            const p2 = getPct(lastYr);
+            return { name: d.delito, p1, p2, diff: p2 - p1 };
+        });
+
+        table.innerHTML = structuralChanges.map(c => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f8fafc;">
+                <div style="flex: 1;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">${c.name}</div>
+                    <div style="font-size: 0.7rem; color: #94a3b8;">${c.p1.toFixed(1)}% (${firstYr}) → ${c.p2.toFixed(1)}% (${lastYr})</div>
+                </div>
+                <div style="font-weight: 800; color: ${c.diff > 0 ? '#ef4444' : '#10b981'};">
+                    ${c.diff > 0 ? '▲' : '▼'} ${Math.abs(c.diff).toFixed(1)} pp
+                </div>
+            </div>
+        `).join('');
+
+        // --- Insight Text ---
+        const maxChange = structuralChanges.reduce((a, b) => Math.abs(a.diff) > Math.abs(b.diff) ? a : b);
+        document.getElementById('v7_transformation_text').innerHTML =
+            `La transformación más profunda se observa en <strong>${maxChange.name}</strong>, que ha variado su peso relativo en <strong>${Math.abs(maxChange.diff).toFixed(1)} puntos porcentuales</strong> en los últimos ${years.length} años. ` +
+            `Este cambio estructural indica una evolución en el perfil delictual de la comuna que trasciende las variaciones estacionales.`;
+
+        // --- Chart ---
+        const ctx = document.getElementById('v7_chart_stream').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels: years, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { family: 'Outfit', size: 10 } } },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    y: {
+                        stacked: true,
+                        max: 100,
+                        ticks: { callback: v => v + '%' },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+    })();
+</script>

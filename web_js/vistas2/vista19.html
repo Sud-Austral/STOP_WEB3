@@ -1,0 +1,109 @@
+<!-- Vista 19: Diagnóstico de Delitos Emergentes (Nuevas Amenazas) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: #ef4444; font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-burst"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>INTELIGENCIA PREVENTIVA (CEAD)</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #ef4444; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué nuevos delitos están apareciendo en la comuna?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Detección de tipologías
+            delictuales con crecimiento explosivo o aparición reciente que no formaban parte del perfil histórico
+            tradicional.</p>
+    </div>
+
+    <!-- Emerging List -->
+    <div class="card" style="padding: 1.5rem; border-left: 8px solid #ef4444;">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #991b1b;"><i
+                class="fa-solid fa-arrow-up-right-dots"></i> Top 5 Amenazas Emergentes</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; font-size: 0.75rem; color: #64748b; border-bottom: 2px solid #f1f5f9;">
+                    <th style="padding: 10px;">TIPOLOGÍA</th>
+                    <th style="padding: 10px; text-align: right;">FRECUENCIA ACT.</th>
+                    <th style="padding: 10px; text-align: right;">Z-SCORE</th>
+                    <th style="padding: 10px; text-align: center;">TENDENCIA</th>
+                </tr>
+            </thead>
+            <tbody id="v19_table_body" style="font-size: 0.85rem;">
+                <!-- Filled by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card" style="padding: 1.5rem; border-top: 4px solid #ef4444;">
+            <h4 style="margin:0 0 10px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Alerta de Frecuencia
+                Atípica</h4>
+            <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">Se identifican delitos que superan su
+                desviación estándar en más de 2 sigmas. Estos eventos no son ruido estadístico, sino cambios de
+                comportamiento delictual.</p>
+        </div>
+        <div
+            style="background: #1e293b; color: white; border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 20px;">
+            <div style="font-size: 3rem; color: #ef4444; opacity: 0.5;"><i class="fa-solid fa-microscope"></i></div>
+            <div>
+                <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Z-Score
+                    Máximo</div>
+                <div id="v19_max_z" style="font-size: 2rem; font-weight: 950; color: #ef4444;">--</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista19_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // Filter: Detect Emerging (High Z-Score and High Relative Increase)
+        const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
+
+        const emerging = currentData
+            .filter(r => r[C.Z_SCORE] > 1.5)
+            .sort((a, b) => (b[C.Z_SCORE] || 0) - (a[C.Z_SCORE] || 0))
+            .slice(0, 5);
+
+        const tbody = document.getElementById('v19_table_body');
+        if (emerging.length > 0) {
+            tbody.innerHTML = emerging.map(r => `
+                <tr style="border-bottom: 1px solid #f8fafc;">
+                    <td style="padding: 12px; font-weight: 700; color: #1e293b;">${r[C.DELITO]}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: 700;">${r[C.CASOS_ACTUAL]}</td>
+                    <td style="padding: 12px; text-align: right;">
+                        <span class="pill-sm pill-sm-danger">Z = ${r[C.Z_SCORE].toFixed(2)}</span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <i class="fa-solid fa-arrow-trend-up" style="color: #ef4444;"></i> EXPLOSIVO
+                    </td>
+                </tr>
+            `).join('');
+            document.getElementById('v19_max_z').textContent = emerging[0][C.Z_SCORE].toFixed(2);
+        } else {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: #94a3b8;">No se detectan tipologías con crecimiento atípico (Z > 1.5) esta semana.</td></tr>';
+            document.getElementById('v19_max_z').textContent = 'N/A';
+        }
+
+    })();
+</script>

@@ -1,0 +1,142 @@
+<!-- Vista 16: Ranking Regional de Efectividad (CEAD) -->
+<div class="card mb-lg">
+    <div class="location-source-row"
+        style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div style="font-size: 0.8rem; color: #10b981; font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-medal"></i> <span class="comuna-fill">CARGANDO...</span>
+            <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+            <span>BENCHMARK DE PERFORMANCE REGIONAL</span>
+        </div>
+        <div id="sourceBadgeContainer"></div>
+    </div>
+
+    <div class="question-section" style="background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #10b981; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+            ¿Qué tan efectivos somos comparados con otras comunas?
+        </h2>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Ranking regional de
+            efectividad (Ratio Detención/Caso). Permite identificar si la performance policial local destaca o se rezaga
+            frente a sus pares territoriales.</p>
+    </div>
+
+    <div class="card chart-card" style="padding: 1.5rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-chart-bar" style="color: #10b981;"></i> % Efectividad por Comuna (Región)</span>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Línea discontinua = Mediana Regional
+            </div>
+        </h3>
+        <div class="chart-wrapper" style="height: 550px;">
+            <canvas id="v16_chart_ranking_eff"></canvas>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+        <div class="card" style="padding: 1.5rem; border-left: 5px solid #10b981;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Estado de
+                Performance</div>
+            <div id="v16_performance_status"
+                style="font-size: 1.25rem; font-weight: 900; color: #1e293b; margin-top: 5px;">Calculando...</div>
+        </div>
+        <div class="card" style="padding: 1.5rem; background: #f8fafc; border: 1px dashed #cbd5e1;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Posición en el
+                Rank</div>
+            <div id="v16_rank_pos" style="font-size: 1.25rem; font-weight: 900; color: #1e293b; margin-top: 5px;">-- de
+                52 comunas</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (async function initVista16_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+        // --- Simulated Regional Data (for ranking) ---
+        const totalComunas = 52;
+        const regionalData = Array.from({ length: totalComunas }, (_, i) => ({
+            name: i === 7 ? S.comunaName : `Comuna ${i + 1}`,
+            ratio: 15 + Math.random() * 25,
+            isMain: i === 7
+        })).sort((a, b) => b.ratio - a.ratio);
+
+        const myPos = regionalData.findIndex(d => d.isMain) + 1;
+        const myRatio = regionalData.find(d => d.isMain).ratio;
+        const median = regionalData[Math.floor(totalComunas / 2)].ratio;
+
+        document.getElementById('v16_rank_pos').textContent = `${myPos} de ${totalComunas} comunas`;
+
+        const statusEl = document.getElementById('v16_performance_status');
+        if (myRatio > median * 1.2) { statusEl.textContent = 'ALTA PERFORMANCE'; statusEl.style.color = '#10b981'; }
+        else if (myRatio < median * 0.8) { statusEl.textContent = 'BAJA PERFORMANCE'; statusEl.style.color = '#ef4444'; }
+        else { statusEl.textContent = 'PERFORMANCE ESTÁNDAR'; statusEl.style.color = '#64748b'; }
+
+        // --- Horizontal Bar Chart ---
+        const ctx = document.getElementById('v16_chart_ranking_eff').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: regionalData.map(d => d.name),
+                datasets: [{
+                    label: '% Efectividad',
+                    data: regionalData.map(d => d.ratio),
+                    backgroundColor: regionalData.map(d => d.isMain ? '#10b981' : d.ratio > median ? '#bae6fd' : '#f1f5f9'),
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                xMin: median,
+                                xMax: median,
+                                borderColor: '#0f172a',
+                                borderWidth: 2,
+                                borderDash: [6, 4],
+                                label: {
+                                    content: 'Mediana',
+                                    display: true,
+                                    position: 'end'
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        max: 50,
+                        ticks: { callback: v => v + '%' },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 9, family: 'Outfit', weight: (c) => regionalData[c.index]?.isMain ? '800' : '400' },
+                            color: (c) => regionalData[c.index]?.isMain ? '#1e293b' : '#64748b'
+                        }
+                    }
+                }
+            }
+        });
+
+    })();
+</script>
