@@ -43,7 +43,8 @@ const App = {
             'vista31', 'vista32', 'vista33', 'vista34', 'vista35',
             'vista36', 'vista37', 'vista38', 'vista39', 'vista40',
             'vista41', 'vista42', 'vista43', 'vista44', 'vista45'
-        ]
+        ],
+        viewsPath: 'vistas' // Default path
     },
 
     // State
@@ -155,7 +156,7 @@ const App = {
         }
 
         try {
-            const response = await fetch(`vistas/${viewName}.html`);
+            const response = await fetch(`${this.config.viewsPath}/${viewName}.html`);
 
             if (!response.ok) {
                 throw new Error(`View not found: ${viewName}`);

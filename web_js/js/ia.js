@@ -532,7 +532,7 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
         const interpretation = await this.getInterpretation(viewId);
         const element = document.getElementById(elementId);
         if (element) {
-            element.innerHTML = interpretation;
+            element.textContent = interpretation;
         }
     }
 };

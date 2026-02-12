@@ -283,9 +283,9 @@ const dataLoaderCead = {
                 console.log('🔍 CEAD Raw Data Sample:', rawData[0]);
                 console.log('🔍 CEAD Total rows loaded:', rawData.length);
 
-                // Filtro temporal: Solo hasta Septiembre 2025 (id_periodo <= 202509)
-                const filteredData = rawData.filter(row => row[COLS_CEAD.ID_PERIODO] <= 202509);
-                console.log('📅 CEAD Data filtered up to 2025-09. Rows remaining:', filteredData.length);
+                // Habilitar datos completos (incluyendo proyecciones 202510-202512)
+                const filteredData = rawData;
+                console.log('📅 CEAD Data fully loaded (including projections). Total rows:', filteredData.length);
 
                 // Separate 'Total' from individual delitos
                 STATE_DATA_CEAD.allDataHistory = filteredData.filter(

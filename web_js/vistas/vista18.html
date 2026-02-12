@@ -526,6 +526,7 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: false,
                         interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: { display: false },
@@ -608,7 +609,7 @@
             if (typeof IAModule !== 'undefined') {
                 IAModule.getInterpretation('vista18').then(text => {
                     const el = document.getElementById('alertText18');
-                    if (el) el.innerHTML = text;
+                    if (el) el.textContent = text;
                 });
             }
 

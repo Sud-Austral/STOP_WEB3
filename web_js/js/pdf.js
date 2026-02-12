@@ -28,6 +28,65 @@ const PDFModule = {
     },
 
     /**
+     * Adds an image to the PDF with smart slicing to avoid cutting cards/tables
+     */
+    addSmartSlices(pdf, imgData, originalImgHeight, sectionTitle, startPage, totalPages, cardBoundaries) {
+        const { pageWidth, pageHeight, headerHeight, footerHeight } = this.config;
+        const usableHeight = pageHeight - headerHeight - footerHeight;
+
+        let heightLeft = originalImgHeight;
+        let currentY = 0; // Relative to img start (mm)
+        let currentPage = startPage;
+
+        while (heightLeft > 0.1) { // Floating point safety
+            if (currentY > 0) {
+                pdf.addPage();
+            }
+
+            let sliceHeight = Math.min(heightLeft, usableHeight);
+
+            // Smart Break Check
+            if (heightLeft > usableHeight && cardBoundaries && cardBoundaries.length > 0) {
+                const targetCutLine = currentY + usableHeight;
+
+                // Find a card that is being cut (overlaps the targetCutLine)
+                const overlappingCard = cardBoundaries.find(b =>
+                    b.top < targetCutLine - 2 && b.bottom > targetCutLine + 2
+                );
+
+                if (overlappingCard && overlappingCard.top > currentY + 5) {
+                    // Cut BEFORE the overlapping card to keep it together on the next page
+                    sliceHeight = overlappingCard.top - currentY;
+                }
+            }
+
+            const pageTitle = currentY === 0 ? sectionTitle : `${sectionTitle} (cont.)`;
+            this.addHeader(pdf, currentPage, totalPages, pageTitle);
+            this.addFooter(pdf, currentPage);
+
+            // Draw slice (using negative y position)
+            // Clipping is handled by the PDF viewer boundaries
+            pdf.addImage(imgData, 'JPEG', 0, headerHeight - currentY, pageWidth, originalImgHeight);
+
+            // Clean overlays for header and footer areas
+            pdf.setFillColor(248, 250, 252); // Match header bg
+            pdf.rect(0, 0, pageWidth, headerHeight, 'F');
+            pdf.setFillColor(255, 255, 255); // Match body bg
+            pdf.rect(0, pageHeight - footerHeight, pageWidth, footerHeight, 'F');
+
+            // Re-draw header/footer over the overlays to ensure text is visible
+            this.addHeader(pdf, currentPage, totalPages, pageTitle);
+            this.addFooter(pdf, currentPage);
+
+            heightLeft -= sliceHeight;
+            currentY += sliceHeight;
+            currentPage++;
+        }
+
+        return currentPage;
+    },
+
+    /**
      * #5 - Generate consistent header for content pages
      * @param {jsPDF} pdf - The jsPDF instance
      * @param {number} pageNum - Current page number
@@ -1017,6 +1076,9 @@ const PDFModule = {
         // #44 - Show enhanced overlay with progress tracking
         this.showEnhancedOverlay(stopViews.length);
 
+        // Desactivar animaciones globalmente para la exportación
+        if (typeof Chart !== 'undefined') Chart.defaults.animation = false;
+
         try {
             const pageWidth = 210;
             const pageHeight = 297;
@@ -1037,8 +1099,8 @@ const PDFModule = {
                 // Load view
                 await App.loadView(viewName);
 
-                // Wait for charts to render (8 seconds)
-                await App.delay(8000);
+                // Wait for charts to render (Estabilización para PDF)
+                await App.delay(4000);
 
                 // Capture
                 const canvas = await html2canvas(container, {
@@ -1052,8 +1114,20 @@ const PDFModule = {
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-                // Store captured image
-                capturedPages.push({ imgData, imgHeight, viewName });
+                // Smart Boundaries: Identify card positions to avoid cutting them
+                const containerRect = container.getBoundingClientRect();
+                const pxToMm = pageWidth / canvas.width;
+                const cards = Array.from(container.querySelectorAll('.card, .indicator-card, .chart-card, .v2-card, .performance-table'));
+                const cardBoundaries = cards.map(card => {
+                    const rect = card.getBoundingClientRect();
+                    return {
+                        top: (rect.top - containerRect.top) * pxToMm,
+                        bottom: (rect.bottom - containerRect.top) * pxToMm
+                    };
+                });
+
+                // Store captured image and boundaries
+                capturedPages.push({ imgData, imgHeight, viewName, cardBoundaries });
 
                 // Update progress after capture
                 this.updateProgress(i + 1, `Vista ${viewName} capturada`);
@@ -1081,36 +1155,16 @@ const PDFModule = {
             });
             const totalPages = 2 + totalContentPages + 1; // Cover + TOC + Content + BackCover
 
-            // STEP 3: Add all captured pages with headers/footers (#5)
-            let currentPage = 3; // Start after Cover, TOC
+            // STEP 3: Add all captured pages with headers/footers
+            let currentPage = 3;
             for (let i = 0; i < capturedPages.length; i++) {
-                const { imgData, imgHeight, viewName } = capturedPages[i];
+                const { imgData, imgHeight, viewName, cardBoundaries } = capturedPages[i];
                 const sectionTitle = tocSections[i]?.title || '';
 
-                // Add new page for each view
                 pdf.addPage();
 
-                // Handle multi-page content
-                let heightLeft = imgHeight;
-                let position = this.config.headerHeight;
-                const usableHeight = pageHeight - this.config.headerHeight - this.config.footerHeight;
-
-                // First segment
-                this.addHeader(pdf, currentPage, totalPages, sectionTitle);
-                this.addFooter(pdf, currentPage);
-                pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
-                heightLeft -= usableHeight;
-                currentPage++;
-
-                while (heightLeft > 0) {
-                    pdf.addPage();
-                    this.addHeader(pdf, currentPage, totalPages, sectionTitle + ' (cont.)');
-                    this.addFooter(pdf, currentPage);
-                    position = this.config.headerHeight - (imgHeight - heightLeft);
-                    pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
-                    heightLeft -= usableHeight;
-                    currentPage++;
-                }
+                // Use Smart Slicing instead of fixed position sliced image
+                currentPage = this.addSmartSlices(pdf, imgData, imgHeight, sectionTitle, currentPage, totalPages, cardBoundaries);
             }
 
             // Page N: Back Cover (#7)
@@ -1127,6 +1181,9 @@ const PDFModule = {
             console.error('Error exporting PDF with cover:', error);
             alert('Error al exportar PDF. Por favor intente nuevamente.');
         } finally {
+            // Restaurar animaciones
+            if (typeof Chart !== 'undefined') Chart.defaults.animation = true;
+
             // Restore state
             this.hideEnhancedOverlay();
             btn.innerHTML = originalBtnText;
@@ -1168,6 +1225,9 @@ const PDFModule = {
         // #44 - Show enhanced overlay
         this.showEnhancedOverlay(viewsToExport.length);
 
+        // Desactivar animaciones globalmente para la exportación
+        if (typeof Chart !== 'undefined') Chart.defaults.animation = false;
+
         try {
             const pageWidth = 210;
             const pageHeight = 297;
@@ -1188,8 +1248,8 @@ const PDFModule = {
                 // Load view
                 await App.loadView(viewName);
 
-                // Wait for charts to render
-                await App.delay(8000);
+                // Wait for charts to render (Estabilización para PDF)
+                await App.delay(4000);
 
                 // Capture
                 const canvas = await html2canvas(container, {
@@ -1203,7 +1263,19 @@ const PDFModule = {
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const imgHeight = (canvas.height * pageWidth) / canvas.width;
 
-                capturedPages.push({ imgData, imgHeight, viewName });
+                // Smart Boundaries
+                const containerRect = container.getBoundingClientRect();
+                const pxToMm = pageWidth / canvas.width;
+                const cards = Array.from(container.querySelectorAll('.card, .indicator-card, .chart-card, .v2-card, .performance-table'));
+                const cardBoundaries = cards.map(card => {
+                    const rect = card.getBoundingClientRect();
+                    return {
+                        top: (rect.top - containerRect.top) * pxToMm,
+                        bottom: (rect.bottom - containerRect.top) * pxToMm
+                    };
+                });
+
+                capturedPages.push({ imgData, imgHeight, viewName, cardBoundaries });
                 this.updateProgress(i + 1, `Vista ${viewName} capturada`);
             }
 
@@ -1231,30 +1303,13 @@ const PDFModule = {
             // Add all captured pages with headers/footers
             let currentPage = 3;
             for (let i = 0; i < capturedPages.length; i++) {
-                const { imgData, imgHeight, viewName } = capturedPages[i];
+                const { imgData, imgHeight, viewName, cardBoundaries } = capturedPages[i];
                 const sectionTitle = tocSections[i]?.title || '';
 
                 pdf.addPage();
 
-                let heightLeft = imgHeight;
-                let position = this.config.headerHeight;
-                const usableHeight = pageHeight - this.config.headerHeight - this.config.footerHeight;
-
-                this.addHeader(pdf, currentPage, totalPages, sectionTitle);
-                this.addFooter(pdf, currentPage);
-                pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
-                heightLeft -= usableHeight;
-                currentPage++;
-
-                while (heightLeft > 0) {
-                    pdf.addPage();
-                    this.addHeader(pdf, currentPage, totalPages, sectionTitle + ' (cont.)');
-                    this.addFooter(pdf, currentPage);
-                    position = this.config.headerHeight - (imgHeight - heightLeft);
-                    pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, imgHeight);
-                    heightLeft -= usableHeight;
-                    currentPage++;
-                }
+                // Use Smart Slicing
+                currentPage = this.addSmartSlices(pdf, imgData, imgHeight, sectionTitle, currentPage, totalPages, cardBoundaries);
             }
 
             // Back Cover
@@ -1271,6 +1326,9 @@ const PDFModule = {
             console.error('Error exporting Full PDF:', error);
             alert('Error al exportar PDF Completo. Por favor intente nuevamente.');
         } finally {
+            // Restaurar animaciones
+            if (typeof Chart !== 'undefined') Chart.defaults.animation = true;
+
             this.hideEnhancedOverlay();
             btn.innerHTML = originalBtnText;
             btn.disabled = false;
@@ -1311,42 +1369,32 @@ const PDFModule = {
                 windowHeight: container.scrollHeight
             });
 
-            const imgData = canvas.toDataURL('image/png');
-            const imgWidth = 190;
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const imgWidth = 210; // ancho total A4 en mm
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            // Create PDF
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: imgHeight > 270 ? 'portrait' : 'portrait',
-                unit: 'mm',
-                format: 'a4'
+            // Identificar límites de tarjetas para evitar cortes
+            const containerRect = container.getBoundingClientRect();
+            const pxToMm = imgWidth / canvas.width;
+            const cards = Array.from(container.querySelectorAll('.card, .indicator-card, .chart-card, .v2-card, .performance-table'));
+            const cardBoundaries = cards.map(card => {
+                const rect = card.getBoundingClientRect();
+                return {
+                    top: (rect.top - containerRect.top) * pxToMm,
+                    bottom: (rect.bottom - containerRect.top) * pxToMm
+                };
             });
 
-            // Add image
-            const pageHeight = 287;
-            let yPos = 5;
+            // Crear PDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
 
-            if (imgHeight <= pageHeight) {
-                pdf.addImage(imgData, 'PNG', 10, yPos, imgWidth, imgHeight);
-            } else {
-                // Multi-page if content is too tall
-                let heightLeft = imgHeight;
-                let position = yPos;
+            // Usar Smart Slices para evitar cortes en tablas
+            const currentView = App.state.currentView || 'vista';
+            this.addSmartSlices(pdf, imgData, imgHeight, currentView, 1, 1, cardBoundaries);
 
-                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
-
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
-                }
-            }
 
             // Save
-            const currentView = App.state.currentView || 'vista';
             const comunaName = window.STATE_DATA?.comunaName || 'Santiago';
             pdf.save(`${currentView}_${comunaName}.pdf`);
 
