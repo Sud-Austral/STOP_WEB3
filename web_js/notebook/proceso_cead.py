@@ -1,18 +1,30 @@
-
 import pandas as pd
-import json
 import warnings
 import numpy as np
 import os
 import sys
-from datetime import datetime
-from functools import partial
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 
 def ejecutar_proceso():
     print(">>> Iniciando Proceso CEAD (Modo Secuencial)...")
     
+    # -----------------------------------------
+    # 0. Configuración Progreso (tqdm)
+    # -----------------------------------------
+    try:
+        from tqdm import tqdm
+        USE_TQDM = True
+    except ImportError:
+        USE_TQDM = False
+
+    def progress_wrapper(iterable, desc="Procesando", total=None):
+        try:
+           if USE_TQDM:
+               return tqdm(iterable, desc=desc, total=total, smoothing=0.1)
+        except: pass
+        return iterable
+
     # -----------------------------------------
     # 1. Definiciones y Constantes Locales
     # -----------------------------------------
@@ -39,36 +51,40 @@ def ejecutar_proceso():
     # -----------------------------------------
     def predecir_sarima_secuencial(args):
         """Función de predicción para ejecución secuencial."""
-        (com, tipo, delit, tipo_val_nombre, serie_train) = args
-        
-        if len(serie_train) < 24 or serie_train.std() < 0.01:
-            last_val = serie_train.iloc[-3:].mean() if len(serie_train) >= 3 else serie_train.mean()
-            vals_pred = [max(0, round(last_val))] * len(FILL_PERIODS)
-        else:
-            try:
-                model = SARIMAX(
-                    serie_train,
-                    order=(1, 1, 0), 
-                    seasonal_order=(0, 1, 0, 12),
-                    enforce_stationarity=False,
-                    enforce_invertibility=False,
-                    simple_differencing=True
-                )
-                result = model.fit(disp=False, maxiter=15, cov_type='none', method='powell')
-                forecast = result.get_forecast(steps=len(FILL_PERIODS))
-                vals_pred = [max(0, round(v)) for v in forecast.predicted_mean]
-            except:
-                vals_pred = [max(0, round(serie_train.iloc[-1]))] * len(FILL_PERIODS)
-        
-        res = []
-        for i, date_f in enumerate(FILL_PERIODS):
-            res.append({
-                'codcom': com, 'tipoValCod': tipo, 'delito': delit,
-                'año': date_f.year, 'mes': date_f.month,
-                'id_periodo': date_to_id(date_f), 'fecha': date_f,
-                'frecuencia': vals_pred[i], 'tipoVal': tipo_val_nombre
-            })
-        return res
+        # Silenciar advertencias específicas de este modelo para evitar spam en logs
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            
+            (com, tipo, delit, tipo_val_nombre, serie_train) = args
+            
+            if len(serie_train) < 24 or serie_train.std() < 0.01:
+                last_val = serie_train.iloc[-3:].mean() if len(serie_train) >= 3 else serie_train.mean()
+                vals_pred = [max(0, round(last_val))] * len(FILL_PERIODS)
+            else:
+                try:
+                    model = SARIMAX(
+                        serie_train,
+                        order=(1, 1, 0), 
+                        seasonal_order=(0, 1, 0, 12),
+                        enforce_stationarity=False,
+                        enforce_invertibility=False,
+                        simple_differencing=True
+                    )
+                    result = model.fit(disp=False, maxiter=15, cov_type='none', method='powell')
+                    forecast = result.get_forecast(steps=len(FILL_PERIODS))
+                    vals_pred = [max(0, round(v)) for v in forecast.predicted_mean]
+                except:
+                    vals_pred = [max(0, round(serie_train.iloc[-1]))] * len(FILL_PERIODS)
+            
+            res = []
+            for i, date_f in enumerate(FILL_PERIODS):
+                res.append({
+                    'codcom': com, 'tipoValCod': tipo, 'delito': delit,
+                    'año': date_f.year, 'mes': date_f.month,
+                    'id_periodo': date_to_id(date_f), 'fecha': date_f,
+                    'frecuencia': vals_pred[i], 'tipoVal': tipo_val_nombre
+                })
+            return res
 
     def calc_estacionalidad(group):
         total_rows = group[group['delito'] == 'Total']
