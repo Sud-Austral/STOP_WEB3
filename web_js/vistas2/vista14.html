@@ -144,7 +144,7 @@
         new Chart(lineCtx, {
             type: 'line',
             data: {
-                labels: last12.map(id => `S${id % 100}`),
+                labels: last12.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id % 100}`),
                 datasets: [{
                     label: '% Aporte Comunal',
                     data: pctsHistory,

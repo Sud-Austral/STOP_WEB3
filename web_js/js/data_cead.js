@@ -213,12 +213,12 @@ window.COLS_CEAD = {
     ES_RACHA_NEG: '_na_racha_neg',
     ES_RACHA_POS: '_na_racha_pos',
 
-    // IDI (no calculado en CEAD — graceful fallback a 0)
-    IDI_PESO: '_na_idi_peso',
-    IDI_PROY_MES: '_na_idi_proy_mes',
+    // IDI (Calculated via Union Mapping)
+    IDI_PESO: 'idi_peso',
+    IDI_PROY_MES: 'idi_mensual',
     IDI_MES_ANT_YEAR: '_na_idi_ant_year',
     IDI_MES_ANTERIOR: '_na_idi_mes_ant',
-    IDI_PROY_ANUAL: '_na_idi_proy_anual',
+    IDI_PROY_ANUAL: 'idi_acumulado_anual',
     IDI_ANUAL_ANT: '_na_idi_anual_ant',
     IDI_REGIONAL: '_na_idi_reg',
     IDI_NACIONAL: '_na_idi_nac',

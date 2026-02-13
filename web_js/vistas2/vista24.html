@@ -180,7 +180,7 @@
         new Chart(miniCtx, {
             type: 'line',
             data: {
-                labels: last8.map(id => `S${id % 100}`),
+                labels: last8.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id % 100}`),
                 datasets: [{
                     data: trendValues,
                     borderColor: '#1e293b',

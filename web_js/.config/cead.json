@@ -1,7 +1,7 @@
 {
-    "timestamp": "2026-02-13T19:39:10.853469",
+    "timestamp": "2026-02-13T20:24:15.965857",
     "source": "proceso_cead.py",
-    "rows": 4462920,
+    "rows": 4260060,
     "columns": [
         "codcom",
         "año",
@@ -34,6 +34,9 @@
         "total_año_real",
         "ranking_regional_anual_metric",
         "ranking_nacional_mensual",
+        "idi_peso",
+        "idi_mensual",
+        "idi_acumulado_anual",
         "t22_mes_nombre",
         "t22_mes_pct",
         "t22_trimestre_nombre",
@@ -86,6 +89,9 @@
         "total_año_real": "int64",
         "ranking_regional_anual_metric": "float64",
         "ranking_nacional_mensual": "float64",
+        "idi_peso": "float64",
+        "idi_mensual": "float64",
+        "idi_acumulado_anual": "float64",
         "t22_mes_nombre": "object",
         "t22_mes_pct": "float64",
         "t22_trimestre_nombre": "object",
@@ -108,12 +114,12 @@
     },
     "date_range": {
         "start": "2005-01-01T00:00:00",
-        "end": "2026-12-01T00:00:00"
+        "end": "2025-12-01T00:00:00"
     },
     "limits": {
-        "start_fill": "2026-01-01",
-        "end_fill": "2026-12-01",
-        "limit_date": "2025-12-01"
+        "start_fill": "2025-10-01",
+        "end_fill": "2025-12-01",
+        "limit_date": "2025-09-01"
     },
     "mapping_hint": {
         "CASOS_ACTUAL": "frecuencia",

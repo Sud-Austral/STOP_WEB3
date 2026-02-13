@@ -164,7 +164,8 @@
         // --- Gráfico de Tendencia: 8 Semanas ---
         const last8_IDs = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 8).reverse();
         const trendData = last8_IDs.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id)?.[C.CASOS_ACTUAL] || 0);
-        const trendLabels = last8_IDs.map(id => `S${id % 100}`);
+        // Use central date formatter (YYYY/MM)
+        const trendLabels = last8_IDs.map(id => S.getDateLabel(id));
 
         new Chart(document.getElementById('v1_chart_trend'), {
             type: 'line',

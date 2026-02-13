@@ -281,17 +281,31 @@ window.DataManager = {
         // --- Helper: Date Formatting based on DATA ---
         window.getFormattedDate = (weekId) => {
             const row = this.state.stop.totalHistory.find(r => r.id_semana === weekId);
-            if (row && row.fecha) {
-                // Assuming format YYYY-MM-DD or similar
-                const d = new Date(row.fecha);
-                if (!isNaN(d)) {
-                    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-                    const day = d.getDate().toString().padStart(2, '0');
-                    return `${day}/${month}`;
+            if (row) {
+                // Preferred: Use 'fecha' field (YYYY-MM-DD)
+                if (row.fecha) {
+                    // Fix timezone issue by parsing components directly if string is YYYY-MM-DD
+                    // to avoid getting previous day due to UTC conversion
+                    const parts = String(row.fecha).split('-');
+                    if (parts.length >= 2) {
+                        return `${parts[0]}/${parts[1]}`; // YYYY/MM
+                    }
+
+                    const d = new Date(row.fecha);
+                    if (!isNaN(d.getTime())) {
+                        const year = d.getFullYear();
+                        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+                        return `${year}/${month}`;
+                    }
+                }
+                // Fallback: Use 'anio' and 'mes_num'/'mes' if available
+                if (row.anio) {
+                    const m = row.mes_num || row.mes || 0;
+                    return `${row.anio}/${String(m).padStart(2, '0')}`;
                 }
             }
-            // Fallback to S{id}
-            return `S${weekId % 100}`;
+            // Fallback to Week ID
+            return `S${weekId}`;
         };
 
         // --- Map to STATE_DATA (STOP) ---

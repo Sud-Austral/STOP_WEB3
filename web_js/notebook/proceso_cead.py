@@ -49,13 +49,17 @@ def ejecutar_proceso():
     # 2. Funciones Auxiliares (Closures)
     # -----------------------------------------
     def predecir_sarima_secuencial(args):
-        """Función de predicción para ejecución secuencial."""
+        """Función de predicción para ejecución secuencial con validación de anomalías."""
         # Silenciar advertencias específicas de este modelo para evitar spam en logs
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             
             (com, tipo, delit, tipo_val_nombre, serie_train) = args
             
+            # Promedio base para chequeo de sanidad (últimos 12 meses conocidos)
+            avg_base = serie_train.iloc[-12:].mean() if len(serie_train) >= 12 else serie_train.mean()
+            if np.isnan(avg_base) or avg_base == 0: avg_base = 0.1
+
             if len(serie_train) < 24 or serie_train.std() < 0.01:
                 last_val = serie_train.iloc[-3:].mean() if len(serie_train) >= 3 else serie_train.mean()
                 vals_pred = [max(0, round(last_val))] * len(FILL_PERIODS)
@@ -72,8 +76,39 @@ def ejecutar_proceso():
                     result = model.fit(disp=False, maxiter=15, cov_type='none', method='powell')
                     forecast = result.get_forecast(steps=len(FILL_PERIODS))
                     vals_pred = [max(0, round(v)) for v in forecast.predicted_mean]
+                    
+                    # --- SANITY CHECK ---
+                    # Si alguna predicción cae un 50% por debajo del promedio anual base (siendo base > 5)
+                    # Lo consideramos una anomalía del modelo (colapso) y usamos promedio simple.
+                    is_anomalous = False
+                    if avg_base > 5:
+                        for v in vals_pred:
+                            if v < (avg_base * 0.5): # Umbral estricto: caída > 50% es anomalía
+                                is_anomalous = True
+                                break
+                    
+                    if is_anomalous:
+                        # Fallback Robusto: Promedio de los últimos 6 meses IGNORANDO ceros finales (posibles datos incompletos)
+                        # Tomamos los ultimos 6 meses
+                        recent = serie_train.iloc[-6:] if len(serie_train) >= 6 else serie_train
+                        
+                        # Si el promedio base es alto (>10), filtramos meses con < 5 casos para no ensuciar el promedio
+                        fallback_val = avg_base # Default a promedio anual
+                        
+                        if avg_base > 10:
+                            months_valid = recent[recent > 5]
+                            if not months_valid.empty:
+                                fallback_val = months_valid.mean()
+                        else:
+                            fallback_val = recent.mean()
+                            
+                        # print(f"⚠️ Anomalía detectada en {delit} (Pred: {vals_pred[0]} vs Base: {avg_base:.1f}). Corrigiendo a {fallback_val:.1f}")
+                        vals_pred = [max(0, round(fallback_val))] * len(FILL_PERIODS)
+                        
                 except:
-                    vals_pred = [max(0, round(serie_train.iloc[-1]))] * len(FILL_PERIODS)
+                    # Fallback por error de ejecución: Promedio ultimos 3
+                    fallback_val = serie_train.iloc[-3:].mean() if len(serie_train) >= 3 else serie_train.iloc[-1]
+                    vals_pred = [max(0, round(fallback_val))] * len(FILL_PERIODS)
             
             res = []
             for i, date_f in enumerate(FILL_PERIODS):
@@ -222,6 +257,52 @@ def ejecutar_proceso():
         
     # Ranking Nacional Mensual
     df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'])['frecuencia'].rank(method='dense', ascending=False)
+
+    print("> Calculando IDI CEAD (Basado en Union)...")
+    try:
+        import json
+        # 1. Definir Pesos Base STOP
+        weights_stop = {
+            'HOMICIDIOS Y FEMICIDIOS': 1000,
+            'ROBOS CON VIOLENCIA E INTIMIDACIÓN': 150,
+            'VIOLACIONES Y DELITOS SEXUALES': 200,
+            'LEY DE CONTROL DE ARMAS': 75,
+            'LEY DE DROGAS': 30,
+            'DELITOS EN CONTEXTO DE VIOLENCIA INTRAFAMILIAR': 40
+        }
+        
+        # 2. Cargar Union
+        union_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".config", "union.json")
+        if os.path.exists(union_path):
+            with open(union_path, 'r', encoding='utf-8') as f:
+                union_data = json.load(f)
+            
+            map_cead_weight = {}
+            for item in union_data:
+                stop_name = item.get(' Delitos_stop', '').strip()
+                weight = weights_stop.get(stop_name, 0)
+                if weight > 0:
+                    map_cead_weight[item['id_subgrupo']] = weight
+            
+            # 3. Aplicar mapeo (df['CODIGO'] es el id_subgrupo CEAD)
+            df['idi_peso'] = df['CODIGO'].map(map_cead_weight).fillna(0)
+            
+            # 4. Calcular Métricas IDI
+            # IDI Mensual Ponderado por Población (Puntos)
+            df['idi_mensual'] = (df['frecuencia'] * df['idi_peso'] / df['factor_poblacion']).fillna(0)
+            
+            # IDI Acumulado Anual
+            df['idi_acumulado_anual'] = df.groupby(['codcom', 'delito', 'año'])['idi_mensual'].cumsum()
+            
+            print(f"   - Pesos asignados exitosamente usando union.json")
+        else:
+            print(f"⚠️ Archivo union.json no encontrado en {union_path}")
+            df['idi_peso'] = 0
+            df['idi_mensual'] = 0
+            
+    except Exception as e:
+        print(f"⚠️ Error calculando IDI CEAD: {e}")
+        df['idi_peso'] = 0
 
     df3 = df.copy()
     est = df3.groupby(['codcom', 'tipoValCod']).apply(calc_estacionalidad).reset_index()

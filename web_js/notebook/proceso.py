@@ -462,7 +462,7 @@ weights_idi = {
 BASE_IDI_ANUAL = 110526
 BASE_IDI_MENSUAL = 9279
 
-df3['idi_peso'] = df3['delito'].map(weights_idi).fillna(0)
+df3['idi_peso'] = df3['delito'].str.upper().map(weights_idi).fillna(0)
 
 # Calcular Proyección Mensual si faltante
 # Calcular Proyección Mensual (Extrapolación lineal simple del acumulado)
