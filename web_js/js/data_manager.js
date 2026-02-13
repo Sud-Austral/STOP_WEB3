@@ -258,11 +258,14 @@ window.DataManager = {
         window.COLS.Z_SCORE = 'z_score';
         window.COLS.ALERTA = 'alerta_aumento_critico';
 
+        // COLS_CEAD: Defined primarily in data_cead.js. DataManager respects existing definition.
         if (!window.COLS_CEAD) window.COLS_CEAD = {};
-        window.COLS_CEAD.ID_PERIODO = 'id_periodo';
-        window.COLS_CEAD.CASOS_ACTUAL = 'frecuencia'; // Corrected to match python output
-        window.COLS_CEAD.DELITO = 'delito';
-        window.COLS_CEAD.PERIODO_DETALLE = 'periodo_detalle';
+
+        // Only set defaults if missing to avoid overwriting data_cead.js configuration
+        if (!window.COLS_CEAD.ID_PERIODO) window.COLS_CEAD.ID_PERIODO = 'id_periodo';
+        if (!window.COLS_CEAD.CASOS_ACTUAL) window.COLS_CEAD.CASOS_ACTUAL = 'frecuencia'; // Correct mapping
+        if (!window.COLS_CEAD.DELITO) window.COLS_CEAD.DELITO = 'delito';
+        if (!window.COLS_CEAD.PERIODO_DETALLE) window.COLS_CEAD.PERIODO_DETALLE = 'periodo_detalle';
 
         console.log("🔄 DataManager: Legacy STATE_DATA objects hydrated.");
 

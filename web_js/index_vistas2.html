@@ -19,13 +19,6 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css?v=3">
-
-    <!-- Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body class="app-layout">
@@ -61,6 +54,16 @@
         </section>
     </main>
 
+    <!-- Libraries (Moved to footer for performance) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+
+    <!-- Global Configuration -->
+    <script src="js/config/columns.js?v=2"></script>
+
     <!-- Data Layer -->
     <!-- Unified Data Manager -->
     <!-- We keep data.js strictly for COLS definitions if they are not fully migrated, but DataManager handles loading -->
@@ -69,7 +72,8 @@
     <script src="js/data_manager.js?v=5"></script>
 
     <!-- App Scripts -->
-    <script src="js/utils/chart-helper.js?v=3"></script>
+    <script src="js/utils/waiter.js?v=1"></script>
+    <script src="js/utils/chart-helper.js?v=4"></script>
     <script src="js/utils/chart-enhancer.js?v=3"></script>
     <script src="js/ia.js?v=3"></script>
     <script src="js/app.js?v=3"></script>

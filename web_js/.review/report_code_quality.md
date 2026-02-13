@@ -1,90 +1,59 @@
-# 🔍 REPORTE DE CALIDAD DE CÓDIGO Y PERFORMANCE (AUDITORÍA SENIOR)
+# 🔍 Calidad de Código: STOP WEB V2 (Performance y Mantenibilidad)
 
-## 📋 RESUMEN EJECUTIVO
-**Puntuación de Mantenibilidad**: 6/10
-**Puntuación de Performance (LCP/INP)**: 7/10
-**Auditores**: code-reviewer
+## 1️⃣ ARQUITECTURA Y MANTENIBILIDAD
 
----
-
-## 💡 Hallazgo: "Fragmented DOM Batching" (Layout Thrashing)
-**🏗️ Principio/Métrica**: Performance / Layout Thrashing
-**📍 Ubicación**: `vistas/vista0.html` | Bloque `initVista0` (Líneas 1151-1703)
-**Hallazgo**: Se realizan más de 120 llamadas individuales a `setEl` y `setConc`. Cada una ejecuta un `document.getElementById` interno. Aunque el acceso por ID es óptimo, realizar cientos de escrituras atómicas en el DOM principal sin fragmentos provoca micro-reflows constantes.
+**💡 Hallazgo**: Duplicación de lógica de carga de datos (`waitForData`) en todas las vistas
+**🏗️ Principio/Métrica**: DRY / Mantenibilidad
+**📍 Ubicación**: `vista21.html`, `vista7.html`, `vista4.html`, etc.
 **🛠️ Refactor Sugerido**:
-Cachear referencias al inicio o usar un `DocumentFragment` si el contenido fuera generado dinámicamente. Para este caso, el uso de un objeto de referencias es lo más limpio:
+- Centralizar la función `waitForData` en `js/utils/loading.js` o `js/app.js` y exponerla globalmente o importarla.
 ```javascript
-const UI = {
-  v0_t1_actual: document.getElementById('v0_t1_actual'),
-  // ... resto de IDs
-};
-const setEl = (ref, val) => { if (UI[ref]) UI[ref].textContent = val; };
+// js/utils/waiter.js
+export async function waitForData(dataKey = 'STATE_DATA_CEAD') { ... }
 ```
-**📈 Beneficio**: Menor carga en el Main Thread durante el renderizado inicial (~15% mejora en tiempo de inactividad tras carga).
+**📈 Beneficio**: Reduce duplicidad y centraliza la lógica de timeouts/intentos.
 
----
-
-## 💡 Hallazgo: "Polling over Event-Driven" (Magic Numbers)
-**🏗️ Principio/Métrica**: Robustez / Latencia
-**📍 Ubicación**: `js/app.js` | Línea 188 (`setTimeout` de 500ms)
-**Hallazgo**: La orquestación entre la carga de HTML (`loadView`) y la mejora visual (`ChartEnhancer`) depende de un `setTimeout`. Esto es un anti-patrón de "magic numbers". Si el hardware es lento, la mejora falla; si es rápido, el usuario percibe un "flash de contenido sin estilo".
+**💡 Hallazgo**: Acoplamiento fuerte de nombres de columnas (String Matching)
+**🏗️ Principio/Métrica**: Mantenibilidad / Robustez (SOLID - Open/Closed)
+**📍 Ubicación**: Múltiples vistas usando cadenas literales para claves de objetos (`r[C.CASOS_ACTUAL]`).
 **🛠️ Refactor Sugerido**:
-Implementar un sistema de promesas o un evento `viewLoaded`.
-```javascript
-// En app.js
-this.elements.viewContainer.dispatchEvent(new CustomEvent('viewReady', { detail: { viewName } }));
+- Definir un objeto `ColumnMap` único y extensible en `js/config/columns.js`.
+- Usar claves constantes (Enum-like) en todo el código JS.
+**📈 Beneficio**: Evita errores de typo y facilita refactorización si cambia el esquema de Python.
 
-// En ChartEnhancer.js
-document.addEventListener('viewReady', (e) => {
-    ChartEnhancer.applyEnhancements(e.detail.viewName);
-});
-```
-**📈 Beneficio**: Eliminación de condiciones de carrera y eliminación de latencia artificial de 500ms.
+## 2️⃣ PERFORMANCE & DOM
 
----
-
-## 💡 Hallazgo: Polución del Global Scope y Falta de Encapsulación
-**🏗️ Principio/Métrica**: SOLID / Encapsulación
-**📍 Ubicación**: `js/data.js`, `js/data_cead.js`, `js/ia.js`
-**Hallazgo**: Los objetos `STATE_DATA`, `STATE_DATA_CEAD` y los metadatos de columnas `COLS` están expuestos directamente en `window`. Esto permite mutaciones accidentales desde cualquier script inyectado sin trazabilidad (Side Effects).
+**💡 Hallazgo**: Layout Thrashing potencial al asignar `innerHTML` repetidamente en loops (Menor)
+**🏗️ Principio/Métrica**: Layout Thrashing (INP)
+**📍 Ubicación**: `vista22.html` (Línea 111, `.map(...).join('')`), `vista8.html`, `vista4.html`.
 **🛠️ Refactor Sugerido**:
-Utilizar un Store centralizado o un Namespace cerrado con métodos `get/set` (Proxy pattern sugerido para debugging).
-```javascript
-const Store = {
-    _state: { ... },
-    get state() { return Object.freeze({ ...this._state }); }, 
-    update(key, val) { this._state[key] = val; }
-};
-```
-**📈 Beneficio**: Facilita el Debugging (Time-travel debugging posible) y previene errores por colisión de variables en aplicaciones de gran escala.
+- El uso actual de `.map(...).join('')` es el correcto (Batching). Se debe evitar usar `list.innerHTML += ...` en loops.
+- Verificar que el navegador no esté recalcular el layout innecesariamente si se cambia `style.display` antes de insertar contenido.
+**📈 Beneficio**: Asegura renderizado fluido (60fps) en tablas grandes.
 
----
-
-## 💡 Hallazgo: "Inefficient Global Selectors" en Post-procesamiento
-**🏗️ Principio/Métrica**: Performance (INP)
-**📍 Ubicación**: `js/utils/chart-enhancer.js` | Funciones `formatViewNumbers`, `applyTableStyling`.
-**Hallazgo**: Cada vez que se carga una vista, el potenciador busca en TODO el documento (`document.querySelectorAll`). En el caso de `vista0.html`, se están recorriendo elementos de cabecera y sidebar innecesariamente de forma repetitiva.
+**💡 Hallazgo**: Chart.js Memory Leaks (Instancias huérfanas)
+**🏗️ Principio/Métrica**: Memory Efficiency (Heap Usage)
+**📍 Ubicación**: Todas las vistas con gráficos (`vistas2/*.html`).
 **🛠️ Refactor Sugerido**:
-Restringir la búsqueda al contenedor de la vista actual.
+- Implementar un gestor de instancias de Chart en `js/app.js` o `js/utils/chart-helper.js` que destruya automáticamente las instancias vinculadas a un canvas que ya no está en el DOM al cambiar de vista.
 ```javascript
-formatViewNumbers(containerId = 'viewContainer') {
-    const root = document.getElementById(containerId);
-    root.querySelectorAll('[data-format="number"]').forEach(...);
+// chart-helper.js
+const instances = [];
+function createChart(ctx, config) {
+   const chart = new Chart(ctx, config);
+   instances.push(chart);
+   return chart;
 }
+function cleanup() { instances.forEach(c => c.destroy()); instances.length = 0; }
 ```
-**📈 Beneficio**: Reducción del coste de recorrido del DOM en un 80% en vistas complejas.
+**📈 Beneficio**: Previene fugas de memoria críticas en SPAs de larga ejecución.
 
----
+## 3️⃣ BUNDLE & CARGA
 
-## 💡 Hallazgo: Duplicación de Lógica en Vistas (DRY Violation)
-**🏗️ Principio/Métrica**: DRY (Don't Repeat Yourself)
-**📍 Ubicación**: `vistas/*.html` y `vistas2/*.html`
-**Hallazgo**: Los helpers de formateo (`fN`, `fP`, `fD`, `setEl`) y la lógica de espera de datos (`waitForData`) se copian y pegan en cada archivo HTML.
+**💡 Hallazgo**: Carga bloqueante de librerías pesadas (Chart.js, html2canvas) en `index_vistas2.html`
+**🏗️ Principio/Métrica**: FCP (First Contentful Paint) / LCP
+**📍 Ubicación**: `index_vistas2.html` `<head>`
 **🛠️ Refactor Sugerido**:
-Mover estos helpers a `js/utils/view-helper.js` y cargarlos una sola vez o inyectarlos como un objeto global `Utils` disponible para todos los componentes.
-**📈 Beneficio**: Facilidad de mantenimiento. Cambiar el símbolo de moneda o separador decimal ahora requiere editar 45 archivos en lugar de uno.
-
----
-
-### Resumen Técnico para Dirección
-El código es funcional y utiliza estándares modernos, pero sufre de una arquitectura "Page-Oriented" en lugar de "Component-Oriented". La performance es aceptable para reportes PDF estáticos, pero la interactividad (INP) se verá comprometida si el número de indicadores sigue creciendo. Se recomienda la transición a un Store centralizado y la unificación de utilitarios de vista.
+- Mover scripts no críticos al final del `<body>` o usar `defer`.
+- Cargar librerías específicas (ej. `jspdf`, `html2canvas`) bajo demanda solo cuando se requiera exportar.
+**📈 Beneficio**: Acelera la carga inicial y la percepción de velocidad.

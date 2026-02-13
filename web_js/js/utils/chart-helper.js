@@ -37,6 +37,23 @@ const ChartHelper = {
     },
 
     /**
+     * Destroy all Chart.js instances to prevent memory leaks when changing views.
+     */
+    destroyAllCharts: function () {
+        if (typeof Chart !== 'undefined') {
+            const charts = Object.values(Chart.instances || {});
+            charts.forEach(chart => {
+                try {
+                    chart.destroy();
+                } catch (e) {
+                    console.warn('Error destroying chart:', e);
+                }
+            });
+            console.log("🧹 Charts cleaned up");
+        }
+    },
+
+    /**
      * #21 - Formato numérico chileno (1.234,56)
      */
     formatNumber(value, decimals = 0) {

@@ -800,6 +800,75 @@ const PDFModule = {
     },
 
     /**
+     * Export Single Page (Current View)
+     * Fixes: onclick="PDFModule.exportSinglePage()"
+     */
+    async exportSinglePage() {
+        const btn = document.getElementById('btnExportSingle');
+        const originalText = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+        }
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const container = document.getElementById('viewContainer');
+
+            // Capture
+            const canvas = await html2canvas(container, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#f8fafc'
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+
+            const pdfW = 297;
+            const pdfH = 210;
+            const imgH = (canvas.height * pdfW) / canvas.width;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, imgH);
+
+            const viewName = window.App?.state?.currentView || 'vista';
+            pdf.save(`Reporte_Individual_${viewName}.pdf`);
+
+        } catch (error) {
+            console.error("Export Single Error:", error);
+            alert("Error exportando hoja actual.");
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+    },
+
+    /**
+     * Export Full Report with Cover
+     * Fixes: onclick="PDFModule.exportWithCover()"
+     * Delegates to V2 module if available and relevant.
+     */
+    async exportWithCover() {
+        // Check if we contain Vistas 2 module
+        if (window.PDFModuleV2 && window.location.href.includes('vistas2')) {
+            console.log("Delegating to PDFModuleV2...");
+            await window.PDFModuleV2.exportReport();
+            return;
+        }
+
+        // Fallback or Standard Impl
+        console.warn("Standard exportWithCover not fully implemented in this context. Using V2 delegation.");
+        if (window.PDFModuleV2) {
+            await window.PDFModuleV2.exportReport();
+        } else {
+            alert("Módulo de reporte completo no inicializado.");
+        }
+    },
+
+    /**
      * Generate cover page on a jsPDF instance
      * @param {jsPDF} pdf - The jsPDF instance
      */

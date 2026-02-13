@@ -21,6 +21,33 @@ window.STATE_DATA_CEAD = {
 };
 
 // CEAD Column Keys - Mapped to proceso_cead.py output (orient='records')
+/**
+ * CEAD Data Loader
+ * Loads data from json files produced by Python script
+ * Relies on window.COLS_CEAD defined in config/columns.js
+ */
+
+// If COLS_CEAD is missing, recreate it (fallback), but prefer config/columns.js
+if (!window.COLS_CEAD) {
+    console.warn("⚠️ COLS_CEAD missing! Using fallback configuration.");
+    window.COLS_CEAD = {
+        ID_PERIODO: 'id_periodo',
+        DELITO: 'delito',
+        CASOS_ACTUAL: 'frecuencia',
+        CASOS_ANT: 'casos_mes_anterior',
+        DELTA: 'delta',
+        VAR_PCT: 'variacion_porcentual',
+        ANIO: 'anio',
+        MES: 'mes',
+        MES_NUM: 'mes_num',
+        COMUNA: 'comuna',
+        REGION: 'region',
+        PERIODO_DETALLE: 'periodo_detalle',
+        ALERTA: 'alerta_aumento_critico'
+    };
+} else {
+    console.log("✅ Using Centralized COLS_CEAD configuration.");
+}
 window.COLS_CEAD = {
     // Identificadores Base
     CODCOM: 'codcom',

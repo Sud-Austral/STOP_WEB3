@@ -1,94 +1,54 @@
-# 📘 Documentación Técnica: STOP_WEB3 CEAD Integration
+# 📘 Documentación Técnica: STOP WEB V2
 
-## 📋 Overview
-**STOP_WEB3** es una plataforma de inteligencia delictual diseñada para la reportabilidad oficial de seguridad pública. Integra datos operativos semanales del sistema **STOP** (Carabineros) con estadísticas mensuales oficiales de **CEAD** (Subsecretaría de Prevención del Delito).
+## 1️⃣ OVERVIEW
+**STOP WEB V2** es una plataforma de inteligencia delictual basada en Single Page Application (SPA) híbrida construida con **Vanilla JavaScript (ES2020+)**. Su objetivo es visualizar y analizar datos complejos provenientes de fuentes policiales (CEAD/STOP) mediante dashboards interactivos de alto rendimiento.
 
-### Arquitectura General
-- **Frontend**: Single Page Application (SPA) basada en **Vanilla JS** (ES2022+). Utiliza inyección dinámica de HTML para las vistas.
-- **Estado**: Gestión de estado centralizada a través de objetos globales (`STATE_DATA`, `STATE_DATA_CEAD`).
-- **Data Layer**: Procesamiento previo en **Python (Pandas/Statsmodels)** con salida en JSON comprimidos (Gzip) para optimización de red.
-- **Reporting**: Generación de informes profesionales en PDF directamente en el cliente mediante `html2canvas` y `jsPDF`.
+## 2️⃣ ARCHITECTURE
 
----
+### Core Components
+- **`index_vistas2.html`**: El "App Shell" principal. Carga las librerías base, estilos y el `js/app.js` que orquesta la aplicación.
+- **`js/app.js`**: El controlador central. Maneja la carga de vistas (`loadView`), la navegación (`loadSidebar`) y la inicialización de módulos.
+- **`js/data_manager.js`**: Gestor de estado global para datos **STOP**. Carga JSONs, normaliza y expone `window.STATE_DATA`.
+- **`js/data_cead.js`**: Gestor de estado global para datos **CEAD**. Carga JSONs generados por Python y expone `window.STATE_DATA_CEAD`.
+- **`vistas2/*.html`**: Fragmentos de HTML + JS que componen cada pantalla del dashboard. Se inyectan dinámicamente en el `#viewContainer`.
 
-## 🛠️ API Reference
+### Data Flow
+1.  **Ingesta (Python)**: `notebook/proceso_cead.py` procesa archivos Excel/CSV crudos y genera `data_cead.json`.
+2.  **Carga (JS)**: Al inicio, `data_cead.js` descarga `data_cead.json` y lo almacena en memoria (`window.STATE_DATA_CEAD.allData`).
+3.  **Renderizado (View)**: Cuando el usuario navega a una vista (ej. `vista21`), el JS de la vista:
+    - Espera a que los datos estén listos (`waitForData`).
+    - Filtra y transforma los datos globales según la lógica de negocio (ej. filtrar por año, calcular proyecciones).
+    - Renderiza gráficos con **Chart.js** y manipula el DOM para mostrar tablas/KPIs.
 
-### 1. `App` (js/app.js)
-El controlador principal de la aplicación. Gestiona el ciclo de vida de las vistas y la navegación.
+## 3️⃣ API REFERENCE (Principales Funciones Globales)
 
-| Función | Parámetros | Descripción |
-| :--- | :--- | :--- |
-| `init()` | - | Inicializa la aplicación, cachea elementos y bindea eventos. |
-| `loadView(viewName)` | `string` | Carga un archivo HTML remoto (`vistas/`) en el contenedor principal. |
-| `exportPdf()` | - | Orquestador de exportación masiva de vistas a formato PDF. |
-| `destroyAllCharts()` | - | Limpia instancias de Chart.js para prevenir fugas de memoria. |
+### `App` (js/app.js)
+- `App.loadView(viewName)`: Carga el HTML de `vistas2/{viewName}.html` e inyecta en `#viewContainer`. Ejecuta scripts embebidos.
+- `App.loadSidebar()`: Carga y renderiza el menú lateral (`sidebar2.html`).
 
-### 2. `dataLoader` / `dataLoaderCead` (js/data.js, js/data_cead.js)
-Responsables de la hidratación del estado y la descompresión de datos.
+### `DataManager` (js/data_manager.js)
+- `DataManager.init()`: Inicia la carga de datos STOP.
+- `DataManager.state`: Objeto con los datos cargados (`allData`, `comunaName`, etc).
 
-| Función | Parámetros | Descripción |
-| :--- | :--- | :--- |
-| `load()` | - | Fetch de datos Gzip, descompresión vía `DecompressionStream` e hidratación del estado global. |
-| `updateHeader()` | - | Actualiza dinámicamente el nombre de la comuna y periodo en el DOM superior. |
+### `ChartHelper` (js/utils/chart-helper.js)
+- `ChartHelper.formatNumber(num)`: Formatea números con separadores de miles (CLP standard).
+- `ChartHelper.colors`: Paleta de colores corporativa para gráficos.
 
-### 3. `IAModule` (js/ia.js)
-Módulo de interpretación de datos asistido por IA.
+## 4️⃣ GUÍA DE IMPLEMENTACIÓN DE NUEVAS VISTAS
 
-| Función | Parámetros | Descripción |
-| :--- | :--- | :--- |
-| `getInterpretation(viewId)` | `string` | Recupera o genera un análisis de IA para una vista específica. |
-| `cleanOldCaches()` | - | Mantenimiento preventivo de `localStorage`. |
-
-### 4. `ChartEnhancer` (js/utils/chart-enhancer.js)
-Motor de estética premium para visualizaciones.
-
-| Función | Parámetros | Descripción |
-| :--- | :--- | :--- |
-| `enhanceAllCharts()` | - | Aplica defaults globales (Fuentes Outfit, bordes redondeados, sombras). |
-| `formatViewNumbers()` | - | Aplica formato de moneda y porcentajes locales (`es-CL`). |
-
----
-
-## 📡 Eventos
-La comunicación entre módulos desacoplados se realiza mediante `CustomEvents`.
-
-- **`dataLoaded`**: Disparado por `dataLoader` cuando el estado está listo para ser consumido por las vistas.
-- **`DOMContentLoaded`**: Punto de entrada inicial para la inicialización de `App`.
-
----
-
-## 🚀 Guía de Implementación
-
-### Cómo agregar una nueva vista
-1. Crear un archivo HTML en la carpeta `vistas/` (ej: `vista46.html`).
-2. Implementar la estructura básica de tarjetas:
-```html
-<div class="card">
-    <div id="v46_kpi">--</div>
-</div>
-<script>
-    (async function() {
-        // Lógica de carga de datos desde STATE_DATA
+Para crear una nueva vista (ej. `vista99.html`):
+1.  Copiar la estructura base de una vista existente (ej. `vista21.html`).
+2.  Implementar la lógica dentro de una **IIFE async** para evitar contaminar el scope global:
+    ```javascript
+    (async function initVista99() {
+        await waitForData(); // Implementar o importar
+        const S = window.STATE_DATA_CEAD;
+        // Lógica de filtrado y renderizado
     })();
-</script>
-```
-3. Registrar la vista en `App.config.views` dentro de `js/app.js`.
+    ```
+3.  Agregar la entrada en `sidebar2.html` con `data-view="vista99"`.
+4.  Si requiere columnas nuevas, asegurar que `proceso_cead.py` las exporte y agregarlas a `COLS_CEAD` en `js/data_cead.js`.
 
-### Consideraciones de Performance (LCP/INP)
-- **Lazy Loading**: Las vistas se cargan bajo demanda vía `fetch`.
-- **Gzip**: Es obligatorio que el servidor sirva los archivos de datos con el encabezado correcto o que el cliente use `DecompressionStream`.
-- **Render Delay**: Chart.js requiere un pequeño delay (~1.5s) tras la inyección del DOM para calcular dimensiones correctamente dentro de contenedores ocultos durante exportaciones.
-
----
-
-## 📦 Dependencias
-- [Chart.js](https://www.chartjs.org/) (v4.x)
-- [html2canvas](https://html2canvas.hertzen.com/)
-- [jsPDF](https://rawgit.com/MrRio/jsPDF/master/docs/index.html)
-- [FontAwesome](https://fontawesome.com/) (Iconografía)
-- [Google Fonts (Outfit)](https://fonts.google.com/specimen/Outfit)
-
----
-
-**Mantenido por**: Equipo de Inteligencia - Instituto Libertad
-**Última actualización**: 2026-02-12
+## 5️⃣ SCRIPTS Y HERRAMIENTAS
+- **Python ETL**: `python notebook/proceso_cead.py` (Requiere Pandas, Statsmodels). Genera `data_cead.json`.
+- **Servidor Local**: `python -m http.server` o extensión "Live Server" en VSCode. No requiere build step (Webpack/Vite) para desarrollo, es nativo.

@@ -1,67 +1,93 @@
-# 🛠️ REPORTE DE REFACTORIZACIONES (QUICK WINS)
+# 🛠️ Plan de Refactorización: STOP WEB V2
 
-## 📋 ABSTRACCIÓN Y LIMPIEZA
-**Prioridad**: Alta (Mantenibilidad)
+## 1️⃣ QUICK WINS (P0/P1) - Estabilidad y Seguridad Inmediata
 
----
-
-## ⚡ Refactor: Unificación de Helpers de Vista (Evitar Duplicación)
-**Hallazgo**: Los formateadores `fN`, `fP`, `fD` y la función `setEl` se repiten textualmente en cada archivo `vistaX.html`.
-**🛠️ Propuesta**: 
-Crear `js/utils/view-helper.js` y exponer un objeto global `ViewUtils`.
+**🔨 Refactor**: Gestión de Memoria Chart.js
+**🎯 Objetivo**: `report_errors.md` (Fuga de Memoria) / `report_code_quality.md` (Memory Leaks)
+**💻 Código (After)**:
 ```javascript
-window.ViewUtils = {
-    formatNumber: (v) => Math.round(v || 0).toLocaleString('es-CL'),
-    formatPercent: (v) => (v > 0 ? '+' : '') + (v || 0).toFixed(1) + '%',
-    setText: (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; },
-    // ...
-};
+// js/utils/chart-helper.js
+let activeCharts = [];
+export function registerChart(chart) { activeCharts.push(chart); }
+export function destroyAllCharts() { 
+    activeCharts.forEach(c => c.destroy()); 
+    activeCharts = []; 
+}
+// En app.js -> loadView:
+ChartHelper.destroyAllCharts();
 ```
-**📈 Beneficio**: Reducción masiva de líneas de código redundantes y punto único de cambio para formatos regionales.
+**⚠️ Riesgo**: Bajo (Solo afecta limpieza).
+**⏱️ Esfuerzo**: S (1 hora).
 
----
-
-## ⚡ Refactor: Guard del Bucle de Carga en IA
-**📍 Ubicación**: `js/ia.js` | Línea 519
-**Hallazgo**: El bucle `while (this.isLoading)` no tiene límite de tiempo. Si la IA falla, la pestaña se bloquea en un loop infinito.
-**🛠️ Propuesta**:
-Añadir un contador de reintentos o un timestamp de expiración.
+**🔨 Refactor**: Centralización de `waitForData` (DRY)
+**🎯 Objetivo**: `report_code_quality.md` (Duplicación)
+**💻 Código (After)**:
 ```javascript
-let attempts = 0;
-while (this.isLoading && attempts < 100) { // Max 10 seg
-    await new Promise(resolve => setTimeout(resolve, 100));
-    attempts++;
+// js/utils/data-waiter.js
+export function waitForData(key = 'STATE_DATA_CEAD', timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const start = Date.now();
+        const check = () => {
+            if (window[key] && window[key].isLoaded) resolve(window[key]);
+            else if (Date.now() - start > timeout) reject(new Error('Timeout waiting for data'));
+            else requestAnimationFrame(check);
+        };
+        check();
+    });
+}
+// En vista21.html:
+await DataWaiter.waitForData();
+```
+**⚠️ Riesgo**: Bajo.
+**⏱️ Esfuerzo**: S (30 min).
+
+**🔨 Refactor**: Validación de Columnas (`COLS_CEAD`)
+**🎯 Objetivo**: `report_errors.md` (Robustez Dinámica)
+**💻 Código (After)**:
+```javascript
+// js/data_cead.js
+const REQUIRED_COLS = ['ID_PERIODO', 'DELITO', 'CASOS_ACTUAL'];
+function validateCols() {
+    REQUIRED_COLS.forEach(c => {
+        if (!COLS_CEAD[c]) console.error(`Missing column definition: ${c}`);
+    });
 }
 ```
-**📈 Beneficio**: Resiliencia del sistema ante fallos de red o errores de API.
+**⚠️ Riesgo**: Medio (Alertará sobre configs rotas).
+**⏱️ Esfuerzo**: S (1 hora).
 
----
+## 2️⃣ MEJORAS DE CALIDAD (P2) - Mantenibilidad
 
-## ⚡ Refactor: Mejora del Router de Vistas
-**📍 Ubicación**: `js/app.js` | Propiedad `config.views`
-**Hallazgo**: La lista de vistas es un array plano de strings. Forzar el nombre `vistaN` limita la flexibilidad.
-**🛠️ Propuesta**:
-Mover la configuración a un objeto estructurado que defina metadatos (título, categoría, path).
+**🔨 Refactor**: Sanitización de `innerHTML`
+**🎯 Objetivo**: `report_compliance.md` (XSS)
+**💻 Código (After)**:
 ```javascript
-config: {
-    views: [
-        { id: 'vista1', title: 'Dashboard Resumen', category: 'STOP' },
-        // ...
-    ]
+// js/utils/security.js
+export function sanitize(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
 }
+// Uso:
+el.innerHTML = `<b>${sanitize(userData)}</b>`;
 ```
-**📈 Beneficio**: Permite generar automáticamente el sidebar, los badges de fuente y los headers del PDF sin lógica `switch` o `regex` compleja.
+**⚠️ Riesgo**: Bajo.
+**⏱️ Esfuerzo**: M (Revisar todas las vistas).
 
----
+**🔨 Refactor**: Desacoplamiento de Lógica de Vistas
+**🎯 Objetivo**: `report_architecture.md` (Separación de Concerns)
+**💻 Código (After)**:
+- Mover lógica compleja (`map`, `filter`, `reduce` grandes) de `vista21.html` a `js/services/cead-service.js`.
+- Las vistas solo deben llamar `CeadService.getProjections()` y renderizar.
+**⚠️ Riesgo**: Medio (Requiere mover código y probar regresión).
+**⏱️ Esfuerzo**: M (varias horas por vista).
 
-## ⚡ Refactor: Eliminación de Filtros Hardcoded en Datos
-**📍 Ubicación**: `js/data_cead.js` | Línea 287
-**Hallazgo**: El filtro `.filter(row => row[COLS_CEAD.ID_PERIODO] <= 202509)` es una "bomba de tiempo" técnica.
-**🛠️ Propuesta**:
-Hacer que el límite de datos sea configurable desde `App.config` o eliminarlo si el script de Python ya garantiza la integridad del dataset.
-**📈 Beneficio**: Permite ver las proyecciones SARIMA de Oct-Dic 2025 de forma inmediata.
+## 3️⃣ EVOLUCIÓN ARQUITECTÓNICA (P3) - Largo Plazo
 
----
-
-## 🎯 RESUMEN DE QUICK WINS
-Implementar el `ViewUtils` y corregir el filtro de `data_cead.js` son cambios de bajo riesgo con **impacto inmediato** en la calidad del producto y la visibilidad de los datos proyectados.
+**🔨 Refactor**: Adopción de JSDoc Estricto / TypeScript Checking
+**🎯 Objetivo**: `report_architecture.md` (Robustez)
+**💻 Código (After)**:
+- Agregar `@ts-check` al inicio de archivos JS críticos.
+- Definir tipos para `STATE_DATA` y `COLS_CEAD` en `js/types.d.js`.
+**⚠️ Riesgo**: Bajo (Solo linting).
+**⏱️ Esfuerzo**: L (Documentar todo el proyecto).

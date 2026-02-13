@@ -144,6 +144,13 @@ const App = {
         container.innerHTML = '<div class="loading"></div>';
         this.state.currentView = viewName;
 
+        // Clean up charts from previous view
+        if (typeof ChartHelper !== 'undefined') {
+            ChartHelper.destroyAllCharts();
+        } else {
+            console.warn('ChartHelper not found during view switch.');
+        }
+
         // Toggle PDF button visibility (STOP Views 1-20 only)
         if (this.elements.coverBtn) {
             const match = viewName.match(/^vista(\d+)$/);

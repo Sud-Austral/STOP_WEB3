@@ -1,56 +1,45 @@
-# ⚒️ REPORTE DE ERRORES: RUNTIME & RELIABILITY
+# 🛠️ Reporte de Errores: STOP WEB V2
 
-## 📋 RESUMEN DE SALUD
-**Estado**: ⚠️ ATENCIÓN REQUERIDA
-**Hallazgos**: 1 Crítico, 3 Altos, 2 Medios.
+## 1️⃣ GESTIÓN DE MEMORIA Y DOM
 
----
-
-## ❗ Problema: Bloqueo de Datos Proyectados (Filtro Hardcoded)
-**📍 Ubicación**: `js/data_cead.js` | Línea 287
-**💥 Escenario de Fallo**: El script `proceso_cead.py` genera predicciones exitosas para Oct-Dic 2025 (ID 202510, 202511, 202512). Sin embargo, el frontend filtra todo lo superior a 202509, haciendo que las predicciones sean invisibles para el usuario.
-**⚠️ Impacto**: **CRÍTICO**. Invalida el objetivo de negocio de "Proyecciones de Cierre de Año".
+**❗ Problema**: Fuga de Memoria en Chart.js
+**📍 Ubicación**: Todas las Vistas en `vistas2/*.html` (ej. `vista21.html`, `vista4.html`)
+**💥 Escenario de Fallo**: 
+1. Usuario navega a Vista 21. Se crea `new Chart()`.
+2. Usuario cambia a Vista 22. El HTML de Vista 21 se elimina.
+3. El usuario vuelve a Vista 21. Se crea NUEVO `new Chart()`.
+4. La instancia anterior de Chart.js sigue en memoria o intentando renderizar en un canvas destruido, causando errores o fugas.
+**⚠️ Impacto**: Medio (Degradación de performance con navegación prolongada).
 **🛠️ Fix Sugerido**:
 ```javascript
-// ELIMINAR O AMPLIAR:
-// const filteredData = rawData.filter(row => row[COLS_CEAD.ID_PERIODO] <= 202509);
-// CAMBIAR A:
-const filteredData = rawData; // Confiar en el filtrado previo del ETL Python
+// Antes de crear chart:
+if (window.myChartInstance) window.myChartInstance.destroy();
+window.myChartInstance = new Chart(ctx, ...);
+// O registrar instancias en un gestor global para limpieza al desmontar vista.
 ```
 
----
+**❗ Problema**: Selectores DOM Frágiles
+**📍 Ubicación**: `vistas2/vista21.html`, `vista25.html`, etc.
+**💥 Escenario de Fallo**: Si `App.loadView` falla parcialmente o el HTML no coincide exactamente (ids dinámicos), `document.getElementById('v21_...')` retorna `null`. Acceder a `.textContent` lanza excepción y detiene todo el script de la vista.
+**⚠️ Impacto**: Alto (Vista rota).
+**🛠️ Fix Sugerido**: Uso de Optional Chaining o guards.
+```javascript
+const el = document.getElementById('id');
+if (el) el.textContent = val;
+```
 
-## ❗ Problema: Fuga de Memoria y Colisión de Listeners
-**📍 Ubicación**: `js/app.js` | Función `executeScripts` (Línea 295)
-**💥 Escenario de Fallo**: Un usuario navega entre `vista1` y `vista2` repetidamente. Si una vista registra un listener en `window` (ej: `window.addEventListener('resize', ...)`), cada navegación añade un nuevo listener duplicado. El consumo de RAM sube y la CPU se satura al procesar el mismo evento N veces.
-**⚠️ Impacto**: **ALTO**. Degradación de performance tras sesiones largas.
-**🛠️ Fix Sugerido**: Implementar un sistema de `cleanup` por vista o desacoplar los listeners del script inyectado, moviéndolos a funciones globales controladas por `App`.
+## 2️⃣ ASINCRONÍA Y ESTADO
 
----
+**❗ Problema**: Bucle de espera potencialmente infinito (`waitForData`)
+**📍 Ubicación**: Todas las IIFEs de inicio en `vistas2/*.html`.
+**💥 Escenario de Fallo**: Si `data_manager.js` falla en cargar (ej. error de red 500 en JSON), `window.STATE_DATA_CEAD.isLoaded` nunca es true. La función recursiva `check()` con `setTimeout` corre indefinidamente consumiendo CPU.
+**⚠️ Impacto**: Medio.
+**🛠️ Fix Sugerido**: Implementar timeout máximo o contador de reintentos.
 
-## ❗ Problema: Condición de Carrera en Aplicación de Estilos (Race Condition)
-**📍 Ubicación**: `js/app.js` | Línea 189 (`setTimeout` de 500ms)
-**💥 Escenario de Fallo**: En sistemas lentos o con datos masivos (CEAD), la inyección del HTML de la vista tarda >500ms. `ChartEnhancer` se ejecuta sobre un DOM aún vacío o incompleto, fallando en aplicar colores de variación y formato de tablas.
-**⚠️ Impacto**: **ALTO**. Reportes PDF y vistas con visualización "rota" o sin formato profesional.
-**🛠️ Fix Sugerido**: Utilizar un bloque `try/retry` o disparar `ChartEnhancer` mediante un evento personalizado `viewRendered` emitido por cada vista tras completar su lógica interna.
+## 3️⃣ ROBUSTEZ DINÁMICA
 
----
-
-## ❗ Problema: Bloqueo de Promise en IA (Busy Wait)
-**📍 Ubicación**: `js/ia.js` | Línea 519
-**💥 Escenario de Fallo**: Si la llamada a la API de IA falla o el servidor no responde y no captura el error correctamente (manteniendo `isLoading: true`), la función `getInterpretation` entrará en un bucle infinito de `setTimeout(100)`, bloqueando la ejecución lógica del componente.
-**⚠️ Impacto**: **MEDIO**. Congelamiento de componentes específicos.
-**🛠️ Fix Sugerido**: Añadir un `timeout` o un contador máximo de reintentos en el bucle `while`.
-
----
-
-## ❗ Problema: Fallo en Búsqueda de Tendencia CEAD (Null Safety)
-**📍 Ubicación**: `js/ia.js` | Línea 193
-**💥 Escenario de Fallo**: `ceadData.find(...)` puede devolver `undefined` si los datos están incompletos. Acceder a `undefined[idxCead.TENDENCIA...]` provocará un crash inmediato de la carga de IA.
-**⚠️ Impacto**: **MEDIO**. Interrupción de la generación de interpretaciones.
-**🛠️ Fix Sugerido**: Uso de Optional Chaining: `latestCead?.[idxCead.TENDENCIA_CORTO_PLAZO] ?? "Estable"`.
-
----
-
-## 🎯 RECOMENDACIÓN EJECUTIVA
-Priorizar la eliminación del filtro temporal en `js/data_cead.js` para habilitar las visualizaciones SARIMA. Refactorizar el cargador de scripts en `app.js` para evitar el crecimiento descontrolado del árbol de listeners en memoria.
+**❗ Problema**: Datos "Fake" o Ceros en Gráficos (Mapeo de Columnas)
+**📍 Ubicación**: `vistas2/vista7.html`, `vista4.html`.
+**💥 Escenario de Fallo**: Dependencia de `COLS_CEAD.CASOS_ACTUAL`. Si Python cambia el nombre de columna (ej. 'frecuencia' vs 'casos_mes_actual') y `data_manager.js` sobrescribe el mapa incorrectamente, los valores son `undefined` || 0.
+**⚠️ Impacto**: Crítico (Decisiones basadas en datos erróneos).
+**🛠️ Fix Sugerido**: Centralizar definición de columnas en UN solo archivo (`js/config/columns.js`) y validar existencia de columnas al cargar datos.
