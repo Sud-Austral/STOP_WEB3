@@ -68,8 +68,11 @@
         // Process Ranking by Year
         const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
         const rankings = years.map(yr => {
-            const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0]; // Get last month of that year or avg
-            return row ? (row[C.RANKING] || 25) : 25;
+            const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0];
+            // Prefer consolidated annual ranking, fallback to monthly ranking or default (25)
+            // Note: C.RANKING_REG_ANUAL maps to 'ranking_regional_anual_metric' created in python
+            const rankVal = row ? (row[C.RANKING_REG_ANUAL] || row['ranking_regional_anual_metric'] || row[C.RANKING] || 25) : 25;
+            return Math.round(rankVal);
         });
 
         // Trajectory Logic

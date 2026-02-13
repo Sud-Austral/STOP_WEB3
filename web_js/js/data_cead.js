@@ -110,6 +110,7 @@ window.COLS_CEAD = {
 
     // Rankings
     RANKING: 'ranking_comunal_regional',
+    RANKING_REG_ANUAL: 'ranking_regional_anual_metric', // Nuevo calculo anual consolidado
     RANKING_ANT: 'ranking_comunal_regional_mes_anterior',
     RANK_NAC_MES: 'ranking_nacional_mensual',
     RANK_NAC_MES_ANT: 'ranking_nacional_mensual_anterior',

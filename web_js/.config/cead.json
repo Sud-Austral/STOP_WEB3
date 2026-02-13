@@ -1,5 +1,5 @@
 {
-    "timestamp": "2026-02-13T19:19:52.140314",
+    "timestamp": "2026-02-13T19:39:10.853469",
     "source": "proceso_cead.py",
     "rows": 4462920,
     "columns": [
@@ -30,6 +30,10 @@
         "Codcom_y",
         "Población",
         "factor_poblacion",
+        "ranking_comunal_regional",
+        "total_año_real",
+        "ranking_regional_anual_metric",
+        "ranking_nacional_mensual",
         "t22_mes_nombre",
         "t22_mes_pct",
         "t22_trimestre_nombre",
@@ -78,6 +82,10 @@
         "Codcom_y": "int64",
         "Población": "int64",
         "factor_poblacion": "float64",
+        "ranking_comunal_regional": "float64",
+        "total_año_real": "int64",
+        "ranking_regional_anual_metric": "float64",
+        "ranking_nacional_mensual": "float64",
         "t22_mes_nombre": "object",
         "t22_mes_pct": "float64",
         "t22_trimestre_nombre": "object",

@@ -5,9 +5,11 @@
 
 window.DataManager = {
     // ─── Configuration ───
+    // ─── Configuration ───
     config: {
         stopPath: 'data/stop',
         ceadPath: 'data/cead_split',
+        unionPath: '.config/union.json',
         defaultComuna: 13101
     },
 
@@ -16,6 +18,13 @@ window.DataManager = {
         isLoaded: false,
         isLoading: false,
         comunaId: null,
+
+        // Taxonomy Mapping (Union Data)
+        union: {
+            data: [],
+            byStopName: {},  // Map<NormalizedName, UnionRow>
+            byCeadCode: {}   // Map<Code, UnionRow>
+        },
 
         // STOP Data (Weekly)
         stop: {
@@ -62,6 +71,9 @@ window.DataManager = {
         console.log(`🔄 DataManager: Initializing for Comuna ${this.state.comunaId}...`);
 
         try {
+            // Priority: Load Union Taxonomy FIRST
+            await this.loadUnionData();
+
             // Load both sources in parallel
             await Promise.all([
                 this.loadStopData(this.state.comunaId),
@@ -86,6 +98,74 @@ window.DataManager = {
     },
 
     /**
+     * Load Union Taxonomy (STOP <-> CEAD Mapping)
+     */
+    async loadUnionData() {
+        if (this.state.union.data.length > 0) return; // Already loaded
+
+        try {
+            const res = await fetch(this.config.unionPath);
+            if (!res.ok) throw new Error("Union config not found");
+
+            const data = await res.json();
+            this.state.union.data = data;
+
+            // Build indices
+            this.state.union.byStopName = {};
+            this.state.union.byCeadCode = {};
+
+            data.forEach(row => {
+                // Index by STOP Normalized "Delitos min_stop" (e.g. "Homicidios ") -> trim -> "homicidios"
+                if (row['Delitos min_stop']) {
+                    const stopKey = row['Delitos min_stop'].trim().toLowerCase();
+                    this.state.union.byStopName[stopKey] = row;
+                }
+
+                // Index by CEAD Code "id_subgrupo" (e.g. 10101)
+                if (row.id_subgrupo) {
+                    this.state.union.byCeadCode[row.id_subgrupo] = row;
+                }
+            });
+            console.log(`🔗 DataManager: Taxonomy Union Loaded. ${data.length} mappings.`);
+        } catch (e) {
+            console.warn("⚠️ DataManager: Failed to load Union taxonomy.", e);
+        }
+    },
+
+    /**
+     * Enrich a data row with Union Taxonomy metadata
+     */
+    _enrichRow(row) {
+        // 1. Try enrich via STOP Name (if present)
+        if (row.delito) {
+            const key = String(row.delito).trim().toLowerCase();
+            const meta = this.state.union.byStopName[key];
+            if (meta) {
+                row.Familia = meta.Familia;
+                row.id_familia = meta.id_familia;
+                row.Grupo = meta.Grupo;
+                row.id_grupo = meta.id_grupo;
+                row.Subgrupo = meta.Subgrupo;
+                row.id_subgrupo = meta.id_subgrupo; // CEAD Code from mapping
+            }
+        }
+
+        // 2. Try enrich via CEAD Code (CODIGO / id_subgrupo)
+        // Note: CEAD Data uses 'CODIGO' as identifier
+        if (row.CODIGO) {
+            const meta = this.state.union.byCeadCode[row.CODIGO];
+            if (meta) {
+                row.Familia = meta.Familia;
+                row.id_familia = meta.id_familia;
+                row.Grupo = meta.Grupo;
+                row.id_grupo = meta.id_grupo;
+                row.Subgrupo = meta.Subgrupo;
+                row.Delito_STOP_Ref = meta[' Delitos_stop'];
+            }
+        }
+    },
+
+    /**
      * Load Weekly STOP Data
      */
     async loadStopData(id) {
@@ -99,6 +179,9 @@ window.DataManager = {
             const blob = await new Response(res.body.pipeThrough(ds)).json();
 
             // Organize
+            // Apply Enrichment
+            if (blob && blob.length) blob.forEach(r => this._enrichRow(r));
+
             this.state.stop.data = blob;
             this.state.stop.history = blob.filter(r => r.delito !== 'Total' && r.delito !== 'TOTAL');
             this.state.stop.totalHistory = blob.filter(r => r.delito === 'Total' || r.delito === 'TOTAL');
@@ -159,6 +242,9 @@ window.DataManager = {
             const blob = await new Response(res.body.pipeThrough(ds)).json();
 
             // Organize
+            // Apply Enrichment
+            if (blob && blob.length) blob.forEach(r => this._enrichRow(r));
+
             this.state.cead.data = blob;
             this.state.cead.history = blob.filter(r => r.delito !== 'Total' && r.delito !== 'TOTAL');
             this.state.cead.totalHistory = blob.filter(r => r.delito === 'Total' || r.delito === 'TOTAL');

@@ -28,9 +28,9 @@ def ejecutar_proceso():
     # -----------------------------------------
     # 1. Definiciones y Constantes Locales
     # -----------------------------------------    # Configuración de Fechas
-    START_FILL = "2026-01-01"
-    END_FILL = "2026-12-01" # Proyectar 2026 completo
-    LIMIT_DATE = "2025-12-01" # Incluir datos reales hasta Dic 2025
+    START_FILL = "2025-10-01"
+    END_FILL = "2025-12-01" # 
+    LIMIT_DATE = "2025-09-01" # 
     MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     
@@ -203,6 +203,25 @@ def ejecutar_proceso():
         pob = pd.read_excel(r"C:\Users\limc_\Downloads\Factores Población.xlsx", sheet_name="Factores")[['Codcom', 'Año', 'Población', 'Factor Población']]
         df = df.merge(pob.rename(columns={'Año': 'año', 'Factor Población': 'factor_poblacion'}), left_on=['codcom', 'año'], right_on=['Codcom', 'año'], how='left')
     except: df['factor_poblacion'] = 100000
+
+    print("> Calculando Rankings CEAD...")
+    # Ranking Regional por Frecuencia (Descendente: Mayor delito = Rank 1)
+    if 'Codreg' in df.columns:
+        # Ranking mensual
+        df['ranking_comunal_regional'] = df.groupby(['Codreg', 'delito', 'id_periodo'])['frecuencia'].rank(method='dense', ascending=False)
+        
+        # Ranking Anual (Basado en total anual real)
+        total_anual = df.groupby(['codcom', 'delito', 'año'])['frecuencia'].sum().reset_index(name='total_año_real')
+        df = df.merge(total_anual, on=['codcom', 'delito', 'año'], how='left')
+        
+        # Rankear sobre dataframe reducido para eficiencia y luego merge
+        ranking_anual_df = df[['codcom', 'Codreg', 'delito', 'año', 'total_año_real']].drop_duplicates()
+        ranking_anual_df['ranking_regional_anual_metric'] = ranking_anual_df.groupby(['Codreg', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
+        
+        df = df.merge(ranking_anual_df[['codcom', 'delito', 'año', 'ranking_regional_anual_metric']], on=['codcom', 'delito', 'año'], how='left')
+        
+    # Ranking Nacional Mensual
+    df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'])['frecuencia'].rank(method='dense', ascending=False)
 
     df3 = df.copy()
     est = df3.groupby(['codcom', 'tipoValCod']).apply(calc_estacionalidad).reset_index()
