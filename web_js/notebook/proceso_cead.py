@@ -217,6 +217,50 @@ def ejecutar_proceso():
     for i in progress_wrapper(df3["codcom"].unique(), desc="Guardando"):
         df3[df3["codcom"] == i].to_json(fr'{out}/{i}', orient='records', compression='gzip', date_format='iso')
 
+    import json
+    import datetime
+
+    # 4. Generar Archivo de Configuración (.config/cead.json)
+    print("> Generando metadatos de configuración...")
+    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".config")
+    os.makedirs(config_dir, exist_ok=True)
+    
+    # Extraer columnas y tipos de datos
+    columns_info = {col: str(dtype) for col, dtype in df3.dtypes.items()}
+    
+    # Extraer rango de fechas
+    min_date = df3['fecha'].min().isoformat() if not df3.empty else None
+    max_date = df3['fecha'].max().isoformat() if not df3.empty else None
+    
+    config_data = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "source": "proceso_cead.py",
+        "rows": len(df3),
+        "columns": list(df3.columns),
+        "column_types": columns_info,
+        "date_range": {
+            "start": min_date,
+            "end": max_date
+        },
+        "limits": {
+            "start_fill": START_FILL,
+            "end_fill": END_FILL,
+            "limit_date": LIMIT_DATE
+        },
+        "mapping_hint": {
+            "CASOS_ACTUAL": "frecuencia",
+            "CASOS_ANT": "casos_mes_anterior", 
+            "DELITO": "delito",
+            "ID_PERIODO": "id_periodo"
+        }
+    }
+    
+    config_path = os.path.join(config_dir, "cead.json")
+    with open(r"D:\GitHub\STOP_WEB3\web_js\.config\cead.json", "w", encoding="utf-8") as f:
+        json.dump(config_data, f, indent=4, ensure_ascii=False)
+    
+    print(f"✅ Configuración guardada en: {config_path}")
+
     print(f">>> Completado. {len(df3):,} filas procesadas.")
     return df3
 

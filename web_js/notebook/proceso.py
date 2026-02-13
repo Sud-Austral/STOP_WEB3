@@ -5,6 +5,7 @@ import warnings
 import numpy as np
 import os
 import sys
+import datetime
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -778,6 +779,53 @@ for i in progress_wrapper(unique_comunas, desc="Guardando Comunas"):
     aux = df3[df3["codcom"] == i]
     # Si quieres guardar:
     aux.to_json(fr'{output_dir}/{i}', orient='records', compression='gzip', date_format='iso')
+
+# =========================================
+# CONFIGURACIÓN AUTOMÁTICA
+# =========================================
+print("> Generando metadatos de configuración...")
+
+
+try:
+    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".config")
+    os.makedirs(config_dir, exist_ok=True)
+    
+    # Extraer columnas y tipos
+    columns_info = {col: str(dtype) for col, dtype in df3.dtypes.items()}
+    
+    # Extraer rango de fechas
+    min_date = df3['fecha'].min().isoformat() if not df3.empty else None
+    max_date = df3['fecha'].max().isoformat() if not df3.empty else None
+    
+    config_data = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "source": "proceso.py",
+        "rows": len(df3),
+        "columns": list(df3.columns),
+        "column_types": columns_info,
+        "date_range": {
+            "start": min_date,
+            "end": max_date,
+            "semana_actual": int(df3['semana_numero'].max()) if not df3.empty else None,
+            "ano_actual": int(df3['año'].max()) if not df3.empty else None
+        },
+        "prioridad_delito": prioridad_delito,
+        "mapping_hint": {
+            "CASOS_ACTUAL": "frecuencia",
+            "CASOS_ANT": "casos_semana_anterior",
+            "DELITO": "delito",
+            "ID_SEMANA": "id_semana",
+            "SEMANA_DETALLE": "semana_detalle"
+        }
+    }
+    
+    config_path = os.path.join(config_dir, "stop.json")
+    with open(r"D:\GitHub\STOP_WEB3\web_js\.config\stop.json", "w", encoding="utf-8") as f:
+        json.dump(config_data, f, indent=4, ensure_ascii=False)
+    
+    print(f"✅ Configuración guardada en: {config_path}")
+except Exception as e:
+    print(f"❌ Error generando config: {e}")
 
 print(f"Total Columnas {len(df3.columns)}")
 print("Proceso Finalizado Exitosamente.")
