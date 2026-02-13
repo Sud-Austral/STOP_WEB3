@@ -27,11 +27,10 @@ def ejecutar_proceso():
 
     # -----------------------------------------
     # 1. Definiciones y Constantes Locales
-    # -----------------------------------------
-    START_FILL = "2025-10-01"
-    END_FILL = "2025-12-01"
-    LIMIT_DATE = "2025-09-01"
-
+    # -----------------------------------------    # Configuración de Fechas
+    START_FILL = "2026-01-01"
+    END_FILL = "2026-12-01" # Proyectar 2026 completo
+    LIMIT_DATE = "2025-12-01" # Incluir datos reales hasta Dic 2025
     MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     

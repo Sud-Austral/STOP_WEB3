@@ -121,8 +121,8 @@
         document.getElementById('v25_kpi_completion').textContent = `${actualPeriods} / ${expectedPeriods}`;
         document.getElementById('v25_kpi_outliers').textContent = `${outliers} eventos`;
 
-        // Latency Calculation (Days since last data point 2025-09-01)
-        const lastDate = new Date(2025, 8, 1); // Sept 2025
+        // Latency Calculation (Days since last data point 2025-12-01)
+        const lastDate = new Date(2025, 11, 1); // Dec 2025
         const diffDays = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
         document.getElementById('v25_kpi_latency').textContent = `${diffDays} días`;
 

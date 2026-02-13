@@ -1,11 +1,11 @@
-<!-- Vista 21: Modelos de Predicción Mensual (CEAD) -->
+<!-- Vista 21: Proyecciones y Rachas (CEAD) -->
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
         <div style="font-size: 0.8rem; color: #4f46e5; font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-crystal-ball"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-            <span>MODELADO PREDICTIVO SARIMA</span>
+            <span>MODELADO PREDICTIVO & RACHAS</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
@@ -13,11 +13,25 @@
     <div class="question-section" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, transparent 100%); 
             border-left: 4px solid #4f46e5; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            ¿Qué proyecta la inteligencia para los próximos meses?
+            Proyecciones SARIMA y Detección de Rachas
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Proyecciones estadísticas
-            de corto plazo (3 meses) generadas mediante algoritmo SARIMA (Auto-Regressive Integrated Moving Average).
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Análisis de tendencias consecutivas (rachas) y proyección estadística de corto plazo para anticipar
+            escenarios delictuales.
         </p>
+    </div>
+
+    <!-- Rachas Alert Section (New) -->
+    <div id="v21_rachas_container" class="card mb-lg"
+        style="padding: 1.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b; display: none;">
+        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: #9a3412; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Alertas de Racha Detectadas (Últimos 3 meses
+            confirmados)
+        </h3>
+        <div id="v21_rachas_list"
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+            <!-- JS filled -->
+        </div>
     </div>
 
     <div class="cards-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
@@ -39,7 +53,7 @@
                     style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px;">
                     PRÓXIMO MES PROYECTADO</div>
                 <div id="v21_next_month_name"
-                    style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 5px;">Noviembre 2025</div>
+                    style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 5px;">Enero 2026</div>
                 <div id="v21_next_month_val" style="font-size: 3rem; font-weight: 950; color: #4f46e5;">--</div>
                 <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Casos esperados (Media)</div>
             </div>
@@ -47,20 +61,21 @@
             <div class="card" style="padding: 1.5rem;">
                 <h4
                     style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
-                    Nivel de Confianza</h4>
+                    Nivel de Confianza SARIMA</h4>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 0.85rem; color: #64748b;">Rango Superior:</span>
+                    <span style="font-size: 0.85rem; color: #64748b;">Rango Superior (+15%):</span>
                     <span id="v21_range_up" style="font-size: 1rem; font-weight: 800; color: #1e293b;">--</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 0.85rem; color: #64748b;">Rango Inferior:</span>
+                    <span style="font-size: 0.85rem; color: #64748b;">Rango Inferior (-15%):</span>
                     <span id="v21_range_down" style="font-size: 1rem; font-weight: 800; color: #1e293b;">--</span>
                 </div>
             </div>
 
             <div class="alert alert--info" style="font-size: 0.8rem; line-height: 1.4;">
                 <i class="fa-solid fa-robot"></i> <strong>Nota del Modelo:</strong> La predicción utiliza la
-                estacionalidad de los últimos 20 años combinada con el impulso de tendencia de los últimos 6 meses.
+                estacionalidad de los últimos 20 años combinada con el impulso de tendencia reciente. Las rachas se
+                detectan sobre datos confirmados.
             </div>
         </div>
     </div>
@@ -80,43 +95,100 @@
 
         await waitForData();
         const S = window.STATE_DATA_CEAD;
-        const C = window.COLS_CEAD;
+        const C = window.COLS_CEAD; // Ensure data_cead.js is using 'frecuencia' for CASOS_ACTUAL
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // --- Forecast Logic ---
-        // We have data until 202509, and predictions for 202510, 202511, 202512
-        const allHistory = S.allDataHistory_total.sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
-        const last6 = allHistory.filter(r => r[C.ID_PERIODO] <= 202509).slice(-6);
-        const forecast = allHistory.filter(r => r[C.ID_PERIODO] > 202509).slice(0, 3);
+        // 1. RACHAS DETECTION LOGIC
+        // Racha: 3 consecutive periods of increase or decrease
+        const uniqueDelitos = [...new Set(S.allDataHistory.map(r => r[C.DELITO]))];
+        const rachas = [];
+        const limitDate = 202512; // Dec 2025
 
-        const labels = [...last6, ...forecast].map(r => r[C.PERIODO_DETALLE].split(' ')[0]);
+        uniqueDelitos.forEach(delito => {
+            // Get rows for this crime, sorted by date
+            const rows = S.allDataHistory
+                .filter(r => r[C.DELITO] === delito && r[C.ID_PERIODO] <= limitDate)
+                .sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
+
+            if (rows.length >= 3) {
+                const last3 = rows.slice(-3);
+                const v1 = last3[0][C.CASOS_ACTUAL] || 0; // t-2
+                const v2 = last3[1][C.CASOS_ACTUAL] || 0; // t-1
+                const v3 = last3[2][C.CASOS_ACTUAL] || 0; // t (current)
+
+                // Threshold to avoid noise (e.g. at least 5 cases)
+                if (v3 > 5 || v1 > 5) {
+                    if (v3 > v2 && v2 > v1) {
+                        rachas.push({ delito, tipo: 'ALZA', v1, v2, v3, pct: ((v3 - v1) / v1 * 100) });
+                    } else if (v3 < v2 && v2 < v1) {
+                        rachas.push({ delito, tipo: 'BAJA', v1, v2, v3, pct: ((v3 - v1) / v1 * 100) });
+                    }
+                }
+            }
+        });
+
+        // Render Rachas
+        const rList = document.getElementById('v21_rachas_list');
+        const rContainer = document.getElementById('v21_rachas_container');
+
+        if (rachas.length > 0) {
+            rContainer.style.display = 'block';
+            // Show top 6
+            rList.innerHTML = rachas.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)).slice(0, 6).map(r => `
+                <div style="padding: 10px; border-radius: 8px; background: ${r.tipo === 'ALZA' ? '#fef2f2' : '#f0fdf4'}; border: 1px solid ${r.tipo === 'ALZA' ? '#fee2e2' : '#dcfce7'};">
+                    <div style="font-size: 0.75rem; font-weight: 800; color: ${r.tipo === 'ALZA' ? '#ef4444' : '#10b981'}; margin-bottom: 4px;">
+                        ${r.tipo === 'ALZA' ? '▲ EN ALZA' : '▼ A LA BAJA'} (${Math.abs(r.pct).toFixed(0)}%)
+                    </div>
+                    <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b; line-height: 1.2;">${r.delito}</div>
+                    <div style="font-size: 0.7rem; color: #64748b; margin-top: 4px;">
+                        ${r.v1} → ${r.v2} → <strong>${r.v3}</strong>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            rContainer.style.display = 'block';
+            rList.innerHTML = '<div style="grid-column: 1/-1; color: #64748b; font-size: 0.9rem; font-style: italic;">No se detectan rachas consecutivas de 3 meses en los delitos principales.</div>';
+        }
+
+
+        // 2. FORECAST LOGIC (Updated to use data until 202512 as history)
+        const allHistory = S.allDataHistory_total.sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
+        // History: up to Dec 2025
+        const last6 = allHistory.filter(r => r[C.ID_PERIODO] <= 202512).slice(-6);
+        // Forecast: Jan 2026 onwards
+        const forecast = allHistory.filter(r => r[C.ID_PERIODO] > 202512).slice(0, 3);
+
+        const labels = [...last6, ...forecast].map(r => r[C.PERIODO_DETALLE] ? r[C.PERIODO_DETALLE].split(' ')[0] : r[C.ID_PERIODO]);
         const historyValues = last6.map(r => r[C.CASOS_ACTUAL]);
         const forecastValues = forecast.map(r => r[C.CASOS_ACTUAL]);
 
         // KPIs
         if (forecast.length > 0) {
             const next = forecast[0];
-            document.getElementById('v21_next_month_name').textContent = next[C.PERIODO_DETALLE];
+            document.getElementById('v21_next_month_name').textContent = next[C.PERIODO_DETALLE] || 'Mes Futuro';
             document.getElementById('v21_next_month_val').textContent = ChartHelper.formatNumber(next[C.CASOS_ACTUAL]);
 
-            // Artificial confidence interval (usually SARIMA provides this, here we simulate ±15%)
             const up = Math.round(next[C.CASOS_ACTUAL] * 1.15);
             const down = Math.round(next[C.CASOS_ACTUAL] * 0.85);
             document.getElementById('v21_range_up').textContent = up;
             document.getElementById('v21_range_down').textContent = down;
+        } else {
+            // Handle empty forecast gracefully if projections are missing
+            document.getElementById('v21_next_month_name').textContent = "Sin Proyección";
+            document.getElementById('v21_next_month_val').textContent = "--";
         }
 
         // --- Forecast Chart ---
         const ctx = document.getElementById('v21_chart_forecast').getContext('2d');
 
-        // Prepare datasets
         const lineDataHistory = [...historyValues, forecastValues[0] || null];
-        const lineDataForecast = [
+        // Only render forecast line if we have forecast values
+        const lineDataForecast = forecastValues.length > 0 ? [
             ...Array(historyValues.length - 1).fill(null),
             historyValues[historyValues.length - 1],
             ...forecastValues
-        ];
+        ] : [];
 
         new Chart(ctx, {
             type: 'line',
@@ -124,7 +196,7 @@
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Histórico',
+                        label: 'Histórico (Real)',
                         data: lineDataHistory,
                         borderColor: '#94a3b8',
                         borderWidth: 3,
@@ -152,7 +224,7 @@
                     legend: { position: 'bottom', labels: { font: { family: 'Outfit', weight: '600' } } }
                 },
                 scales: {
-                    y: { grid: { color: '#f1f5f9' }, title: { display: true, text: 'N° Casos Semanales' } },
+                    y: { grid: { color: '#f1f5f9' }, title: { display: true, text: 'N° Casos Mensuales' } },
                     x: { grid: { display: false } }
                 }
             }

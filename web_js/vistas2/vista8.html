@@ -117,9 +117,10 @@
         const head = document.getElementById('v8_head');
         const body = document.getElementById('v8_body');
 
-        const shortNames = topDelitos.map(n => n.length > 8 ? n.substring(0, 8) + '...' : n);
+        // Render full names, horizontal with wrapping
+        const displayNames = topDelitos;
 
-        head.innerHTML = '<th></th>' + shortNames.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 4px; border: 1px solid #f1f5f9; background: #f8fafc; transform: rotate(-15deg); height: 50px;">${n}</th>`).join('');
+        head.innerHTML = '<th></th>' + displayNames.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 2px; border: 1px solid #f1f5f9; background: #f8fafc; vertical-align: bottom; height: auto;"><div style="white-space: normal; text-align: center; width: 100%; min-width: 60px; line-height: 1.1;">${n}</div></th>`).join('');
 
         const getColor = (v) => {
             const val = Math.abs(v);
@@ -132,7 +133,7 @@
 
         body.innerHTML = matrix.map((row, i) => `
             <tr>
-                <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc;">${shortNames[i]}</td>
+                <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc; white-space: normal; max-width: 150px;">${displayNames[i]}</td>
                 ${row.map(v => {
             const c = getColor(v);
             return `<td style="background: ${c.bg}; color: ${c.text}; font-size: 0.7rem; font-weight: 800; text-align: center; border: 1px solid #fff; cursor: help;" title="${v.toFixed(3)}">${v.toFixed(1)}</td>`
@@ -152,8 +153,9 @@
         const list = document.getElementById('v8_associations_list');
         list.innerHTML = associations.slice(0, 4).map(a => `
             <div style="display: flex; gap: 10px; align-items: center; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #4f46e5;">
-                <div style="font-size: 0.8rem; font-weight: 700; color: #475569; flex: 1;">
-                    ${a.d1} + ${a.d2}
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">${a.d1}</div>
+                    <div style="font-size: 0.75rem; color: #64748b;">+ ${a.d2}</div>
                 </div>
                 <div style="text-align: right; font-weight: 900; color: #4f46e5;">r = ${a.val.toFixed(2)}</div>
             </div>

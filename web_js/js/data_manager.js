@@ -260,7 +260,7 @@ window.DataManager = {
 
         if (!window.COLS_CEAD) window.COLS_CEAD = {};
         window.COLS_CEAD.ID_PERIODO = 'id_periodo';
-        window.COLS_CEAD.CASOS_ACTUAL = 'casos_mes_actual';
+        window.COLS_CEAD.CASOS_ACTUAL = 'frecuencia'; // Corrected to match python output
         window.COLS_CEAD.DELITO = 'delito';
         window.COLS_CEAD.PERIODO_DETALLE = 'periodo_detalle';
 

@@ -38,7 +38,7 @@ window.COLS_CEAD = {
 
     // Métricas Base
     FRECUENCIA: 'frecuencia',
-    CASOS_ACTUAL: 'casos_mes_actual',
+    CASOS_ACTUAL: 'frecuencia', // Mapped to 'frecuencia' as 'casos_mes_actual' does not exist in CEAD output
     CASOS_ANT: 'casos_mes_anterior',
     DELTA: 'delta',
 
