@@ -42,10 +42,45 @@
                     <i class="fa-solid fa-book"></i>
                     <span>Informe PDF</span>
                 </button>
+
                 <button class="btn btn--primary" id="btnComuna">
                     <i class="fa-solid fa-location-dot"></i>
                     <span id="btnComunaText">Cargando...</span>
                 </button>
+
+                <!-- Navigation Sequence -->
+                <div class="nav-sequence"
+                    style="display: flex; gap: 10px; margin-left: 20px; padding-left: 20px; border-left: 1px solid #cbd5e1; align-items: center;">
+
+                    <!-- Botón Anterior -->
+                    <button id="btnNavPrev" class="btn-nav-seq"
+                        style="display: none; align-items: center; gap: 10px; padding: 6px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                        <i class="fa-solid fa-chevron-left" style="color: #3b82f6;"></i>
+                        <div style="text-align: left; line-height: 1.2;">
+                            <div
+                                style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                ANTERIOR</div>
+                            <div id="navPrevText"
+                                style="font-size: 0.85rem; color: #1e293b; font-weight: 600; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                --</div>
+                        </div>
+                    </button>
+
+                    <!-- Botón Siguiente -->
+                    <button id="btnNavNext" class="btn-nav-seq"
+                        style="display: none; align-items: center; gap: 10px; padding: 6px 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;">
+                        <div style="text-align: right; line-height: 1.2;">
+                            <div
+                                style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                SIGUIENTE</div>
+                            <div id="navNextText"
+                                style="font-size: 0.85rem; color: #1e293b; font-weight: 600; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                --</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color: #3b82f6;"></i>
+                    </button>
+
+                </div>
             </div>
         </header>
 
@@ -80,7 +115,49 @@
     <script src="js/pdf.js?v=3"></script>
     <script src="js/pdf_vistas2.js?v=1"></script>
 
+    <style>
+        .btn-nav-arrow:hover {
+            background-color: #f1f5f9 !important;
+            color: #3b82f6 !important;
+            transform: scale(1.1);
+        }
+
+        .btn-nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
     <script>
+        // Titles for Tooltips (Updated from Sidebar2)
+        const VIEW_TITLES = {
+            'vista1': 'Resumen Ejecutivo',
+            'vista2': 'Tendencia Reciente',
+            'vista3': 'Comparativo Temporal',
+            'vista4': 'Estacionalidad Mensual',
+            'vista5': 'Delitos Críticos',
+            'vista6': 'Evolución por Delito',
+            'vista7': 'Evolución Delitos (20años)',
+            'vista8': 'Correlaciones',
+            'vista9': 'Puntos Débiles',
+            'vista10': 'Vs. Región',
+            'vista11': 'Ranking Histórico',
+            'vista12': 'Vs. País',
+            'vista13': 'Vs. Comunas Similares',
+            'vista14': 'Aporte Regional',
+            'vista15': 'Efectividad Policial',
+            'vista16': 'Gravedad (IDI)',
+            'vista17': 'Proyección Gravedad',
+            'vista18': 'Gravedad por Delito',
+            'vista19': 'IDI Comparativo',
+            'vista20': 'Tendencia 20 Años',
+            'vista21': 'Proyecciones y Rachas',
+            'vista22': 'Priorización Estratégica',
+            'vista23': 'Decisiones Tácticas',
+            'vista24': 'Reporte Ejecutivo',
+            'vista25': 'Auditoría Técnica'
+        };
+
         // Override configuration for Vistas 2
         // We run this immediately to ensure it overrides App before App.init() is called by the DOMContentLoaded event in app.js
         if (window.App) {
@@ -93,12 +170,64 @@
 
             // Monkey Patch: Ensure PDF button is always visible for Vistas 2 strategic views
             const originalLoadView = App.loadView;
+
+            function updateNavigationUI(currentViewName) {
+                const views = App.config.views; // ['vista1', 'vista2'...]
+                const currentIndex = views.indexOf(currentViewName);
+
+                const prevBtn = document.getElementById('btnNavPrev');
+                const nextBtn = document.getElementById('btnNavNext');
+                const prevText = document.getElementById('navPrevText');
+                const nextText = document.getElementById('navNextText');
+
+                if (prevBtn && nextBtn && currentIndex !== -1) {
+                    // Previous Button
+                    if (currentIndex > 0) {
+                        const prevView = views[currentIndex - 1];
+                        if (prevText) prevText.textContent = VIEW_TITLES[prevView] || prevView;
+
+                        prevBtn.disabled = false;
+                        prevBtn.onclick = () => App.loadView(prevView);
+                        prevBtn.style.display = 'flex';
+                    } else {
+                        prevBtn.style.display = 'none';
+                    }
+
+                    // Next Button
+                    if (currentIndex < views.length - 1) {
+                        const nextView = views[currentIndex + 1];
+                        if (nextText) nextText.textContent = VIEW_TITLES[nextView] || nextView;
+
+                        nextBtn.disabled = false;
+                        nextBtn.onclick = () => App.loadView(nextView);
+                        nextBtn.style.display = 'flex';
+                    } else {
+                        nextBtn.style.display = 'none';
+                    }
+                }
+            }
+
             App.loadView = async function (viewName) {
                 await originalLoadView.call(this, viewName);
                 if (this.elements.coverBtn) {
                     this.elements.coverBtn.style.display = 'inline-flex';
                     // Update onclick handler dynamically to be safe
                     this.elements.coverBtn.onclick = function () { window.PDFModuleV2.exportReport(); };
+                }
+
+                // Update Nav Arrows
+                updateNavigationUI(viewName);
+
+                // Update Sidebar Active Link (Sync with Arrows)
+                const sidebarLinks = document.querySelectorAll('.sidebar-content .nav-link');
+                if (sidebarLinks.length > 0) {
+                    sidebarLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.dataset.view === viewName) {
+                            link.classList.add('active');
+                            link.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    });
                 }
             };
 

@@ -16,7 +16,7 @@
             ¿Cuál es nuestra posición en el contexto nacional?
         </h2>
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Ranking nacional semanal y
-            proyección anual frente al total de 346 comunas del país.</p>
+            proyección anual frente al total de <span id="v12_total_comunas_txt">345</span> comunas del país.</p>
     </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: center;">
@@ -109,13 +109,21 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
         const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-        const rank = totalRow[C.RANK_NAC_SEM] || 50; // Fallback for DEMO
-        const totalNac = 346;
-        const ptil = ((totalNac - rank + 1) / totalNac * 100);
+        const rank = totalRow[C.RANK_NAC_SEM] || 50;
+        const totalNac = 345;
+
+        // Percentil de Criminalidad (100% = Rank 1 = Peor)
+        const ptil = totalNac > 1
+            ? ((totalNac - rank) / (totalNac - 1) * 100)
+            : 50;
 
         document.getElementById('v12_rank_val').textContent = rank;
         document.getElementById('v12_bg_num').textContent = rank;
-        document.getElementById('v12_percentile_val').textContent = `Posición ${rank} de 346 (Percentil ${ptil.toFixed(1)})`;
+        // Text update: "de 345"
+        const nextSpan = document.getElementById('v12_rank_val').nextElementSibling;
+        if (nextSpan) nextSpan.textContent = `de ${totalNac}`;
+
+        document.getElementById('v12_percentile_val').textContent = `Posición ${rank} de ${totalNac} (Percentil de Riesgo ${ptil.toFixed(1)}%)`;
 
         // Tasa comparison
         const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;

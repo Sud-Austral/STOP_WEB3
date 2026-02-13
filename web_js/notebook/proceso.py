@@ -386,19 +386,39 @@ df3['proyeccion_anual'] = df3['acumulado_anual'] * df3['factor_expansion_anual']
 
 # Tasas
 # Usar factor_poblacion para tasas
-df3['tasa_semanal'] = df3['frecuencia'] / df3['factor_poblacion']
-df3['tasa_proyectada_anual'] = df3['proyeccion_anual'] / df3['factor_poblacion']
+df3['tasa_semanal'] = df3['frecuencia'] / df3['factor_poblacion'] * 100000 
+df3['tasa_proyectada_anual'] = df3['proyeccion_anual'] / df3['factor_poblacion'] * 100000
 
-# Rankings (Regional/Nacional/Cluster Proy)
+# Rankings (Regional/Nacional/Cluster Proy) - VOLUMEN
 if 'Codreg' in df3.columns:
     df3['ranking_regional_proy_anual'] = df3.groupby(['Codreg', 'delito', 'id_semana'])['proyeccion_anual'].rank(method='dense', ascending=False)
+    # Nuevo: Ranking Tasa
+    df3['ranking_regional_tasa_sem'] = df3.groupby(['Codreg', 'delito', 'id_semana'])['tasa_semanal'].rank(method='dense', ascending=False)
+    df3['ranking_regional_tasa_anual'] = df3.groupby(['Codreg', 'delito', 'id_semana'])['tasa_proyectada_anual'].rank(method='dense', ascending=False)
     
 df3['ranking_nacional_proy_anual'] = df3.groupby(['delito', 'id_semana'])['proyeccion_anual'].rank(method='dense', ascending=False)
+# Nuevo: Ranking Tasa Nacional
+df3['ranking_nacional_tasa_sem'] = df3.groupby(['delito', 'id_semana'])['tasa_semanal'].rank(method='dense', ascending=False)
+df3['ranking_nacional_tasa_anual'] = df3.groupby(['delito', 'id_semana'])['tasa_proyectada_anual'].rank(method='dense', ascending=False)
 
 
 if 'clase_poblacion' in df3.columns:
     df3['ranking_cluster_proy_anual'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['proyeccion_anual'].rank(method='dense', ascending=False)
     df3['ranking_cluster_semanal'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['frecuencia'].rank(method='dense', ascending=False)
+    # Nuevo: Ranking Tasa Cluster
+    df3['ranking_cluster_tasa_sem'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['tasa_semanal'].rank(method='dense', ascending=False)
+    df3['ranking_cluster_tasa_anual'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['tasa_proyectada_anual'].rank(method='dense', ascending=False)
+
+# Normalizar Rankings de Tasa (Si Frecuencia es 0 -> Rank 999)
+tasa_rank_cols = [
+    'ranking_regional_tasa_sem', 'ranking_regional_tasa_anual',
+    'ranking_nacional_tasa_sem', 'ranking_nacional_tasa_anual',
+    'ranking_cluster_tasa_sem', 'ranking_cluster_tasa_anual'
+]
+for col in tasa_rank_cols:
+    if col in df3.columns:
+        df3[col] = np.where(df3['frecuencia'] == 0, 999, df3[col])
+        df3[col] = df3[col].fillna(999)
 
 # =====================================================
 # 16b. CALCULOS DE RANKINGS ANTERIORES (NO EXISTENTES)
@@ -409,7 +429,14 @@ rank_cols_to_shift = [
     'ranking_regional_proy_anual', 
     'ranking_nacional_proy_anual',
     'ranking_cluster_proy_anual',
-    'ranking_cluster_semanal'
+    'ranking_cluster_semanal',
+    # Nuevos Rankings de Tasa
+    'ranking_regional_tasa_sem',
+    'ranking_regional_tasa_anual',
+    'ranking_nacional_tasa_sem',
+    'ranking_nacional_tasa_anual',
+    'ranking_cluster_tasa_sem',
+    'ranking_cluster_tasa_anual'
 ]
 
 df3 = df3.sort_values(['codcom', 'delito', 'id_semana'])

@@ -108,28 +108,47 @@
 
         // Data calculation
         const totalComunas = S.totalComunasReg || 52;
+        // Asumiendo que 1 = PEOR (Más delitos)
         const currentRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_PROY] || Math.round(totalComunas / 2);
         const prevRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1))?.[C.RANK_REG_PROY] || currentRank;
 
-        const rankPct = ((totalComunas - currentRank + 1) / totalComunas * 100).toFixed(1);
+        // Gauge mide "Gravedad Relativa": 100% = Rank 1 (Peor), 0% = Rank 52 (Mejor)
+        // Invertimos la lógica visual para que "Alto" sea "Malo"
+        const severityPct = totalComunas > 1
+            ? ((totalComunas - currentRank) / (totalComunas - 1) * 100)
+            : 50;
 
         document.getElementById('v10_rank_val').textContent = currentRank;
         document.getElementById('v10_rank_total').textContent = `/ ${totalComunas}`;
-        document.getElementById('v10_gauge_val').textContent = `${rankPct}%`;
+        document.getElementById('v10_gauge_val').textContent = `${currentRank}°`;
 
         const gLabel = document.getElementById('v10_gauge_label');
-        if (rankPct > 75) { gLabel.textContent = 'MEJOR QUE EL 75% DE LA REGIÓN'; gLabel.style.color = '#10b981'; }
-        else if (rankPct > 40) { gLabel.textContent = 'SITUACIÓN REGIONAL PROMEDIO'; gLabel.style.color = '#f59e0b'; }
-        else { gLabel.textContent = 'DENTRO DEL 25% MÁS CRÍTICO'; gLabel.style.color = '#ef4444'; }
+        // Rank 1-10 (Top 20%) es Crítico
+        if (currentRank <= totalComunas * 0.2) {
+            gLabel.textContent = 'CRÍTICO: TOP 20% REGIONAL';
+            gLabel.style.color = '#ef4444'; // Rojo
+        } else if (currentRank <= totalComunas * 0.5) {
+            gLabel.textContent = 'SITUACIÓN MEDIA-ALTA';
+            gLabel.style.color = '#f97316'; // Naranja
+        } else if (currentRank <= totalComunas * 0.8) {
+            gLabel.textContent = 'MEJOR QUE PROMEDIO';
+            gLabel.style.color = '#eab308'; // Amarillo
+        } else {
+            gLabel.textContent = 'ZONA SEGURA (TOP 20% MEJOR)';
+            gLabel.style.color = '#10b981'; // Verde
+        }
 
         const trendEl = document.getElementById('v10_rank_trend');
-        const diff = prevRank - currentRank; // If prev=10, cur=8, diff=2 (improved 2 positions)
-        if (diff > 0) {
-            trendEl.innerHTML = `<i class="fa-solid fa-arrow-up"></i> ▲ ${diff} POSICIONES`;
-            trendEl.style.color = '#10b981';
-        } else if (diff < 0) {
-            trendEl.innerHTML = `<i class="fa-solid fa-arrow-down"></i> ▼ ${Math.abs(diff)} POSICIONES`;
-            trendEl.style.color = '#ef4444';
+        const diff = currentRank - prevRank;
+
+        // Si diff es negativo (ej. 8 - 10 = -2), bajamos hacia el 1 => EMPEORAMOS
+        if (diff < 0) {
+            trendEl.innerHTML = `<i class="fa-solid fa-arrow-up"></i> SUBIÓ ${Math.abs(diff)} PUESTOS (PEOR)`;
+            trendEl.style.color = '#ef4444'; // Rojo
+        } else if (diff > 0) {
+            // Si diff es positivo (ej. 12 - 10 = +2), subimos hacia el 52 => MEJORAMOS
+            trendEl.innerHTML = `<i class="fa-solid fa-arrow-down"></i> BAJÓ ${diff} PUESTOS (MEJOR)`;
+            trendEl.style.color = '#10b981'; // Verde
         } else {
             trendEl.innerHTML = `<i class="fa-solid fa-minus"></i> SIN CAMBIO`;
             trendEl.style.color = '#64748b';
@@ -138,26 +157,39 @@
         // Tasa comparison
         const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
         const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
-        const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob).toFixed(1);
+        const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob * 100000).toFixed(1); // Corrección fórmula tasa
         const tasaReg = ((totalRow[C.CASOS_SEM_REG] || 5000) / (S.totalPobReg || 8000000) * 100000).toFixed(1);
 
         document.getElementById('v10_tasa_com').textContent = tasaCom;
         document.getElementById('v10_tasa_reg').textContent = tasaReg;
 
-        const maxTasa = Math.max(tasaCom, tasaReg) * 1.2;
+        const maxTasa = Math.max(parseFloat(tasaCom), parseFloat(tasaReg)) * 1.2;
+
+        // Colores barras: Si tasa comunal > regional -> Rojo, sino Azul
+        const colorCom = parseFloat(tasaCom) > parseFloat(tasaReg) ? '#ef4444' : '#3b82f6';
+
+        // Update bars
         setTimeout(() => {
-            document.getElementById('v10_bar_com').style.width = `${(tasaCom / maxTasa * 100)}%`;
-            document.getElementById('v10_bar_reg').style.width = `${(tasaReg / maxTasa * 100)}%`;
+            const barCom = document.getElementById('v10_bar_com');
+            const barReg = document.getElementById('v10_bar_reg');
+            if (barCom) {
+                barCom.style.width = `${(tasaCom / maxTasa * 100)}%`;
+                barCom.style.backgroundColor = colorCom;
+            }
+            if (barReg) barReg.style.width = `${(tasaReg / maxTasa * 100)}%`;
         }, 300);
 
         // --- Semi-Doughnut Gauge Chart ---
         const gaugeCtx = document.getElementById('v10_chart_gauge').getContext('2d');
+        // Color Gauge: Rojo si es muy grave (High Severity %), Verde si es bajo
+        const gaugeColor = severityPct > 80 ? '#ef4444' : severityPct > 50 ? '#f97316' : '#10b981';
+
         new Chart(gaugeCtx, {
             type: 'doughnut',
             data: {
                 datasets: [{
-                    data: [parseFloat(rankPct), 100 - parseFloat(rankPct)],
-                    backgroundColor: [rankPct > 70 ? '#10b981' : rankPct > 40 ? '#f59e0b' : '#ef4444', '#f1f5f9'],
+                    data: [severityPct, 100 - severityPct],
+                    backgroundColor: [gaugeColor, '#f1f5f9'],
                     borderWidth: 0,
                     circumference: 180,
                     rotation: 270,
