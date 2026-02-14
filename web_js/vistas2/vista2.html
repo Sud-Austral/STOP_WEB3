@@ -80,7 +80,8 @@
 
         const cases = weeklyData.map(r => r[C.CASOS_ACTUAL] || 0);
         const movingAvg = weeklyData.map(r => r[C.MEDIA_MOVIL_3M] || 0); // Note: We use 3M from data or calculate 4S
-        const labels = last8_IDs.map(id => `Sem ${id % 100}`);
+        // Use centralized date formatter (YYYY/MM)
+        const labels = last8_IDs.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id}`);
 
         // Ranges (±1 Sigma)
         const rangeUpper = weeklyData.map(r => (r[C.PROMEDIO_HIST] || 0) + (r[C.STD_HIST] || 0));
