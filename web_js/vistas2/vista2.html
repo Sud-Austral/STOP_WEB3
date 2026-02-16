@@ -20,6 +20,10 @@
             con suavizado mediante media móvil de 4 semanas para eliminar ruido operacional.</p>
     </div>
 
+<div class="alert alert--info" style="margin-top: 1.5rem;">
+    <strong>🤖 Análisis de Situación:</strong> <span id="v2_ia_analysis">Cargando análisis...</span>
+</div>
+
     <!-- Trend Arrow Indicator -->
     <div
         style="display: flex; align-items: center; gap: 20px; margin-bottom: 2rem; padding: 1rem; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
@@ -79,9 +83,8 @@
         const weeklyData = last8_IDs.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id) || {});
 
         const cases = weeklyData.map(r => r[C.CASOS_ACTUAL] || 0);
-        const movingAvg = weeklyData.map(r => r[C.MEDIA_MOVIL_3M] || 0); // Note: We use 3M from data or calculate 4S
-        // Use centralized date formatter (YYYY/MM)
-        const labels = last8_IDs.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id}`);
+        const movingAvg = weeklyData.map(r => r[C.MEDIA_MOVIL_4S] || 0);
+        const labels = last8_IDs.map(id => S.getDateLabel ? S.getDateLabel(id) : `Sem ${id % 100}`);
 
         // Ranges (±1 Sigma)
         const rangeUpper = weeklyData.map(r => (r[C.PROMEDIO_HIST] || 0) + (r[C.STD_HIST] || 0));

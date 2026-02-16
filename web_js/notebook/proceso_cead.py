@@ -178,6 +178,19 @@ def ejecutar_proceso():
     df.rename(columns={'Codcom': 'codcom', 'Año': 'año', 'Descripcion': 'delito'}, inplace=True)
     df['id_periodo'] = df['año'] * 100 + df['mes']
     df['fecha'] = pd.to_datetime(df['año'].astype(str) + '-' + df['mes'].astype(str) + '-01')
+
+    # --- FIX SARIMA DYNAMIC DATE DETECTION ---
+    try:
+        max_real_date = df['fecha'].max()
+        print(f"   > Fecha Máxima Datos Reales: {max_real_date.date()}")
+        # Ajustar predicción para comenzar inmediatamente después del último dato real
+        start_fill = max_real_date + pd.DateOffset(months=1)
+        end_fill = start_fill + pd.DateOffset(months=11) # Proyectar 1 año
+        FILL_PERIODS = pd.date_range(start=start_fill, end=end_fill, freq='MS')
+        LIMIT_DATE = max_real_date.strftime('%Y-%m-%d')
+    except Exception as e:
+        print(f"   ! Error ajustando fechas dinámicas: {e}. Usando defaults.")
+
     df['periodo_detalle'] = df['mes_nombre'] + ' ' + df['año'].astype(str)
 
     delitos_config = df[['delito', 'Nivel', 'nivel_original', 'CODIGO']].drop_duplicates('delito')
@@ -221,6 +234,9 @@ def ejecutar_proceso():
     df['media_movil_3m'] = df.groupby(['delito', 'codcom', 'tipoValCod'])['frecuencia'].transform(lambda x: x.rolling(3, min_periods=1).mean())
     df['promedio_hist'] = df.groupby(['delito', 'codcom', 'tipoValCod'])['frecuencia'].transform(lambda x: x.expanding().mean())
     df['std_hist'] = df.groupby(['delito', 'codcom', 'tipoValCod'])['frecuencia'].transform(lambda x: x.expanding().std())
+    # Calcular Z-Score para detectar anomalías
+    df['z_score'] = np.where(df['std_hist'] > 0, (df['frecuencia'] - df['promedio_hist']) / df['std_hist'], 0)
+    
     df['acumulado_anual'] = df.groupby(['delito', 'codcom', 'tipoValCod', 'año'])['frecuencia'].cumsum()
     df['proyeccion_anual'] = df['acumulado_anual'] * (12.0 / df['mes'])
     
@@ -305,6 +321,23 @@ def ejecutar_proceso():
         df['idi_peso'] = 0
 
     df3 = df.copy()
+
+    # ----------------------------------------------------
+    # NUEVO: Cálculo de Rankings (Regional y Nacional)
+    # ----------------------------------------------------
+    print("   > Calculando Rankings CEAD...")
+    # Calcular Tasa 
+    df3['tasa_cead'] = np.where(df3['factor_poblacion'] > 0, (df3['frecuencia'] / df3['factor_poblacion']) * 100000, 0)
+    
+    # Ranking Regional (Ascending=False -> Mayor tasa es Rank 1)
+    if 'Codreg' in df3.columns:
+        df3['ranking_comunal_regional'] = df3.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].rank(method='min', ascending=False)
+    else:
+        df3['ranking_comunal_regional'] = 0
+
+    # Ranking Nacional
+    df3['ranking_nacional_mensual'] = df3.groupby(['id_periodo', 'delito'])['tasa_cead'].rank(method='min', ascending=False)
+    
     est = df3.groupby(['codcom', 'tipoValCod']).apply(calc_estacionalidad).reset_index()
     df3 = df3.merge(est, on=['codcom', 'tipoValCod'], how='left')
     

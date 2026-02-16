@@ -27,7 +27,7 @@ def progress_wrapper(iterable, desc="Procesando"):
 
 # Configuration
 
-prioridad_delito = {
+prioridad_delito_deprecated = {
     "HOMICIDIOS Y FEMICIDIOS": 1,
     "VIOLACIONES Y DELITOS SEXUALES": 2,
     "ROBOS CON VIOLENCIA E INTIMIDACIÓN": 3,
@@ -50,6 +50,30 @@ prioridad_delito = {
     "CONSUMO DE ALCOHOL Y DE DROGAS EN LA VÍA PÚBLICA": 20,
     "OTROS DESÓRDENES PÚBLICOS": 21
 }
+
+prioridad_delito = {
+    'Amenazas con Armas': 8,
+    'Amenazas y Riñas': 17,
+    'Consumo de Alcohol y de Drogas en la Vía Pública': 20,
+    'Daños': 15,
+    'Delitos en Contexto de Violencia Intrafamiliar': 7,
+    'Homicidios y Femicidios': 1,
+    'Hurtos': 16,
+    'Incivilidades': 19,
+    'Lesiones graves': 9,
+    'Lesiones leves': 11,
+    'Lesiones menos graves': 10,
+    'Ley de Control de Armas': 12,
+    'Ley de Drogas': 13,
+    'Otros desórdenes públicos': 21,
+    'Otros Robos con Fuerza en las Cosas': 14,
+    'Receptación': 18,
+    'Robos con Violencia e Intimidación': 3,
+    'Robos de Vehículos y sus Accesorios': 6,
+    'Robos en Lugares Habitados y No Habitados': 4,
+    'Robos por Sorpresa': 5,
+    'Violaciones y Delitos Sexuales': 2
+ }
 
 # =========================================
 # 1. CARGA DE DATOS
