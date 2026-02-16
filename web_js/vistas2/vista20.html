@@ -20,6 +20,10 @@
             media histórica.</p>
     </div>
 
+<div class="alert alert--info" style="margin-top: 1.5rem;">
+    <strong>🤖 Análisis de Situación:</strong> <span id="v20_ia_analysis">Cargando análisis...</span>
+</div>
+
     <!-- Success Grid -->
     <div id="v20_success_grid"
         style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
@@ -60,7 +64,7 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
 
         const success = currentData
-            .filter(r => r[C.Z_SCORE] < -1.0 && (r[C.CASOS_ACTUAL] || 0) > 0)
+            .filter(r => (r[C.Z_SCORE] || 0) < -1.0 && (r[C.CASOS_ACTUAL] || 0) > 0)
             .sort((a, b) => (a[C.Z_SCORE] || 0) - (b[C.Z_SCORE] || 0))
             .slice(0, 4);
 
@@ -70,7 +74,7 @@
                 <div class="card" style="padding: 1.5rem; border-left: 6px solid #10b981; display: flex; flex-direction: column; gap: 10px; background: white;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase;">DISIPACIÓN ACTIVA</span>
-                        <span style="font-size: 0.85rem; font-weight: 900; color: #10b981;">Z = ${r[C.Z_SCORE].toFixed(2)}</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #10b981;">Z = ${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
                     </div>
                     <div style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">${r[C.DELITO]}</div>
                     <div style="display: flex; gap: 15px; margin-top: 5px;">

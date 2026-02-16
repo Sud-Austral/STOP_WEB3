@@ -19,6 +19,10 @@
             proyección anual frente al total de 346 comunas del país.</p>
     </div>
 
+<div class="alert alert--info" style="margin-top: 1.5rem;">
+    <strong>🤖 Análisis de Situación:</strong> <span id="v12_ia_analysis">Cargando análisis...</span>
+</div>
+
     <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: center;">
 
         <!-- National Ranking Pyramid -->
@@ -113,9 +117,27 @@
         const totalNac = 346;
         const ptil = ((totalNac - rank + 1) / totalNac * 100);
 
+        // CEAD Ranking Integration (National)
+        const CeadS = window.STATE_DATA_CEAD;
+        let ceadRankNac = null;
+        if (CeadS && CeadS.isLoaded && CeadS.allDataHistory_total.length > 0) {
+            const sorted = [...CeadS.allDataHistory_total].sort((a, b) => b[window.COLS_CEAD.ID_PERIODO] - a[window.COLS_CEAD.ID_PERIODO]);
+            ceadRankNac = sorted[0][window.COLS_CEAD.RANK_NAC_MES];
+        }
+
         document.getElementById('v12_rank_val').textContent = rank;
         document.getElementById('v12_bg_num').textContent = rank;
         document.getElementById('v12_percentile_val').textContent = `Posición ${rank} de 346 (Percentil ${ptil.toFixed(1)})`;
+
+        if (ceadRankNac) {
+            const pVal = document.getElementById('v12_percentile_val');
+            pVal.insertAdjacentHTML('afterend', `
+                <div style="margin-top: 12px; font-size: 0.75rem; color: #64748b; border-top: 1px dashed #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span title="Ranking calculado con Tasa Mensual por 100k hab. (CEAD)"><i class="fa-solid fa-flag" style="color:#f59e0b; margin-right:4px;"></i> Rank Nacional (Tasa Mes):</span>
+                    <div><strong style="color: #1e293b; font-size: 1rem;">${ceadRankNac}</strong><span style="font-size:0.7rem; color:#94a3b8;">/ 346</span></div>
+                </div>
+             `);
+        }
 
         // Tasa comparison
         const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;

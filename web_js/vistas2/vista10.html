@@ -20,6 +20,10 @@
             delictuales ajustadas por población contra el promedio regional y análisis de posición en ranking.</p>
     </div>
 
+<div class="alert alert--info" style="margin-top: 1.5rem;">
+    <strong>🤖 Análisis de Situación:</strong> <span id="v10_ia_analysis">Cargando análisis...</span>
+</div>
+
     <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
         <!-- Relative Position Gauge -->
         <div class="card"
@@ -113,9 +117,29 @@
 
         const rankPct = ((totalComunas - currentRank + 1) / totalComunas * 100).toFixed(1);
 
+        // CEAD Ranking Integration
+        const CeadS = window.STATE_DATA_CEAD;
+        let ceadRank = null;
+        if (CeadS && CeadS.isLoaded && CeadS.allDataHistory_total.length > 0) {
+            // Sort by period descending
+            const sorted = [...CeadS.allDataHistory_total].sort((a, b) => b[window.COLS_CEAD.ID_PERIODO] - a[window.COLS_CEAD.ID_PERIODO]);
+            ceadRank = sorted[0][window.COLS_CEAD.RANKING];
+        }
+
         document.getElementById('v10_rank_val').textContent = currentRank;
         document.getElementById('v10_rank_total').textContent = `/ ${totalComunas}`;
         document.getElementById('v10_gauge_val').textContent = `${rankPct}%`;
+
+        // Add CEAD rank indicator
+        if (ceadRank) {
+            const rankCard = document.getElementById('v10_rank_val').parentElement.parentElement;
+            rankCard.insertAdjacentHTML('beforeend', `
+                <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span title="Ranking calculado según Tasa por 100k hab. (Mensual)"><i class="fa-solid fa-users" style="color:#3b82f6; margin-right:4px;"></i> Rank Tasa Mensual:</span>
+                    <strong style="color: #1e293b; font-size: 0.9rem;">${ceadRank}</strong>
+                </div>
+             `);
+        }
 
         const gLabel = document.getElementById('v10_gauge_label');
         if (rankPct > 75) { gLabel.textContent = 'MEJOR QUE EL 75% DE LA REGIÓN'; gLabel.style.color = '#10b981'; }

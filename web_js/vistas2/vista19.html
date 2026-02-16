@@ -20,6 +20,10 @@
             tradicional.</p>
     </div>
 
+<div class="alert alert--info" style="margin-top: 1.5rem;">
+    <strong>🤖 Análisis de Situación:</strong> <span id="v19_ia_analysis">Cargando análisis...</span>
+</div>
+
     <!-- Emerging List -->
     <div class="card" style="padding: 1.5rem; border-left: 8px solid #ef4444;">
         <h3 class="section-title mb-lg" style="font-size: 1rem; color: #991b1b;"><i
@@ -81,7 +85,7 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
 
         const emerging = currentData
-            .filter(r => r[C.Z_SCORE] > 1.5)
+            .filter(r => (r[C.Z_SCORE] || 0) > 1.5)
             .sort((a, b) => (b[C.Z_SCORE] || 0) - (a[C.Z_SCORE] || 0))
             .slice(0, 5);
 
@@ -92,14 +96,14 @@
                     <td style="padding: 12px; font-weight: 700; color: #1e293b;">${r[C.DELITO]}</td>
                     <td style="padding: 12px; text-align: right; font-weight: 700;">${r[C.CASOS_ACTUAL]}</td>
                     <td style="padding: 12px; text-align: right;">
-                        <span class="pill-sm pill-sm-danger">Z = ${r[C.Z_SCORE].toFixed(2)}</span>
+                        <span class="pill-sm pill-sm-danger">Z = ${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
                     </td>
                     <td style="padding: 12px; text-align: center;">
                         <i class="fa-solid fa-arrow-trend-up" style="color: #ef4444;"></i> EXPLOSIVO
                     </td>
                 </tr>
             `).join('');
-            document.getElementById('v19_max_z').textContent = emerging[0][C.Z_SCORE].toFixed(2);
+            document.getElementById('v19_max_z').textContent = (emerging[0][C.Z_SCORE] || 0).toFixed(2);
         } else {
             tbody.innerHTML = '<tr><td colspan="4" style="padding: 2rem; text-align: center; color: #94a3b8;">No se detectan tipologías con crecimiento atípico (Z > 1.5) esta semana.</td></tr>';
             document.getElementById('v19_max_z').textContent = 'N/A';
