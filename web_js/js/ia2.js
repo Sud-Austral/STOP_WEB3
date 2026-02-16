@@ -72,9 +72,18 @@ Responde SOLO un JSON: {"vista1": "texto...", "vista2": "texto...", ... "vista25
 
             const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf");
 
+            if (!API_KEY || API_KEY.length < 10) {
+                console.error("ia2.js: API Key inválida o vacía.");
+                this.updateAllViews(true);
+                return;
+            }
+
             const response = await fetch(this.API_URL, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+                headers: {
+                    'Authorization': 'Bearer ' + API_KEY,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     model: this.MODEL_NAME,
                     messages: [{ role: "user", content: prompt }],
