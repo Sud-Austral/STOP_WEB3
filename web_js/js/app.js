@@ -65,6 +65,12 @@ const App = {
      */
     async init() {
         this.cacheElements();
+
+        // Global Error Handling
+        window.addEventListener('dataManagerError', (e) => {
+            this.showErrorUI(e.detail.message || "Error desconocido al cargar datos.");
+        });
+
         await this.loadSidebar();
         this.bindEvents();
         this.loadView(this.config.defaultView);
@@ -498,6 +504,27 @@ const App = {
      * Utility: Delay promise
      * @param {number} ms - Milliseconds to wait
      */
+    /**
+     * Show Critical Error UI
+     */
+    showErrorUI(msg) {
+        const container = this.elements.viewContainer;
+        if (container) {
+            container.innerHTML = `
+                <div class="card" style="text-align: center; padding: 3rem; border: 1px solid #fca5a5; background: #fef2f2; max-width: 600px; margin: 2rem auto;">
+                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: #dc2626; margin-bottom: 1rem;"></i>
+                     <h3 style="color: #991b1b; margin-bottom: 0.5rem;">Error de Carga</h3>
+                     <p style="color: #b91c1c; margin-bottom: 1.5rem;">${msg}</p>
+                     <button onclick="location.reload()" style="padding: 0.75rem 1.5rem; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        <i class="fa-solid fa-rotate-right"></i> Reintentar
+                     </button>
+                </div>
+            `;
+        } else {
+            alert("Error Crítico: " + msg);
+        }
+    },
+
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }

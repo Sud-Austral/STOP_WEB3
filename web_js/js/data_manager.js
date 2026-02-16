@@ -93,6 +93,9 @@ window.DataManager = {
 
         } catch (error) {
             console.error("❌ DataManager Error:", error);
+            this.state.error = error.message;
+            this.state.isLoaded = false;
+            window.dispatchEvent(new CustomEvent('dataManagerError', { detail: error }));
             this.state.isLoading = false;
         }
     },

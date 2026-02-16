@@ -20,9 +20,9 @@
             volumen, variación y nivel de riesgo normalizado.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v1_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v1_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <div class="kpi-grid">
         <div class="kpi-card" style="position: relative; overflow: hidden;">
@@ -87,9 +87,8 @@
         const S = window.STATE_DATA;
         const C = window.COLS;
 
-        // Comuna y Semana
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
-        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+        // Header
+        UIHelper.fillHeaders(S.comunaName, S.semanaDetalle);
 
         const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
         const casos = totalRow[C.CASOS_ACTUAL] || 0;
@@ -98,24 +97,12 @@
         const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
 
         // KPIs
-        const vCasos = document.getElementById('v1_casos');
-        const vDelta = document.getElementById('v1_casos_delta');
-        const vVarAnual = document.getElementById('v1_var_anual');
-        const vTasa = document.getElementById('v1_tasa');
-        const vRisk = document.getElementById('v1_risk_level');
-        const vRiskCard = document.getElementById('v1_risk_card');
-        const vZ = document.getElementById('v1_zscore');
+        const deltaSem = casosAnt > 0 ? ((casos - casosAnt) / casosAnt * 100) : 0;
+        const deltaAnual = casosYearAnt > 0 ? ((casos - casosYearAnt) / casosYearAnt * 100) : 0;
 
-        vCasos.textContent = ChartHelper.formatNumber(casos);
-        const varSem = casosAnt > 0 ? ((casos - casosAnt) / casosAnt * 100) : 0;
-        vDelta.innerHTML = `${varSem >= 0 ? '▲' : '▼'} ${Math.abs(varSem).toFixed(1)}% vs sem. ant.`;
-        vDelta.className = `kpi-change ${varSem > 0 ? 'kpi-change--negative' : 'kpi-change--positive'}`;
-
-        const varAnu = casosYearAnt > 0 ? ((casos - casosYearAnt) / casosYearAnt * 100) : 0;
-        vVarAnual.textContent = `${varAnu > 0 ? '+' : ''}${varAnu.toFixed(1)}%`;
-        vVarAnual.style.color = varAnu > 0 ? 'var(--color-danger)' : 'var(--color-success)';
-
-        vTasa.textContent = (casos / factorPob).toFixed(1);
+        UIHelper.renderKpi('v1_casos', 'v1_casos_delta', casos, deltaSem, true, 'vs sem. ant.');
+        UIHelper.renderColoredPercent('v1_var_anual', deltaAnual, true);
+        UIHelper.setText('v1_tasa', (casos / factorPob).toFixed(1));
 
         // Z-Score y Riesgo
         let zSum = 0, zCount = 0;
