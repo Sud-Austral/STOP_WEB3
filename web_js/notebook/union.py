@@ -7,4 +7,4 @@ SHEET_NAME = "Delitos CEAD-STOP"
 
 df = pd.read_excel(url, sheet_name=SHEET_NAME)
 
-df.to_json(r"D:\GitHub\STOP_WEB3\web_js\.config\union.json", orient="records", indent=1)
+df.to_json(r"D:\GitHub\STOP_WEB3\web_js\config\union.json", orient="records", indent=1)

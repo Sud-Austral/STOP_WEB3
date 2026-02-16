@@ -9,7 +9,7 @@ window.DataManager = {
     config: {
         stopPath: 'data/stop',
         ceadPath: 'data/cead_split',
-        unionPath: '.config/union.json',
+        unionPath: 'config/union.json',
         defaultComuna: 13101
     },
 

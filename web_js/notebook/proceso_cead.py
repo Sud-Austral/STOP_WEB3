@@ -353,9 +353,9 @@ def ejecutar_proceso():
     import json
     import datetime
 
-    # 4. Generar Archivo de Configuración (.config/cead.json)
+    # 4. Generar Archivo de Configuración (config/cead.json)
     print("> Generando metadatos de configuración...")
-    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".config")
+    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
     os.makedirs(config_dir, exist_ok=True)
     
     # Extraer columnas y tipos de datos
