@@ -63,6 +63,12 @@ window.IAModuleV2 = {
         const S = window.STATE_DATA;
         const context = this.buildContext(S);
 
+        if (!context) {
+            console.warn("IA2: Contexto insuficiente para análisis (falta carga de datos).");
+            this.fetching = false;
+            return;
+        }
+
         try {
             const prompt = `
 Analiza la seguridad de ${S.comunaName} con estos datos y genera 25 análisis breves (max 20 palabras c/u) para un dashboard.
@@ -93,6 +99,8 @@ Responde SOLO un JSON: {"vista1": "texto...", "vista2": "texto...", ... "vista25
 
             const result = await response.json();
             const content = result.choices?.[0]?.message?.content || '{}';
+            console.log("🤖 IA Raw Response:", content); // DEBUG IA RESPONSE
+
             const jsonStart = content.indexOf('{');
             const jsonEnd = content.lastIndexOf('}') + 1;
             const cleanJson = content.substring(jsonStart, jsonEnd);
@@ -147,17 +155,20 @@ Responde SOLO un JSON: {"vista1": "texto...", "vista2": "texto...", ... "vista25
 
     buildContext(S) {
         const C = window.COLS;
-        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        if (!S.allDataHistory_total || S.allDataHistory_total.length === 0) return null;
+
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana);
+        if (!totalRow) return null;
 
         const basics = {
-            cases: totalRow[C.CASOS_ACTUAL],
+            cases: totalRow[C.CASOS_ACTUAL] || 0,
             delta: totalRow[C.DELTA] || 0
         };
         const emerging = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana && (r[C.Z_SCORE] || 0) > 1.5).map(r => r[C.DELITO]);
         const cead = window.STATE_DATA_CEAD?.allDataHistory_total?.[0] || {};
 
         return {
-            comuna: S.comunaName,
+            comuna: S.comunaName || 'Comuna Desconocida',
             basics,
             top: S.allDataHistory.slice(0, 5).map(r => `${r[C.DELITO]}: ${r[C.CASOS_ACTUAL]}`),
             emerging,
