@@ -111,15 +111,24 @@
             zCount++;
         });
         const avgZ = zCount > 0 ? (zSum / zCount) : 0;
-        vZ.textContent = `Z-Score: ${avgZ.toFixed(2)}`;
+
+        UIHelper.setText('v1_zscore', `Z-Score: ${avgZ.toFixed(2)}`);
 
         let riskLevel = 'BAJO', riskColor = '#10b981', bg = 'rgba(16, 185, 129, 0.1)';
         if (avgZ > 1.5) { riskLevel = 'ALTO'; riskColor = '#ef4444'; bg = 'rgba(239, 68, 68, 0.1)'; }
         else if (avgZ > 0.5) { riskLevel = 'MEDIO'; riskColor = '#f59e0b'; bg = 'rgba(245, 158, 11, 0.1)'; }
-        vRisk.textContent = riskLevel;
-        vRisk.style.color = riskColor;
-        vRiskCard.style.background = bg;
-        vRiskCard.style.borderColor = riskColor;
+
+        const vRisk = document.getElementById('v1_risk_level');
+        if (vRisk) {
+            vRisk.textContent = riskLevel;
+            vRisk.style.color = riskColor;
+        }
+
+        const vRiskCard = document.getElementById('v1_risk_card');
+        if (vRiskCard) {
+            vRiskCard.style.background = bg;
+            vRiskCard.style.borderColor = riskColor;
+        }
 
         // --- Gráfico de Barras: Top 5 ---
         const top5Data = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
