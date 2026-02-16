@@ -108,8 +108,30 @@ Responde SOLO un JSON: {"vista1": "texto...", "vista2": "texto...", ... "vista25
             const vid = `vista${i}`;
             const el = document.getElementById(`v${i}_ia_analysis`);
             if (el) {
-                if (isError) el.textContent = "Análisis no disponible temporalmente.";
-                else if (this.cache[vid]) el.textContent = this.cache[vid];
+                const parent = el.closest('.alert');
+                if (isError) {
+                    el.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Servicio de IA no disponible. Verifique conexión.';
+                    if (parent) {
+                        // Cambiar estilo a Error visualmente
+                        parent.style.backgroundColor = 'rgba(254, 226, 226, 0.5)'; // Rojo claro
+                        parent.style.borderColor = '#fca5a5';
+                        parent.style.color = '#b91c1c';
+                        // Intentar quitar alert--info si entra en conflicto
+                        parent.classList.remove('alert--info');
+                        parent.classList.add('alert--danger');
+                    }
+                }
+                else if (this.cache[vid]) {
+                    el.textContent = this.cache[vid];
+                    if (parent) {
+                        // Restaurar estilo Info
+                        parent.style.backgroundColor = '';
+                        parent.style.borderColor = '';
+                        parent.style.color = '';
+                        parent.classList.add('alert--info');
+                        parent.classList.remove('alert--danger');
+                    }
+                }
             }
         }
     },
