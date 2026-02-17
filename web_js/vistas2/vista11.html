@@ -2,7 +2,7 @@
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-        <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-ranking-star"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
             <span>EVOLUCIÓN ESTRATÉGICA 20 AÑOS</span>
@@ -10,8 +10,9 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #f59e0b; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Nuestra posición relativa ha mejorado o empeorado en la década?
         </h2>
@@ -24,24 +25,30 @@
     </div>
 
     <!-- Stats Cards -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #3b82f6;">
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #4f46e5;">
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
                 Promedio Posición</div>
             <div id="v11_stat_avg" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
         </div>
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: #94a3b8 solid 4px;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Moda Posición</div>
+            <div id="v11_stat_mode" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+        </div>
         <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #10b981;">
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
                 Mejor Posición</div>
-            <div id="v11_stat_best" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+            <div id="v11_stat_best" style="font-size: 1.3rem; font-weight: 900; color: #1e293b;">--</div>
         </div>
         <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #ef4444;">
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
                 Peor Posición</div>
-            <div id="v11_stat_worst" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+            <div id="v11_stat_worst" style="font-size: 1.3rem; font-weight: 900; color: #1e293b;">--</div>
         </div>
     </div>
 
@@ -79,14 +86,12 @@
 </div>
 
 
-<!-- Nota Metodológica -->
-<div class="row" style="margin-top: 2rem;">
-    <div
-        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Ranking
-            Histórico</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
-        estratégicas basadas en evidencia.
-    </div>
+<div class="methodological-note"
+    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #475569; line-height: 1.5; margin-top: 2rem;">
+    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>
+    <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Ranking
+        Histórico</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
+    estratégicas basadas en evidencia.
 </div>
 
 <script>
@@ -117,15 +122,31 @@
 
         // --- Calculate Stats ---
         const avg = Math.round(rankings.reduce((a, b) => a + b, 0) / rankings.length);
-        const best = Math.max(...rankings); // Max number = Better rank (further from #1)
-        const worst = Math.min(...rankings); // Min number = Worse rank (closer to #1)
 
-        const bestYear = years[rankings.indexOf(best)];
-        const worstYear = years[rankings.indexOf(worst)];
+        // Mode Calculation
+        const modeMap = {};
+        let maxCount = 0;
+        let modeVal = rankings[0];
+        rankings.forEach(val => {
+            modeMap[val] = (modeMap[val] || 0) + 1;
+            if (modeMap[val] > maxCount) {
+                maxCount = modeMap[val];
+                modeVal = val;
+            }
+        });
+
+        // Best/Worst Logic: 1 is BAD (More Crime), 52 is GOOD (Less Crime)
+        // Thus, Best = Higher Number, Worst = Lower Number
+        const best = Math.max(...rankings);
+        const worst = Math.min(...rankings);
+
+        const bestYear = years[rankings.lastIndexOf(best)];
+        const worstYear = years[rankings.lastIndexOf(worst)];
 
         document.getElementById('v11_stat_avg').textContent = `${avg}°`;
-        document.getElementById('v11_stat_best').innerHTML = `${best}° <div style="font-size:0.75rem; color:#10b981; font-weight:600;">AÑO ${bestYear}</div>`;
-        document.getElementById('v11_stat_worst').innerHTML = `${worst}° <div style="font-size:0.75rem; color:#ef4444; font-weight:600;">AÑO ${worstYear}</div>`;
+        document.getElementById('v11_stat_mode').textContent = `${modeVal}°`;
+        document.getElementById('v11_stat_best').innerHTML = `${best}° <div style="font-size:0.75rem; color:#10b981; font-weight:600;">EN AÑO ${bestYear}</div>`;
+        document.getElementById('v11_stat_worst').innerHTML = `${worst}° <div style="font-size:0.75rem; color:#ef4444; font-weight:600;">EN AÑO ${worstYear}</div>`;
 
 
         // Trajectory Logic
@@ -144,7 +165,7 @@
             data: {
                 labels: years,
                 datasets: [{
-                    label: 'Ranking Regional (Mayor es Mejor)',
+                    label: 'Posición (Más es Mejor)',
                     data: rankings,
                     borderColor: '#f59e0b',
                     backgroundColor: 'rgba(245, 158, 11, 0.1)',

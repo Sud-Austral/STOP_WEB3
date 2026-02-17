@@ -664,6 +664,34 @@ if (typeof Chart !== 'undefined') {
 
     // Register center text plugin
     Chart.register(ChartHelper.doughnutCenterPlugin);
+
+    // #31 - Global Registration for DataLabels (for PDF/Static focus)
+    if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+
+        // Define standard global defaults for DataLabels to ensure clean look
+        // Explicitly enabling them by default as per user "Zero-Interactivity" request
+        Chart.defaults.plugins.datalabels = {
+            display: true,
+            color: '#1e293b',
+            font: {
+                family: 'Outfit, sans-serif',
+                size: 10,
+                weight: '700'
+            },
+            padding: 4,
+            anchor: 'end',
+            align: 'top',
+            offset: 4,
+            formatter: (value) => {
+                // Handle both simple numbers and decimal values
+                if (typeof value === 'number') {
+                    return ChartHelper.formatNumber(value, value % 1 === 0 ? 0 : 1);
+                }
+                return value;
+            }
+        };
+    }
 }
 
 // Expose globally

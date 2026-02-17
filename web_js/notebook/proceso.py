@@ -429,17 +429,25 @@ df3['ranking_nacional_tasa_anual'] = df3.groupby(['delito', 'id_semana'])['tasa_
 if 'clase_poblacion' in df3.columns:
     df3['ranking_cluster_proy_anual'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['proyeccion_anual'].rank(method='dense', ascending=False)
     df3['ranking_cluster_semanal'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['frecuencia'].rank(method='dense', ascending=False)
+    # Nuevo: Ranking Acumulado Cluster
+    df3['ranking_cluster_acum'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['acumulado_anual'].rank(method='dense', ascending=False)
     # Nuevo: Ranking Tasa Cluster
     df3['ranking_cluster_tasa_sem'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['tasa_semanal'].rank(method='dense', ascending=False)
     df3['ranking_cluster_tasa_anual'] = df3.groupby(['clase_poblacion', 'delito', 'id_semana'])['tasa_proyectada_anual'].rank(method='dense', ascending=False)
 
-# Normalizar Rankings de Tasa (Si Frecuencia es 0 -> Rank 999)
-tasa_rank_cols = [
+# Ranking Nacional Acumulado
+df3['ranking_nacional_acum'] = df3.groupby(['delito', 'id_semana'])['acumulado_anual'].rank(method='dense', ascending=False)
+
+# Normalizar Rankings (Si Frecuencia es 0 -> Rank 999)
+all_rank_cols = [
+    'ranking_regional_proy_anual', 'ranking_nacional_proy_anual', 
+    'ranking_cluster_proy_anual', 'ranking_cluster_semanal',
+    'ranking_cluster_acum', 'ranking_nacional_acum',
     'ranking_regional_tasa_sem', 'ranking_regional_tasa_anual',
     'ranking_nacional_tasa_sem', 'ranking_nacional_tasa_anual',
     'ranking_cluster_tasa_sem', 'ranking_cluster_tasa_anual'
 ]
-for col in tasa_rank_cols:
+for col in all_rank_cols:
     if col in df3.columns:
         df3[col] = np.where(df3['frecuencia'] == 0, 999, df3[col])
         df3[col] = df3[col].fillna(999)
@@ -838,7 +846,7 @@ print("> Generando metadatos de configuración...")
 
 
 try:
-    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".config")
+    config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
     os.makedirs(config_dir, exist_ok=True)
     
     # Extraer columnas y tipos
@@ -871,7 +879,7 @@ try:
     }
     
     config_path = os.path.join(config_dir, "stop.json")
-    with open(r"D:\GitHub\STOP_WEB3\web_js\.config\stop.json", "w", encoding="utf-8") as f:
+    with open(r"D:\GitHub\STOP_WEB3\web_js\config\stop.json", "w", encoding="utf-8") as f:
         json.dump(config_data, f, indent=4, ensure_ascii=False)
     
     print(f"✅ Configuración guardada en: {config_path}")

@@ -42,7 +42,7 @@
         </div>
 
         <!-- Regional Trend and KPIs -->
-        <div style="display: grid; grid-template-rows: auto 1fr; gap: 1rem;">
+        <div style="display: grid; grid-template-rows: auto 1fr auto; gap: 1rem;">
             <div style="display: flex; gap: 1rem;">
                 <div class="card" style="flex: 1; padding: 1.25rem; border-left: 4px solid #3b82f6;">
                     <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">RANKING
@@ -64,8 +64,13 @@
             </div>
 
             <div class="card" style="padding: 1.25rem; background: #f8fafc;">
-                <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; font-weight: 800; color: #1e293b;">Comparativo de
-                    Tasas (x 100k)</h4>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 0.85rem; font-weight: 800; color: #1e293b;">Comparativo de
+                        Tasas (x 100k)</h4>
+                    <i class="fa-solid fa-circle-info" style="color: #94a3b8; font-size: 0.8rem;"
+                        title="Tasa de casos por cada 100.000 habitantes. Permite comparar la violencia real independientemente del tamaño poblacional."></i>
+                </div>
+
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center;">
                         <div style="font-size: 0.8rem; font-weight: 700; color: #475569;">Tasa Comunal</div>
@@ -85,6 +90,22 @@
                         <div id="v10_bar_reg"
                             style="height: 100%; width: 0%; background: #94a3b8; transition: width 1s;"></div>
                     </div>
+                </div>
+                <div style="margin-top: 10px; font-size: 0.7rem; color: #64748b; font-style: italic;">
+                    * Normalizado por población residente (Ine)
+                </div>
+            </div>
+
+            <!-- Infografía Comunal -->
+            <div id="v10_infografia" class="card"
+                style="padding: 1rem; background: #fff; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                        Posición vs Regional</div>
+                    <div id="v10_info_status" style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">--</div>
+                </div>
+                <div id="v10_info_icon" style="font-size: 1.5rem; color: #cbd5e1;">
+                    <i class="fa-solid fa-scale-balanced"></i>
                 </div>
             </div>
         </div>
@@ -212,6 +233,39 @@
             }
             if (barReg) barReg.style.width = `${(tasaReg / maxTasa * 100)}%`;
         }, 300);
+
+        // --- Infografía Logic (User Request) ---
+        // "comunal sobre/bajo 3-5"
+        // Calculate difference percentage relative to region
+        const tComVal = parseFloat(tasaCom);
+        const tRegVal = parseFloat(tasaReg);
+        const diffPct = tRegVal > 0 ? ((tComVal - tRegVal) / tRegVal * 100) : 0;
+
+        const infoStatus = document.getElementById('v10_info_status');
+        const infoIcon = document.getElementById('v10_info_icon');
+        const infoCard = document.getElementById('v10_infografia');
+
+        if (diffPct > 5) {
+            infoStatus.innerHTML = `<span style="color:#ef4444;">SOBRE REGIÓN (>5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-arrow-trend-up" style="color:#ef4444;"></i>`;
+            infoCard.style.borderLeft = "4px solid #ef4444";
+        } else if (diffPct > 3) {
+            infoStatus.innerHTML = `<span style="color:#f97316;">SOBRE REGIÓN (3-5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-angle-up" style="color:#f97316;"></i>`;
+            infoCard.style.borderLeft = "4px solid #f97316";
+        } else if (diffPct < -5) {
+            infoStatus.innerHTML = `<span style="color:#10b981;">BAJO REGIÓN (>5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-arrow-trend-down" style="color:#10b981;"></i>`;
+            infoCard.style.borderLeft = "4px solid #10b981";
+        } else if (diffPct < -3) {
+            infoStatus.innerHTML = `<span style="color:#3b82f6;">BAJO REGIÓN (3-5%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-angle-down" style="color:#3b82f6;"></i>`;
+            infoCard.style.borderLeft = "4px solid #3b82f6";
+        } else {
+            infoStatus.innerHTML = `<span style="color:#64748b;">EN PROMEDIO (+/- 3%)</span>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-minus" style="color:#64748b;"></i>`;
+            infoCard.style.borderLeft = "4px solid #cbd5e1";
+        }
 
         // --- Semi-Doughnut Gauge Chart ---
         const gaugeCtx = document.getElementById('v10_chart_gauge').getContext('2d');

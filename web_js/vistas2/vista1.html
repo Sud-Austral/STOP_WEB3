@@ -178,10 +178,6 @@
                 plugins: {
                     legend: { display: false },
                     datalabels: {
-                        anchor: 'end',
-                        align: 'end',
-                        color: '#334155',
-                        font: { weight: 'bold', size: 11 },
                         formatter: (value) => {
                             if (!casos || casos === 0) return value;
                             const pct = ((value / casos) * 100).toFixed(1);
@@ -197,8 +193,7 @@
                     },
                     y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600' } } }
                 }
-            },
-            plugins: [ChartDataLabels]
+            }
         });
 
         // --- Gráfico de Tendencia: 8 Semanas ---

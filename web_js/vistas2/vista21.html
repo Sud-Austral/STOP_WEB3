@@ -1,110 +1,79 @@
-<!-- Vista 21: Proyecciones y Rachas (CEAD) -->
+<!-- Vista 21: Momentum y Rachas -->
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-        <div style="font-size: 0.8rem; color: #4f46e5; font-weight: 600; letter-spacing: 0.5px;">
-            <i class="fa-solid fa-crystal-ball"></i> <span class="comuna-fill">CARGANDO...</span>
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-bolt"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-            <span>MODELADO PREDICTIVO & RACHAS</span>
+            <span>INTELIGENCIA DE TENDENCIAS</span>
         </div>
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #4f46e5; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            Proyecciones SARIMA y Detección de Rachas
+            Momentum Delictual y Rachas de Crecimiento
         </h2>
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
-            Análisis de tendencias consecutivas (rachas) y proyección estadística de corto plazo para anticipar
-            escenarios delictuales.
+            Análisis de aceleración estadística (CAGR 4S) y detección de patrones de aumento semanal consecutivo.
         </p>
     </div>
 
     <div class="alert alert--info" style="margin-top: 1.5rem;">
-        <strong>🤖 Análisis de Situación:</strong> <span id="v21_ia_analysis">Cargando análisis...</span>
+        <strong>🤖 Análisis de Momentum:</strong> <span id="v21_ia_analysis">Analizando aceleración...</span>
     </div>
 
-    <!-- Rachas Alert Section (New) -->
-    <!-- Rachas Alert Section (Streaks) -->
+    <!-- Rachas Alert Section -->
+    <h3 class="section-title mb-lg" style="font-size: 1rem; margin-top: 2rem;">
+        <i class="fa-solid fa-fire" style="color: #ef4444;"></i> Alertas de Rachas (Semanas al Alza)
+    </h3>
     <div id="v21_rachas_container"
         style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
         <!-- 1 Week -->
-        <div class="card" style="padding: 1rem; border-top: 4px solid #f59e0b;">
+        <div class="card" style="padding: 1rem; border: 1px solid #fed7aa; background: #fff7ed;">
             <h4
-                style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 800; color: #92400e; text-transform: uppercase;">
-                Racha: 1 Semana</h4>
-            <div id="v21_streak_1" style="display: flex; flex-direction: column; gap: 5px;">
-                <!-- Filled -->
+                style="margin: 0 0 8px 0; font-size: 0.75rem; font-weight: 700; color: #9a3412; text-transform: uppercase;">
+                1 Semana al Alza</h4>
+            <div id="v21_streak_1" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
             </div>
         </div>
 
         <!-- 2 Weeks -->
-        <div class="card" style="padding: 1rem; border-top: 4px solid #ea580c;">
+        <div class="card" style="padding: 1rem; border: 1px solid #ffedd5; background: #fffaf5;">
             <h4
-                style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 800; color: #9a3412; text-transform: uppercase;">
-                Racha: 2 Semanas</h4>
-            <div id="v21_streak_2" style="display: flex; flex-direction: column; gap: 5px;">
-                <!-- Filled -->
+                style="margin: 0 0 8px 0; font-size: 0.75rem; font-weight: 700; color: #c2410c; text-transform: uppercase;">
+                2 Semanas al Alza</h4>
+            <div id="v21_streak_2" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
             </div>
         </div>
 
         <!-- 3+ Weeks -->
-        <div class="card" style="padding: 1rem; border-top: 4px solid #dc2626; background: #fef2f2;">
+        <div class="card" style="padding: 1rem; border: 1px solid #fecaca; background: #fef2f2;">
             <h4
-                style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 800; color: #991b1b; text-transform: uppercase;">
-                Racha: 3+ Semanas</h4>
-            <div id="v21_streak_3" style="display: flex; flex-direction: column; gap: 5px;">
-                <!-- Filled -->
+                style="margin: 0 0 8px 0; font-size: 0.75rem; font-weight: 700; color: #dc2626; text-transform: uppercase;">
+                3+ Semanas (Crítico)</h4>
+            <div id="v21_streak_3" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
             </div>
         </div>
-
     </div>
 
-    <div class="cards-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
-        <!-- Prediction Chart -->
-        <div class="card chart-card" style="padding: 1.5rem;">
-            <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
-                <i class="fa-solid fa-chart-line" style="color: #4f46e5;"></i> Pronóstico Mensual (Casos Totales)
-            </h3>
-            <div class="chart-wrapper" style="height: 350px;">
-                <canvas id="v21_chart_forecast"></canvas>
-            </div>
-        </div>
-
-        <!-- Prediction Stats -->
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div id="v21_next_month_card"
-                style="padding: 1.5rem; border-radius: 12px; background: #1e293b; color: white;">
-                <div
-                    style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px;">
-                    PRÓXIMO MES PROYECTADO</div>
-                <div id="v21_next_month_name"
-                    style="font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: 5px;">Enero 2026</div>
-                <div id="v21_next_month_val" style="font-size: 3rem; font-weight: 950; color: #4f46e5;">--</div>
-                <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Casos esperados (Media)</div>
-            </div>
-
-            <div class="card" style="padding: 1.5rem;">
-                <h4
-                    style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
-                    Nivel de Confianza SARIMA</h4>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="font-size: 0.85rem; color: #64748b;">Rango Superior (+15%):</span>
-                    <span id="v21_range_up" style="font-size: 1rem; font-weight: 800; color: #1e293b;">--</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 0.85rem; color: #64748b;">Rango Inferior (-15%):</span>
-                    <span id="v21_range_down" style="font-size: 1rem; font-weight: 800; color: #1e293b;">--</span>
-                </div>
-            </div>
-
-            <div class="alert alert--info" style="font-size: 0.8rem; line-height: 1.4;">
-                <i class="fa-solid fa-robot"></i> <strong>Nota del Modelo:</strong> La predicción utiliza la
-                estacionalidad de los últimos 20 años combinada con el impulso de tendencia reciente. Las rachas se
-                detectan sobre datos confirmados.
-            </div>
+    <!-- Momentum Chart -->
+    <div class="card chart-card">
+        <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-gauge-high" style="color: #3b82f6;"></i> Momentum Delictual (Aceleración)</span>
+            <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">CAGR 4 Semanas</span>
+        </h3>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.5rem;">
+            Tasa de crecimiento compuesto de corto plazo. Valores > 0% indican aceleración.
+        </p>
+        <div class="chart-wrapper" style="height: 450px;">
+            <canvas id="v21_chart_momentum"></canvas>
         </div>
     </div>
 </div>
@@ -114,169 +83,109 @@
 <div class="row" style="margin-top: 2rem;">
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Proyecciones y
-            Rachas</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
-        basadas en evidencia.
+        <strong>Nota Metodológica:</strong> El Momentum utiliza el CAGR (Compound Annual Growth Rate) ajustado a 4
+        semanas para medir la velocidad de propagación. Las Rachas detectan incrementos porcentuales consecutivos en la
+        frecuencia semanal.
     </div>
 </div>
 
 <script>
-    (async function initVista21_V2() {
+    (async function initVista21_V3() {
         const waitForData = () => {
             return new Promise((resolve) => {
                 const check = () => {
-                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
                     else setTimeout(check, 100);
                 };
                 check();
             });
         };
 
-        try {
-            await waitForData();
-        } catch (e) {
-            console.error("Vista 21 Data Load Error:", e);
-            document.getElementById('viewContainer').innerHTML = '<div class="alert alert--danger">Error cargando datos. Por favor recargue.</div>';
-            return;
-        }
-
-        const S = window.STATE_DATA_CEAD;
-        const C = window.COLS_CEAD; // Ensure data_cead.js is using 'frecuencia' for CASOS_ACTUAL
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
-            const S_STOP = window.STATE_DATA;
-            const C_STOP = window.COLS;
+        // --- 1. Streak Logic ---
+        const crimes = [...new Set(S.allDataHistory.map(r => r[C.DELITO]))];
+        const streaks = { 1: [], 2: [], 3: [] };
 
-            // Streak Logic using STOP Data (Weekly)
-            const crimes = [...new Set(S_STOP.allDataHistory.map(r => r[C_STOP.DELITO]))];
-            const streaks = { 1: [], 2: [], 3: [] };
+        crimes.forEach(delito => {
+            const records = S.allDataHistory
+                .filter(r => r[C.DELITO] === delito)
+                .sort((a, b) => a[C.ID_SEMANA] - b[C.ID_SEMANA]);
 
-            crimes.forEach(delito => {
-                // Get weekly data for this crime sorted by week ID ascending
-                const records = S_STOP.allDataHistory
-                    .filter(r => r[C_STOP.DELITO] === delito)
-                    .sort((a, b) => a[C_STOP.ID_SEMANA] - b[C_STOP.ID_SEMANA]);
+            if (records.length < 4) return;
+            const lastRow = records[records.length - 1];
+            const streakVal = lastRow[C.RACHA_ALZA] || 0;
 
-                // Check last weeks for consecutive increases
-                if (records.length < 4) return;
-                const last = records[records.length - 1]; // Current
-                const prev1 = records[records.length - 2];
-                const prev2 = records[records.length - 3];
-                const prev3 = records[records.length - 4];
+            if (streakVal >= 3) streaks[3].push({ delito, val: streakVal });
+            else if (streakVal === 2) streaks[2].push({ delito, val: streakVal });
+            else if (streakVal === 1) streaks[1].push({ delito, val: streakVal });
+        });
 
-                const c0 = last[C_STOP.CASOS_ACTUAL] || 0;
-                const c1 = prev1[C_STOP.CASOS_ACTUAL] || 0;
-                const c2 = prev2[C_STOP.CASOS_ACTUAL] || 0;
-                const c3 = prev3[C_STOP.CASOS_ACTUAL] || 0;
+        const renderStreak = (id, list, color) => {
+            const el = document.getElementById(id);
+            if (list.length > 0) {
+                el.innerHTML = list.map(item => `
+                    <div style="font-size: 0.8rem; font-weight: 600; color: #334155; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 4px 0; display: flex; justify-content: space-between;">
+                        <span>${item.delito}</span>
+                        <span style="color: ${color}; font-weight: 800;">+${item.val}</span>
+                    </div>
+                `).join('');
+            } else {
+                el.innerHTML = '<span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Ninguno</span>';
+            }
+        };
 
-                // Only count if significant volume (>0 to avoid noise)
-                if (c0 > c1 && c1 > c2 && c2 > c3) {
-                    streaks[3].push({ delito, val: c0 });
-                } else if (c0 > c1 && c1 > c2) {
-                    streaks[2].push({ delito, val: c0 });
-                } else if (c0 > c1) {
-                    streaks[1].push({ delito, val: c0 });
-                }
-            });
+        renderStreak('v21_streak_1', streaks[1], '#b45309');
+        renderStreak('v21_streak_2', streaks[2], '#ea580c');
+        renderStreak('v21_streak_3', streaks[3], '#dc2626');
 
-            // Render
-            const renderStreak = (id, list, color) => {
-                const el = document.getElementById(id);
-                if (list.length > 0) {
-                    el.innerHTML = list.map(item => `
-                        <div style="font-size: 0.8rem; font-weight: 600; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding: 4px 0;">
-                            ${item.delito} <span style="font-size: 0.7rem; color: ${color}; font-weight: 800;">(${item.val})</span>
-                        </div>
-                    `).join('');
-                } else {
-                    el.innerHTML = '<span style="font-size: 0.75rem; color: #94a3b8; font-style: italic;">Sin rachas detectadas.</span>';
-                }
-            };
 
-            renderStreak('v21_streak_1', streaks[1], '#f59e0b');
-            renderStreak('v21_streak_2', streaks[2], '#ea580c');
-            renderStreak('v21_streak_3', streaks[3], '#dc2626');
-        }
+        // --- 2. Momentum Chart (CAGR 4S) ---
+        const lastBatch = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
+        const momentumData = lastBatch
+            .filter(r => r[C.DELITO] !== 'Total' && (r[C.T31_CAGR_4S] !== 0))
+            .sort((a, b) => b[C.T31_CAGR_4S] - a[C.T31_CAGR_4S]);
 
-        // 2. FORECAST LOGIC (Dynamic detection of last real point)
-        const allHistory = S.allDataHistory_total.sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
-        // History: up to last non-forecast point
-        const realData = allHistory.filter(r => !r[C.IS_FORECAST]);
-        const last6 = realData.slice(-6);
-        // Forecast: predicted points
-        const forecast = allHistory.filter(r => r[C.IS_FORECAST]).slice(0, 3);
-
-        const labels = [...last6, ...forecast].map(r => r[C.PERIODO_DETALLE] ? r[C.PERIODO_DETALLE].split(' ')[0] : r[C.ID_PERIODO]);
-        const historyValues = last6.map(r => r[C.CASOS_ACTUAL]);
-        const forecastValues = forecast.map(r => r[C.CASOS_ACTUAL]);
-
-        // KPIs
-        if (forecast.length > 0) {
-            const next = forecast[0];
-            document.getElementById('v21_next_month_name').textContent = next[C.PERIODO_DETALLE] || 'Mes Futuro';
-            document.getElementById('v21_next_month_val').textContent = ChartHelper.formatNumber(next[C.CASOS_ACTUAL]);
-
-            const up = Math.round(next[C.CASOS_ACTUAL] * 1.15);
-            const down = Math.round(next[C.CASOS_ACTUAL] * 0.85);
-            document.getElementById('v21_range_up').textContent = up;
-            document.getElementById('v21_range_down').textContent = down;
-        } else {
-            // Handle empty forecast gracefully if projections are missing
-            document.getElementById('v21_next_month_name').textContent = "Sin Proyección";
-            document.getElementById('v21_next_month_val').textContent = "--";
-        }
-
-        // --- Forecast Chart ---
-        const ctx = document.getElementById('v21_chart_forecast').getContext('2d');
-
-        const lineDataHistory = [...historyValues, forecastValues[0] || null];
-        // Only render forecast line if we have forecast values
-        const lineDataForecast = forecastValues.length > 0 ? [
-            ...Array(historyValues.length - 1).fill(null),
-            historyValues[historyValues.length - 1],
-            ...forecastValues
-        ] : [];
-
+        const ctx = document.getElementById('v21_chart_momentum').getContext('2d');
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Histórico (Real)',
-                        data: lineDataHistory,
-                        borderColor: '#94a3b8',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        fill: false
-                    },
-                    {
-                        label: 'Proyección (SARIMA)',
-                        data: lineDataForecast,
-                        borderColor: '#4f46e5',
-                        borderWidth: 4,
-                        borderDash: [5, 5],
-                        pointRadius: 6,
-                        pointBackgroundColor: '#4f46e5',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        fill: false
-                    }
-                ]
+                labels: momentumData.map(d => d[C.DELITO]),
+                datasets: [{
+                    label: '% Aceleración (CAGR 4S)',
+                    data: momentumData.map(d => d[C.T31_CAGR_4S]),
+                    backgroundColor: momentumData.map(d => d[C.T31_CAGR_4S] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
+                    borderRadius: 4
+                }]
             },
             options: {
+                indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { font: { family: 'Outfit', weight: '600' } } }
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#475569',
+                        font: { weight: 'bold', size: 10 },
+                        formatter: (v) => v.toFixed(1) + '%'
+                    }
                 },
                 scales: {
-                    y: { grid: { color: '#f1f5f9' }, title: { display: true, text: 'N° Casos Mensuales' } },
-                    x: { grid: { display: false } }
+                    x: {
+                        ticks: { font: { family: 'Outfit' } },
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Variación CAGR 4S (%)' }
+                    },
+                    y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600', size: 10 } } }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // IA Integration

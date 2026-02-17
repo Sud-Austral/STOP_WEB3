@@ -10,8 +10,9 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(31, 41, 55, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #1f2937; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Qué peso tiene nuestra comuna en la región?
         </h2>
@@ -74,6 +75,15 @@
                     Comunal (Últimas 12
                     Semanas)
                 </h3>
+
+                <!-- Explanation Box -->
+                <div
+                    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 10px; border-radius: 4px; margin-bottom: 1rem; font-size: 0.8rem; color: #475569;">
+                    <strong>¿Cómo se llena este gráfico?</strong><br>
+                    Este gráfico compara semanalmente los delitos de la comuna frente al total regional:
+                    <code>(Casos Comuna / Casos Región) * 100</code>.
+                </div>
+
                 <div class="chart-wrapper" style="height: 300px;">
                     <canvas id="v14_chart_evolution"></canvas>
                 </div>
@@ -109,7 +119,7 @@
     </div>
 
     <script>
-        (async function initVista14_V2() {
+        (async function initVista14_V3() {
             const waitForData = () => {
                 return new Promise((resolve) => {
                     const check = () => {
@@ -126,16 +136,10 @@
 
             document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-            // --- Regional Calculation ---
-            // Assuming S.allDataHistory contains regional totals too, OR we calculate it if we have all communes data.
-            // Simplified: Use a 'TOTAL_REGIONAL' mock or derived if available.
-            // If we don't have true regional data, we simulate it based on a fixed factor or we use provided column.
-            // Let's assume there is a column C.CASOS_SEM_REG (Regional Cases for that week)
-
             const currentSemanaVar = S.currentSemana;
             const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === currentSemanaVar) || {};
             const comCases = totalRow[C.CASOS_ACTUAL] || 0;
-            const regCases = totalRow[C.CASOS_SEM_REG] || (comCases * 5); // Fallback: assumes comuna is 20% of region if missing
+            const regCases = totalRow[C.CASOS_SEM_REG] || (comCases * 5);
 
             const pct = regCases > 0 ? ((comCases / regCases) * 100).toFixed(1) : '0.0';
 
@@ -147,16 +151,12 @@
             const prevRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (currentSemanaVar - 1));
             const prevPct = prevRow && prevRow[C.CASOS_SEM_REG] ? ((prevRow[C.CASOS_ACTUAL] / prevRow[C.CASOS_SEM_REG]) * 100).toFixed(1) : '--';
 
-            // Last Year
-            const currentYear = totalRow[C.ANIO];
-            const currentWeekNum = totalRow[C.SEMANA_ANO];
-            const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (currentYear - 1) && r[C.SEMANA_ANO] == currentWeekNum);
+            const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (totalRow[C.ANIO] - 1) && r[C.SEMANA_ANO] == totalRow[C.SEMANA_ANO]);
             const lastYearPct = lastYearRow && lastYearRow[C.CASOS_SEM_REG] ? ((lastYearRow[C.CASOS_ACTUAL] / lastYearRow[C.CASOS_SEM_REG]) * 100).toFixed(1) : '--';
 
-            // Acum
-            // Approximation for Acum: Sum of Comuna YTD / Sum of Region YTD
-            // Or use a column if exists.
-            const acumPct = totalRow['pct_acum_reg'] || '--'; // Mock column
+            const totalComAcum = S.allDataHistory_total.filter(r => r[C.ANIO] == totalRow[C.ANIO] && r[C.SEMANA_ANO] <= totalRow[C.SEMANA_ANO]).reduce((a, b) => a + (b[C.CASOS_ACTUAL] || 0), 0);
+            const totalRegAcum = S.allDataHistory_total.filter(r => r[C.ANIO] == totalRow[C.ANIO] && r[C.SEMANA_ANO] <= totalRow[C.SEMANA_ANO]).reduce((a, b) => a + (b[C.CASOS_SEM_REG] || (b[C.CASOS_ACTUAL] * 5)), 0);
+            const acumPct = totalRegAcum > 0 ? ((totalComAcum / totalRegAcum) * 100).toFixed(1) : '--';
 
             document.getElementById('v14_pct_prev').textContent = prevPct !== '--' ? `${prevPct}%` : '--';
             document.getElementById('v14_pct_lastyear').textContent = lastYearPct !== '--' ? `${lastYearPct}%` : '--';
@@ -215,7 +215,7 @@
             new Chart(lineCtx, {
                 type: 'line',
                 data: {
-                    labels: last12.map(r => `Sem ${r[C.SEMANA_ANO]}`), // Simple labels
+                    labels: last12.map(r => S.getDateLabel(r[C.ID_SEMANA])),
                     datasets: [{
                         label: '% Aporte Comunal',
                         data: pctsHistory,

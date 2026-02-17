@@ -10,8 +10,9 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #10b981; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Qué acciones debemos tomar ante estos datos?
         </h2>
@@ -46,6 +47,36 @@
     <div class="card" style="padding: 2rem; border-left: 6px solid #4f46e5;">
         <h3 style="margin: 0 0 1.5rem 0; font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-list-check"
                 style="color:#4f46e5;"></i> Acciones Tácticas Recomendadas</h3>
+
+        <!-- Methodology Explanation -->
+        <div
+            style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                <i class="fa-solid fa-lightbulb" style="color: var(--color-primary); margin-top: 2px;"></i>
+                <div>
+                    <h5 style="margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 800; color: var(--color-text);">
+                        ¿Cómo se generan estas recomendaciones?</h5>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.5;">
+                        El sistema analiza la <strong>variación porcentual semanal</strong> de casos totales y aplica
+                        umbrales tácticos:
+                    </p>
+                    <ul
+                        style="margin: 0.5rem 0 0 0; padding-left: 1.5rem; font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.6;">
+                        <li><strong style="color: #ef4444;">Alza crítica (&gt;10%)</strong>: Convocatoria de mesa
+                            jurídico-policial y refocalización inmediata de recursos.</li>
+                        <li><strong style="color: #10b981;">Baja sostenida (&lt;-5%)</strong>: Refuerzo comunicacional y
+                            mantención del esquema operativo exitoso.</li>
+                        <li><strong style="color: #f59e0b;">Estabilidad (±5%)</strong>: Monitoreo activo y verificación
+                            preventiva de factores de riesgo.</li>
+                    </ul>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.7rem; color: #94a3b8; font-style: italic;">
+                        Estas acciones se complementan siempre con verificación de infraestructura crítica (luminarias,
+                        sitios eriazos).
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div id="v23_action_list" style="display: flex; flex-direction: column; gap: 1rem;">
             <!-- Filled by JS -->
         </div>

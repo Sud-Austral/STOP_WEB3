@@ -10,13 +10,19 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #4f46e5; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Cómo nos comparamos con comunas similares?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Comparación con "comunas
-            gemelas" agrupadas por rango poblacional y perfil socioeconómico para una evaluación justa del desempeño.
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Análisis de desempeño relativo frente a comunas "gemelas" agrupadas por rango poblacional y perfil
+            socioeconómico para una evaluación justa del desempeño.
+            <span
+                style="display:block; margin-top:5px; font-weight:700; color:var(--color-primary); font-size:0.85rem;">
+                <i class="fa-regular fa-calendar"></i> <span id="v13_date_display">--</span>
+            </span>
         </p>
     </div>
 
@@ -31,253 +37,261 @@
             </div>
             <div id="v13_cluster_name" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">Rango: -- a -- hab.
             </div>
-
-            <!-- Cluster Performance KPIs -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
-                <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">CLÚSTER
-                        POBLACIONAL
-                    </div>
-                    <div id="v13_cluster_name" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">Rango:
-                        -- a -- hab.
-                    </div>
-                </div>
-                <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">POSICIÓN
-                        EN CLÚSTER
-                    </div>
-                    <div id="v13_cluster_rank" style="font-size: 1.5rem; font-weight: 900; color: #1e293b;">-- de --
-                    </div>
-                </div>
-                <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">ESTADO VS
-                        CLÚSTER
-                    </div>
-                    <div id="v13_cluster_status" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">
-                        Calculando...
-                    </div>
-                </div>
+        </div>
+        <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">POSICIÓN EN CLÚSTER
             </div>
-
-            <!-- Temporal Comparisons -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 2rem;">
-                <div
-                    style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
-                        Sem. Anterior</div>
-                    <div id="v13_rank_prev" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
-                </div>
-                <div
-                    style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
-                        Año Pasado</div>
-                    <div id="v13_rank_lastyear" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--
-                    </div>
-                </div>
-                <div
-                    style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
-                        Acum. Año</div>
-                    <div id="v13_rank_acum" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
-                </div>
-            </div>
-
-            <!-- Scatter Plot Map -->
-            <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                <h3 class="section-title mb-lg"
-                    style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
-                    <span><i class="fa-solid fa-chart-scatter" style="color: #4f46e5;"></i> Población vs Tasa
-                        Delictual (Clúster
-                        Regional)</span>
-                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Comuna actual destacada en
-                        <span style="color:#ef4444;">rojo</span>
-                    </div>
-                </h3>
-                <div class="chart-wrapper" style="height: 380px;">
-                    <canvas id="v13_chart_scatter"></canvas>
-                </div>
-            </div>
-
-            <!-- Cluster Historical Matrix -->
-            <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                <h4
-                    style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
-                    <span>Matriz de Riesgo Histórica (Ranking Clúster)</span>
-                    <span style="font-size: 0.7rem; font-weight: 600; color: #64748b;">COLOR = POSICIÓN EN
-                        CLÚSTER</span>
-                </h4>
-                <div id="v13_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-                    <!-- Filled by JS -->
-                </div>
-            </div>
-
-            <div
-                style="display: flex; gap: 1rem; align-items: center; padding: 1.25rem; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px;">
-                <div style="font-size: 2rem; color: #0369a1;">
-                    <i class="fa-solid fa-lightbulb"></i>
-                </div>
-                <div style="font-size: 0.9rem; color: #0c4a6e; line-height: 1.5;">
-                    <strong>Insight Metodológico:</strong> El análisis de clúster es superior al regional puro
-                    porque compara
-                    comunas con presupuestos y desafíos estructurales similares. Estar en los últimos lugares del
-                    clúster indica
-                    una falla de gestión relativa independiente del contexto país.
-                </div>
+            <div id="v13_cluster_rank" style="font-size: 1.5rem; font-weight: 900; color: #1e293b;">-- de --
             </div>
         </div>
-
-
-        <!-- Nota Metodológica -->
-        <div class="row" style="margin-top: 2rem;">
-            <div
-                style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-                <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Comparativa
-                    con Comunas Similares</strong>, permitiendo evaluar patrones y tendencias clave para la toma de
-                decisiones estratégicas basadas en evidencia.
+        <div class="card" style="padding: 1.5rem; border-bottom: 4px solid #4f46e5;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">ESTADO VS CLÚSTER
+            </div>
+            <div id="v13_cluster_status" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">
+                Calculando...
             </div>
         </div>
+    </div>
 
-        <script>
-            (async function initVista13_V2() {
-                const waitForData = () => {
-                    return new Promise((resolve) => {
-                        const check = () => {
-                            if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-                            else setTimeout(check, 100);
-                        };
-                        check();
-                    });
-                };
+    <!-- Temporal Comparisons -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 2rem;">
+        <div
+            style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                Sem. Anterior</div>
+            <div id="v13_rank_prev" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
+        </div>
+        <div
+            style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                Año Pasado</div>
+            <div id="v13_rank_lastyear" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--
+            </div>
+        </div>
+        <div
+            style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+            <div style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                Acum. Año</div>
+            <div id="v13_rank_acum" style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
+        </div>
+    </div>
 
-                await waitForData();
-                const S = window.STATE_DATA;
-                const C = window.COLS;
+    <!-- Ranking Evolution Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-arrow-trend-up" style="color: #4f46e5;"></i> Evolución de Posición en el
+                Clúster</span>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Histórico 12 Semanas (Rank 1 = Mayor
+                Tasa)</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 380px;">
+            <canvas id="v13_chart_rank_history"></canvas>
+        </div>
+    </div>
 
-                document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+    <!-- Cluster Historical Matrix -->
+    <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h4
+            style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
+            <span>Matriz de Riesgo Histórica (Ranking Clúster)</span>
+            <span style="font-size: 0.7rem; font-weight: 600; color: #64748b;">COLOR = POSICIÓN EN
+                CLÚSTER</span>
+        </h4>
+        <div id="v13_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
 
-                // Cluster and Population Logic
-                const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 2.5;
-                const poblacion = Math.round(factorPob * 100000);
-
-                // Define Cluster
-                let low = 0, high = 0;
-                if (poblacion < 20000) { low = 0; high = 20000; }
-                else if (poblacion < 50000) { low = 20001; high = 50000; }
-                else if (poblacion < 100000) { low = 50001; high = 100000; }
-                else if (poblacion < 250000) { low = 100001; high = 250000; }
-                else { low = 250001; high = 700000; }
-
-                document.getElementById('v13_cluster_name').textContent = `${(low / 1000).toFixed(0)}k a ${(high / 1000).toFixed(0)}k hab.`;
-
-                // Mock Cluster Rank (Using RANK_CLUSTER_PROY if Available)
-                const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-
-                let cRank = totalRow['ranking_cluster_sem'] || totalRow[C.RANK_CLUSTER_SEM] || 8;
-                const cTotal = S.totalComunasCluster || 24;
-
-                // Safety check
-                if (cRank > cTotal) cRank = cTotal;
-
-                document.getElementById('v13_cluster_rank').textContent = `${cRank} de ${cTotal}`;
-
-                const statusEl = document.getElementById('v13_cluster_status');
-                const cPct = cRank / cTotal;
-                if (cPct < 0.3) { statusEl.textContent = 'PEOR DEL CLÚSTER'; statusEl.style.color = '#ef4444'; }
-                else if (cPct > 0.7) { statusEl.textContent = 'LÍDER DE SEGURIDAD'; statusEl.style.color = '#10b981'; }
-                else { statusEl.textContent = 'DESEMPEÑO PROMEDIO'; statusEl.style.color = '#64748b'; }
-
-                // --- Temporal Comparisons ---
-                // Prev Week
-                const prevRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1));
-                const rankPrev = prevRow ? (prevRow['ranking_cluster_sem'] || prevRow[C.RANK_CLUSTER_SEM] || '--') : '--';
-
-                // Last Year
-                const currentYear = totalRow[C.ANIO];
-                const currentWeekNum = totalRow[C.SEMANA_ANO];
-                const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (currentYear - 1) && r[C.SEMANA_ANO] == currentWeekNum);
-                const rankLastYear = lastYearRow ? (lastYearRow['ranking_cluster_sem'] || lastYearRow[C.RANK_CLUSTER_SEM] || '--') : '--';
-
-                // Acumulado
-                const rankAcum = totalRow['ranking_cluster_acum'] || '--';
-
-                document.getElementById('v13_rank_prev').textContent = rankPrev;
-                document.getElementById('v13_rank_lastyear').textContent = rankLastYear;
-                document.getElementById('v13_rank_acum').textContent = rankAcum;
+    <div
+        style="display: flex; gap: 1rem; align-items: center; padding: 1.25rem; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 12px;">
+        <div style="font-size: 2rem; color: #0369a1;">
+            <i class="fa-solid fa-lightbulb"></i>
+        </div>
+        <div style="font-size: 0.9rem; color: #0c4a6e; line-height: 1.5;">
+            <strong>Insight Metodológico:</strong> El análisis de clúster es superior al regional puro
+            porque compara
+            comunas con presupuestos y desafíos estructurales similares. Estar en los últimos lugares del
+            clúster indica
+            una falla de gestión relativa independiente del contexto país.
+        </div>
+    </div>
 
 
-                // --- Scatter Plot Logic ---
-                const scatterData = Array.from({ length: cTotal - 1 }, (_, i) => ({
-                    x: low + Math.random() * (high - low),
-                    y: 30 + Math.random() * 50,
-                    label: `Comuna ${i + 1}`
-                }));
+    <!-- Nota Metodológica -->
+    <div class="row" style="margin-top: 2rem;">
+        <div
+            style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+            <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Comparativa
+                con Comunas Similares</strong>, permitiendo evaluar patrones y tendencias clave para la toma de
+            decisiones estratégicas basadas en evidencia.
+        </div>
+    </div>
 
-                const myTasa = (totalRow[C.CASOS_ACTUAL] / factorPob);
-                scatterData.push({ x: poblacion, y: myTasa, label: S.comunaName, isMain: true });
+    <script>
+        (async function initVista13_V2() {
+            const waitForData = () => {
+                return new Promise((resolve) => {
+                    const check = () => {
+                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                        else setTimeout(check, 100);
+                    };
+                    check();
+                });
+            };
 
-                const ctx = document.getElementById('v13_chart_scatter').getContext('2d');
-                new Chart(ctx, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [
-                            {
-                                label: 'Comunas del Clúster',
-                                data: scatterData.filter(d => !d.isMain).map(d => ({ x: d.x, y: d.y })),
-                                backgroundColor: '#94a3b8',
-                                pointLabels: scatterData.filter(d => !d.isMain).map(d => d.label)
-                            },
-                            {
-                                label: S.comunaName,
-                                data: [{ x: poblacion, y: myTasa }],
-                                backgroundColor: '#ef4444',
-                                pointRadius: 10,
-                                pointHoverRadius: 12,
-                                borderColor: '#fff',
-                                borderWidth: 3
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } },
-                            tooltip: {
-                                callbacks: {
-                                    label: (c) => ` ${c.dataset.label}: ${c.raw.y.toFixed(1)} casos x 100k`
-                                }
-                            }
+            await waitForData();
+            const S = window.STATE_DATA;
+            const C = window.COLS;
+
+            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+            // Date Display
+            const dateEl = document.getElementById('v13_date_display');
+            if (dateEl) {
+                const d = S.semanaDetalle || `Semana ${S.currentSemana}`;
+                const y = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.ANIO] || new Date().getFullYear();
+                dateEl.textContent = `${d} (${y})`;
+            }
+
+            // Cluster and Population Logic
+            const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 2.5;
+            const poblacion = Math.round(factorPob * 100000);
+
+            // Define Cluster (User Request Step 835)
+            // Try to get from data, else calc
+            const currentRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+            let clusterText = currentRow[C.CLASE_POBLACION];
+
+            if (!clusterText) {
+                if (poblacion > 100000) clusterText = 'Más de 100.000';
+                else if (poblacion >= 50000) clusterText = 'Entre 50.000 y 100.000';
+                else if (poblacion >= 20000) clusterText = 'Entre 20.000 y 50.000';
+                else if (poblacion >= 5000) clusterText = 'Entre 5.000 y 20.000';
+                else if (poblacion >= 1000) clusterText = 'Entre 1.000 y 5.000';
+                else clusterText = 'Menos de 1.000';
+            }
+
+            document.getElementById('v13_cluster_name').textContent = clusterText;
+
+            // Map back to ranges for Chart Axis
+            let low = 0, high = 2000000;
+            switch (clusterText) {
+                case 'Más de 100.000': low = 100000; high = Math.max(2000000, poblacion * 1.5); break; // Santiago!
+                case 'Entre 50.000 y 100.000': low = 50000; high = 100000; break;
+                case 'Entre 20.000 y 50.000': low = 20000; high = 50000; break;
+                case 'Entre 5.000 y 20.000': low = 5000; high = 20000; break;
+                case 'Entre 1.000 y 5.000': low = 1000; high = 5000; break;
+                case 'Menos de 1.000': low = 0; high = 1000; break;
+                default: low = 0; high = 100000; // Fallback
+            }
+
+            // Mock Cluster Rank (Using RANK_CLUSTER_PROY if Available)
+            const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+
+            let cRank = totalRow['ranking_cluster_sem'] || totalRow[C.RANK_CLUSTER_SEM] || 8;
+            const cTotal = S.totalComunasCluster || 24;
+
+            // Safety check
+            if (cRank > cTotal) cRank = cTotal;
+
+            document.getElementById('v13_cluster_rank').textContent = `${cRank} de ${cTotal}`;
+
+            const statusEl = document.getElementById('v13_cluster_status');
+            const cPct = cRank / cTotal;
+            if (cPct < 0.3) { statusEl.textContent = 'PEOR DEL CLÚSTER'; statusEl.style.color = '#ef4444'; }
+            else if (cPct > 0.7) { statusEl.textContent = 'LÍDER DE SEGURIDAD'; statusEl.style.color = '#10b981'; }
+            else { statusEl.textContent = 'DESEMPEÑO PROMEDIO'; statusEl.style.color = '#64748b'; }
+
+            // --- Temporal Comparisons ---
+            // Prev Week
+            const prevRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1));
+            const rankPrev = prevRow ? (prevRow['ranking_cluster_sem'] || prevRow[C.RANK_CLUSTER_SEM] || '--') : '--';
+
+            // Last Year
+            const currentYear = totalRow[C.ANIO];
+            const currentWeekNum = totalRow[C.SEMANA_ANO];
+            const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (currentYear - 1) && r[C.SEMANA_ANO] == currentWeekNum);
+            const rankLastYear = lastYearRow ? (lastYearRow['ranking_cluster_sem'] || lastYearRow[C.RANK_CLUSTER_SEM] || '--') : '--';
+
+            // Acumulado
+            const rankAcum = totalRow[C.RANK_CLUSTER_ACUM] || '--';
+
+            document.getElementById('v13_rank_prev').textContent = rankPrev;
+            document.getElementById('v13_rank_lastyear').textContent = rankLastYear;
+            document.getElementById('v13_rank_acum').textContent = rankAcum;
+
+
+            // --- Rank History Chart (User Request Change) ---
+            // Get last 12 weeks of ranking
+            const last12 = S.allDataHistory_total
+                .filter(r => r[C.ID_SEMANA] <= S.currentSemana && r[C.ID_SEMANA] > (S.currentSemana - 12))
+                .sort((a, b) => a[C.ID_SEMANA] - b[C.ID_SEMANA]);
+
+            const labels = last12.map(r => `Sem ${r[C.SEMANA_ANO]}`);
+            const dataRank = last12.map(r => r['ranking_cluster_sem'] || r[C.RANK_CLUSTER_SEM] || null);
+
+            const ctx = document.getElementById('v13_chart_rank_history').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Ranking (1 = Mayor Riesgo)',
+                            data: dataRank,
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderColor: '#4f46e5',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#4f46e5',
+                            pointRadius: 5,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            reverse: true, // Rank 1 at Top
+                            min: 1,
+                            max: cTotal,
+                            title: { display: true, text: 'Posición Ranking', font: { weight: 'bold' } },
+                            grid: { color: '#f1f5f9' },
+                            ticks: { stepSize: 1 }
                         },
-                        scales: {
-                            x: {
-                                type: 'linear',
-                                title: { display: true, text: 'Población Comunal', font: { family: 'Outfit', weight: '700' } },
-                                min: low,
-                                max: high,
-                                grid: { color: '#f1f5f9' }
-                            },
-                            y: {
-                                title: { display: true, text: 'Tasa x 100k hab.', font: { family: 'Outfit', weight: '700' } },
-                                grid: { color: '#f1f5f9' }
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (c) => `Posición: ${c.raw} de ${cTotal}`
                             }
                         }
                     }
-                });
+                }
+            });
 
-                // --- Historical Matrix (Cluster) ---
-                const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
-                const heatmap = document.getElementById('v13_heatmap_years');
+            // --- Historical Matrix (Cluster) ---
+            const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
+            const heatmap = document.getElementById('v13_heatmap_years');
 
-                heatmap.innerHTML = years.map(yr => {
-                    const rows = S.allDataHistory_total.filter(r => r[C.ANIO] === yr);
-                    if (rows.length === 0) return '';
+            heatmap.innerHTML = years.map(yr => {
+                const rows = S.allDataHistory_total.filter(r => r[C.ANIO] === yr);
+                if (rows.length === 0) return '';
 
-                    // Avg Cluster Rank
-                    const avgRank = Math.round(rows.reduce((a, b) => a + (b['ranking_cluster_sem'] || b[C.RANK_CLUSTER_SEM] || 12), 0) / rows.length);
+                // Avg Cluster Rank
+                const avgRank = Math.round(rows.reduce((a, b) => a + (b['ranking_cluster_sem'] || b[C.RANK_CLUSTER_SEM] || 12), 0) / rows.length);
 
-                    const color = avgRank <= (cTotal * 0.3) ? '#ef4444' : avgRank <= (cTotal * 0.7) ? '#f59e0b' : '#10b981';
+                const color = avgRank <= (cTotal * 0.3) ? '#ef4444' : avgRank <= (cTotal * 0.7) ? '#f59e0b' : '#10b981';
 
-                    return `
+                return `
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                     <div style="width: 38px; height: 38px; background: ${color}; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.2);">
                         ${avgRank}
@@ -285,16 +299,16 @@
                     <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
                 </div>
             `;
-                }).join('');
+            }).join('');
 
 
-                // IA Integration
-                if (typeof IAModule !== 'undefined') {
-                    IAModule.getInterpretation('vista13').then(txt => {
-                        const el = document.getElementById('v13_ia_analysis');
-                        if (el) el.innerHTML = txt;
-                    });
-                }
+            // IA Integration
+            if (typeof IAModule !== 'undefined') {
+                IAModule.getInterpretation('vista13').then(txt => {
+                    const el = document.getElementById('v13_ia_analysis');
+                    if (el) el.innerHTML = txt;
+                });
+            }
 
-            })();
-        </script>
+        })();
+    </script>

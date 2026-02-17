@@ -181,17 +181,7 @@ def ejecutar_proceso():
     df['id_periodo'] = df['año'] * 100 + df['mes']
     df['fecha'] = pd.to_datetime(df['año'].astype(str) + '-' + df['mes'].astype(str) + '-01')
 
-    # --- FIX SARIMA DYNAMIC DATE DETECTION ---
-    try:
-        max_real_date = df['fecha'].max()
-        print(f"   > Fecha Máxima Datos Reales: {max_real_date.date()}")
-        # Ajustar predicción para comenzar inmediatamente después del último dato real
-        start_fill = max_real_date + pd.DateOffset(months=1)
-        end_fill = start_fill + pd.DateOffset(months=11) # Proyectar 1 año
-        FILL_PERIODS = pd.date_range(start=start_fill, end=end_fill, freq='MS')
-        LIMIT_DATE = max_real_date.strftime('%Y-%m-%d')
-    except Exception as e:
-        print(f"   ! Error ajustando fechas dinámicas: {e}. Usando defaults.")
+    print(f"   > Usando Límites Estáticos: LIMIT_DATE={LIMIT_DATE}, START_FILL={START_FILL}")
 
     df['periodo_detalle'] = df['mes_nombre'] + ' ' + df['año'].astype(str)
 
@@ -276,6 +266,30 @@ def ejecutar_proceso():
         df = df.merge(pob.rename(columns={'Año': 'año', 'Factor Población': 'factor_poblacion'}), left_on=['codcom', 'año'], right_on=['Codcom', 'año'], how='left')
     except: df['factor_poblacion'] = 100000
 
+    # Determinar Clase Poblacional (User Request Step 835)
+    print("> Calculando Clase Poblacional...")
+    try:
+        if 'Población' in df.columns:
+            df.rename(columns={'Población': 'poblacion'}, inplace=True)
+        
+        if 'poblacion' not in df.columns:
+            # Fallback estimation based on factor
+            df['poblacion'] = df['factor_poblacion'] * 100000
+            
+        def get_clase_pob(p):
+            if pd.isna(p): return 'Sin Clasificar'
+            if p > 100000: return 'Más de 100.000'
+            if p >= 50000: return 'Entre 50.000 y 100.000'
+            if p >= 20000: return 'Entre 20.000 y 50.000'
+            if p >= 5000: return 'Entre 5.000 y 20.000'
+            if p >= 1000: return 'Entre 1.000 y 5.000'
+            return 'Menos de 1.000'
+            
+        df['clase_poblacion'] = df['poblacion'].apply(get_clase_pob)
+    except Exception as e:
+        print(f"⚠️ Error calculando clase_poblacion: {e}")
+        df['clase_poblacion'] = 'Más de 100.000' # Default fallback
+    
     print("> Calculando Rankings CEAD...")
     # Ranking Regional por Frecuencia (Descendente: Mayor delito = Rank 1)
     if 'Codreg' in df.columns:
@@ -309,7 +323,7 @@ def ejecutar_proceso():
         }
         
         # 2. Cargar Union
-        union_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".config", "union.json")
+        union_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config", "union.json")
         if os.path.exists(union_path):
             with open(union_path, 'r', encoding='utf-8') as f:
                 union_data = json.load(f)
@@ -367,6 +381,37 @@ def ejecutar_proceso():
     # Ranking Nacional
     df3['ranking_nacional_mensual'] = df3.groupby(['id_periodo', 'delito'])['tasa_cead'].rank(method='min', ascending=False)
     
+    # --- INFOGRAFIA V10 LOGIC (User Request: sobre/bajo 3-5%) ---
+    print("   > Calculando Infografía V10 (Diferencial Regional)...")
+    if 'Codreg' in df3.columns:
+        # Calc average rate per region/period/crime
+        # We need MEAN rate of communes in the region (or Weighted? lets do Mean of rates for simplicity as 'Promedio Regional')
+        avg_rates = df3.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].mean().reset_index(name='tasa_regional_promedio')
+        df3 = df3.merge(avg_rates, on=['id_periodo', 'delito', 'Codreg'], how='left')
+        
+        # Calc Diff %
+        # diff = (tasa_com - tasa_reg) / tasa_reg * 100
+        # Check div by zero
+        df3['diff_tasa_regional_pct'] = np.where(df3['tasa_regional_promedio'] > 0, ((df3['tasa_cead'] - df3['tasa_regional_promedio']) / df3['tasa_regional_promedio'] * 100), 0)
+        
+        # Classify
+        # > 5%: SOBRE_CRITICO
+        # 3-5%: SOBRE_ALERTA
+        # -3 to 3: PROMEDIO
+        # -5 to -3: BAJO_BUENO
+        # < -5: BAJO_DESTACADO
+        
+        conditions = [
+            (df3['diff_tasa_regional_pct'] > 5),
+            (df3['diff_tasa_regional_pct'] > 3),
+            (df3['diff_tasa_regional_pct'] < -5),
+            (df3['diff_tasa_regional_pct'] < -3)
+        ]
+        choices = ['SOBRE_CRITICO', 'SOBRE_ALERTA', 'BAJO_DESTACADO', 'BAJO_BUENO']
+        df3['infografia_v10'] = np.select(conditions, choices, default='PROMEDIO')
+    else:
+        df3['infografia_v10'] = 'N/A'
+    
     est = df3.groupby(['codcom', 'tipoValCod']).apply(calc_estacionalidad).reset_index()
     df3 = df3.merge(est, on=['codcom', 'tipoValCod'], how='left')
     
@@ -418,7 +463,7 @@ def ejecutar_proceso():
     }
     
     config_path = os.path.join(config_dir, "cead.json")
-    with open(r"D:\GitHub\STOP_WEB3\web_js\.config\cead.json", "w", encoding="utf-8") as f:
+    with open(r"D:\GitHub\STOP_WEB3\web_js\config\cead.json", "w", encoding="utf-8") as f:
         json.dump(config_data, f, indent=4, ensure_ascii=False)
     
     print(f"✅ Configuración guardada en: {config_path}")

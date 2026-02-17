@@ -2,7 +2,7 @@
 <div class="card mb-lg">
     <div class="location-source-row"
         style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-        <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px;">
+        <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
             <i class="fa-solid fa-timeline"></i> <span class="comuna-fill">CARGANDO...</span>
             <span style="margin: 0 8px; color: #cbd5e1;">/</span>
             <span>PERSPECTIVA HISTÓRICA 20 AÑOS</span>
@@ -10,8 +10,9 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #f59e0b; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Cómo ha cambiado la "huella delictual" en los últimos 20 años?
         </h2>
@@ -56,14 +57,18 @@
                     Transformación
                 </h4>
                 <p id="v7_transformation_text" style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: #475569;">
-                    Identificando cambios en
-                    la composición delictual histórica...</p>
+                    Este análisis permite identificar variaciones estructurales en la "huella delictual" de la zona. A
+                    diferencia de las alzas coyunturales, los cambios en la composición porcentual revelan
+                    transformaciones profundas en el ecosistema de seguridad que requieren adaptaciones de largo plazo
+                    en la estrategia preventiva.</p>
             </div>
 
-            <div class="alert alert--info" style="font-size: 0.8rem;">
-                <i class="fa-solid fa-circle-info"></i> <strong>Nota Metodológica:</strong> El gráfico muestra
-                el peso porcentual de cada delito sobre el total anual. Estas cifras se mantendrán fijas entre periodos
-                de entrega de información del CEAD (Desfase de 6 meses aprox).
+            <div class="methodological-note"
+                style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #475569; line-height: 1.5;">
+                <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>
+                <strong>Nota Metodológica:</strong> El gráfico representa el peso porcentual relativo de cada delito
+                sobre el total anual. Estas cifras se mantienen estables entre los ciclos de actualización del CEAD
+                (desfase operativo de aprox. 6 meses).
             </div>
         </div>
     </div>
@@ -91,8 +96,9 @@
         const years = [...new Set(S.allDataHistory.map(r => r[C.ANIO]))].sort();
         const topDelitos = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
             .map(delito => {
+                const firstRow = S.allDataHistory.find(r => r[C.DELITO] === delito);
                 const total = S.allDataHistory.filter(r => r[C.DELITO] === delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
-                return { delito, total };
+                return { delito, total, Delito_STOP_Ref: firstRow ? firstRow.Delito_STOP_Ref : null };
             })
             .sort((a, b) => b.total - a.total)
             .slice(0, 8); // Top 8 structural crimes
@@ -109,8 +115,9 @@
                 return yrTotal > 0 ? (dRow / yrTotal * 100) : 0;
             });
 
+            const label = d.Delito_STOP_Ref ? `${d.delito} / ${d.Delito_STOP_Ref}` : d.delito;
             return {
-                label: d.delito,
+                label: label,
                 data: percentages,
                 rawCounts: counts, // Custom property
                 backgroundColor: ChartHelper.colors.categorical[i % ChartHelper.colors.categorical.length],
@@ -158,7 +165,8 @@
             };
             const p1 = getPct(firstYr);
             const p2 = getPct(lastYr);
-            return { name: d.delito, p1, p2, diff: p2 - p1 };
+            const name = d.Delito_STOP_Ref ? `${d.delito} <span style="font-weight:400; color:#64748b;">/ ${d.Delito_STOP_Ref}</span>` : d.delito;
+            return { name: name, rawName: d.delito, p1, p2, diff: p2 - p1 };
         });
 
         table.innerHTML = structuralChanges.map(c => `
@@ -173,11 +181,9 @@
             </div>
         `).join('');
 
-        // --- Insight Text ---
-        const maxChange = structuralChanges.reduce((a, b) => Math.abs(a.diff) > Math.abs(b.diff) ? a : b);
-        document.getElementById('v7_transformation_text').innerHTML =
-            `La transformación más profunda se observa en <strong>${maxChange.name}</strong>, que ha variado su peso relativo en <strong>${Math.abs(maxChange.diff).toFixed(1)} puntos porcentuales</strong> en los últimos ${years.length} años. ` +
-            `Este cambio estructural indica una evolución en el perfil delictual de la comuna que trasciende las variaciones estacionales.`;
+        // --- Insight Text (Simplified for generic concept) ---
+        // document.getElementById('v7_transformation_text').innerHTML = 
+        //     `La transformación más profunda se observa en <strong>${maxChange.rawName}</strong>...`;
 
         // --- Chart ---
         const ctx = document.getElementById('v7_chart_stream').getContext('2d');
@@ -194,6 +200,7 @@
                 },
                 plugins: {
                     legend: { position: 'right', labels: { font: { family: 'Outfit', size: 10 } } },
+                    datalabels: { display: false },
                     tooltip: {
                         callbacks: {
                             label: function (context) {

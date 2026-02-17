@@ -296,6 +296,7 @@ body {
     border: 1px solid var(--color-border);
 }
 
+
 .card-title {
     font-size: 1.125rem;
     font-weight: 700;
@@ -1019,4 +1020,48 @@ body {
 
 .inline-variation .arrow {
     font-size: 0.7rem;
+}
+
+/* --- PDF & Print Optimizations --- */
+@media print {
+    body {
+        background: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .sidebar,
+    .nav-tabs,
+    .header,
+    .nota-metodologica {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        margin-bottom: 2rem !important;
+    }
+
+    .chart-wrapper {
+        page-break-inside: avoid !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        page-break-after: avoid !important;
+    }
+
+    .view-container {
+        padding: 0 !important;
+    }
 }

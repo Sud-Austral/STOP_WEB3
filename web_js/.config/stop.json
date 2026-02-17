@@ -1,5 +1,5 @@
 {
-    "timestamp": "2026-02-17T15:00:27.080423",
+    "timestamp": "2026-02-17T16:17:51.539121",
     "source": "proceso.py",
     "rows": 1244665,
     "columns": [
@@ -78,8 +78,10 @@
         "ranking_nacional_tasa_anual",
         "ranking_cluster_proy_anual",
         "ranking_cluster_semanal",
+        "ranking_cluster_acum",
         "ranking_cluster_tasa_sem",
         "ranking_cluster_tasa_anual",
+        "ranking_nacional_acum",
         "ranking_nacional_semanal_anterior",
         "ranking_regional_proy_anual_anterior",
         "ranking_nacional_proy_anual_anterior",
@@ -216,8 +218,10 @@
         "ranking_nacional_tasa_anual": "float64",
         "ranking_cluster_proy_anual": "float64",
         "ranking_cluster_semanal": "float64",
+        "ranking_cluster_acum": "float64",
         "ranking_cluster_tasa_sem": "float64",
         "ranking_cluster_tasa_anual": "float64",
+        "ranking_nacional_acum": "float64",
         "ranking_nacional_semanal_anterior": "float64",
         "ranking_regional_proy_anual_anterior": "float64",
         "ranking_nacional_proy_anual_anterior": "float64",

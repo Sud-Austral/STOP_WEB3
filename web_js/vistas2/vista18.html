@@ -10,8 +10,9 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #ef4444; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Está aumentando la violencia en los delitos?
         </h2>
@@ -19,9 +20,9 @@
             cualitativa del delito: Violentos vs Contra la Propiedad. La peligrosidad es más crítica que el volumen.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v18_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v18_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
         <!-- Pie Balance -->
@@ -47,33 +48,90 @@
         </div>
     </div>
 
-    <!-- Risk Factors Summary -->
-    <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-        <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0;">
-            <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 5px;">FACTOR ARMAS</div>
-            <div style="font-size: 1.1rem; font-weight: 900; color: #ef4444;"><i class="fa-solid fa-gun"></i> <span
-                    id="v18_f_weapons">REDUCIDO</span></div>
-        </div>
-        <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0;">
-            <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 5px;">RIESGO HOMICIDIO
+    <!-- Definición de Categorías -->
+    <div class="card" style="margin-top: 1.5rem; padding: 1.5rem; border: 1px solid #e2e8f0; background: #fff;">
+        <h4
+            style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i> Referencia de Categorización
+        </h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <!-- VIOLENTOS -->
+            <div
+                style="padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.1);">
+                <div
+                    style="font-weight: 800; color: #ef4444; font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> VIOLENTOS
+                </div>
+                <div style="font-size: 0.7rem; color: #6b7280; line-height: 1.5; margin-bottom: 8px;">
+                    Delitos con contacto físico directo o intimidación grave:
+                </div>
+                <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <li>Homicidios</li>
+                    <li>Violaciones</li>
+                    <li>Robo con Violencia</li>
+                    <li>Robo con Intimidación</li>
+                    <li>Lesiones Graves</li>
+                    <li>Secuestro</li>
+                    <li>Extorsión</li>
+                </ul>
             </div>
-            <div style="font-size: 1.1rem; font-weight: 900; color: #f59e0b;"><i class="fa-solid fa-skull"></i> <span
-                    id="v18_f_homicide">MODERADO</span></div>
-        </div>
-        <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid #e2e8f0;">
-            <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 5px;">VIOLENCIA DE GÉNERO
+
+            <!-- A LA PROPIEDAD -->
+            <div
+                style="padding: 1rem; background: rgba(59, 130, 246, 0.05); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.1);">
+                <div
+                    style="font-weight: 800; color: #3b82f6; font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-house-lock"></i> A LA PROPIEDAD
+                </div>
+                <div style="font-size: 0.7rem; color: #6b7280; line-height: 1.5; margin-bottom: 8px;">
+                    Delitos contra bienes sin violencia directa:
+                </div>
+                <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <li>Hurtos (simple y agravado)</li>
+                    <li>Robo en Lugar No Habitado</li>
+                    <li>Robo en Lugar Habitado</li>
+                    <li>Robo de Vehículo Motorizado</li>
+                    <li>Robo de Accesorios de Vehículo</li>
+                    <li>Receptación</li>
+                </ul>
             </div>
-            <div style="font-size: 1.1rem; font-weight: 900; color: #3b82f6;"><i
-                    class="fa-solid fa-person-breastfeeding"></i> <span id="v18_f_gender">MONITOREO</span></div>
+
+            <!-- OTROS -->
+            <div
+                style="padding: 1rem; background: rgba(148, 163, 184, 0.05); border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.1);">
+                <div
+                    style="font-weight: 800; color: #64748b; font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-ellipsis"></i> OTROS
+                </div>
+                <div style="font-size: 0.7rem; color: #6b7280; line-height: 1.5; margin-bottom: 8px;">
+                    Delitos que no clasifican en categorías tácticas principales:
+                </div>
+                <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <li>Daños</li>
+                    <li>Amenazas</li>
+                    <li>Estafas y Fraudes</li>
+                    <li>Delitos Económicos</li>
+                    <li>Delitos Informáticos</li>
+                    <li>Faltas y Contravenciones</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
 
 <!-- Nota Metodológica -->
-<div class="row" style="margin-top: 2rem;">
-    <div style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Gravedad por Delito</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas basadas en evidencia.
+<div class="methodological-note"
+    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1.25rem; border-radius: 0 8px 8px 0; margin-top: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-top: 3px;"></i>
+    <div>
+        <h4 style="margin: 0 0 0.25rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-text);">Nota
+            Metodológica</h4>
+        <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5;">
+            El <strong>Índice de Violencia</strong> se calcula como la proporción de casos violentos (Homicidios, Robos
+            con Violencia, etc.) sobre el total de delitos reportados. Este indicador permite priorizar la gestión
+            táctica sobre la severidad delictual más allá del volumen total de infracciones.
+        </p>
     </div>
 </div>
 
@@ -167,7 +225,7 @@
             }
         });
 
-    
+
         // IA Integration
         if (typeof IAModule !== 'undefined') {
             IAModule.getInterpretation('vista18').then(txt => {

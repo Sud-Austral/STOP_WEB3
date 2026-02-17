@@ -208,7 +208,10 @@ const App = {
                     ChartEnhancer.formatViewNumbers();
                     ChartEnhancer.applyVariationColors();
                 }
-            }, 500);
+
+                // Notify that view is fully ready for other modules (like AI)
+                window.dispatchEvent(new CustomEvent('viewLoaded', { detail: { viewName } }));
+            }, 600);
 
         } catch (error) {
             console.error('Error loading view:', error);

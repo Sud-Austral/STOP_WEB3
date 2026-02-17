@@ -111,22 +111,127 @@ window.PDFModuleV2 = {
                 // Add Image with Slicing Support (using Base Module logic)
                 // Note: base.addSmartSlices might need adaptation if not available, 
                 // but we assuming we can reuse or implement simple addImage here.
-
-                // Simple Full Page Logic for now (Vistas 2 are single page designed usually)
-                // Using Header/Footer V2
-                this.addHeaderV2(pdf, viewNum, sectionTitle);
-                this.addFooterV2(pdf, pageCount + i); // Continuous pagination? Or View Based? Let's use View ID for reference
-
                 // Add Content
                 // Content starts below header (15mm)
                 const yOffset = 18;
-                pdf.addImage(imgData, 'JPEG', 0, yOffset, 210, imgHeight);
+                const footerHeight = 15; // Space for footer
+                const availableHeight = 297 - yOffset - footerHeight; // ~264mm
 
-                // Check if image overflows A4 (minus header/footer)
-                // If yes, multi-page logic would be needed. 
-                // For "Vistas 2", most are designed as dashboards fitting screens. 
-                // We'll scale to fit height if necessary or split.
-                // Assuming "One Pager" design for most.
+                if (imgHeight > availableHeight) {
+                    console.log(`View ${viewNum} overflow (Height: ${imgHeight}mm > ${availableHeight}mm). Splitting...`);
+
+                    // Header for first page
+                    this.addHeaderV2(pdf, viewNum, sectionTitle);
+                    this.addFooterV2(pdf, pageCount); // Footer for first page part
+
+                    // Add Slices
+                    // We need to pass yOffset. base.addSmartSlices usually assumes full page or custom logic.
+                    // Let's adapt: The first slice starts at yOffset. Subsequent slices on new pages.
+
+                    // Use a slightly modified version of manual slicing if base logic is too specific to V1
+                    // Logic:
+                    // 1. First page: Crop from 0 to pixel equivalent of availableHeight
+                    // 2. Add Page
+                    // 3. Second page: Crop remaining... 
+
+                    // For robustness and reused logic, let's look at base implementation:
+                    // It usually adds slices to *current* page.
+
+                    // NOTE: Since we are in an async loop and jsPDF is stateful, we can try using the base function.
+                    // But we want V2 headers/footers on new pages too.
+
+                    let remainingHeightPx = canvas.height;
+                    let currentYPx = 0;
+                    let pageIndex = 0;
+
+                    // Pixels to MM factor for PDF
+                    const pxToMm = 25.4 / 96; // Approximation, better to derive from canvas ratio
+                    // Actually: imgHeight (mm) / canvas.height (px) = ratio
+                    const mmPerPx = imgHeight / canvas.height;
+
+                    while (remainingHeightPx > 0) {
+                        // Max height for this page
+                        // First page has header (15mm) + footer space. New pages also have header? 
+                        // Let's assume generic header on subsequent pages.
+
+                        const isFirst = pageIndex === 0;
+                        if (!isFirst) {
+                            pdf.addPage();
+                            this.addHeaderV2(pdf, viewNum, `${sectionTitle} (Cont.)`);
+                            this.addFooterV2(pdf, pageCount + pageIndex);
+                        }
+
+                        const currentHeaderH = 15;
+                        const currentFooterH = 15;
+                        const currentYOffset = 18; // 15 + padding
+                        const maxContentHeightMm = 297 - currentYOffset - currentFooterH;
+
+                        // How much source image (in px) fits in maxContentHeightMm?
+                        const maxSourcePx = maxContentHeightMm / mmPerPx;
+
+                        const sliceHeightPx = Math.min(remainingHeightPx, maxSourcePx);
+                        const sliceHeightMm = sliceHeightPx * mmPerPx;
+
+                        // Create canvas slice
+                        const sliceCanvas = document.createElement('canvas');
+                        sliceCanvas.width = canvas.width;
+                        sliceCanvas.height = sliceHeightPx;
+                        const ctx = sliceCanvas.getContext('2d');
+
+                        ctx.drawImage(canvas,
+                            0, currentYPx, canvas.width, sliceHeightPx,
+                            0, 0, canvas.width, sliceHeightPx
+                        );
+
+                        const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.95);
+
+                        // Center horizontally
+                        // If width is standard, aspect ratio is preserved.
+                        // Width on PDF:
+                        const pdfWidth = 210;
+
+                        pdf.addImage(sliceImg, 'JPEG', 0, currentYOffset, pdfWidth, sliceHeightMm);
+
+                        currentYPx += sliceHeightPx;
+                        remainingHeightPx -= sliceHeightPx;
+                        pageIndex++;
+                    }
+
+                    // Update main page counter loop to account for extra pages?
+                    // Note: pdf_vistas2.js loop uses `i` but page numbering `pageCount` isn't auto-incremented by PDF instance.
+                    // We need to return the number of extra pages added to update global counter if strictly tracking.
+                    // But here pageCount is just a local var passed + i. 
+                    // To be correct, we should update a shared counter. 
+                    // For now, let's just let pagination be sequential per view.
+
+                } else {
+                    // Fits on one page (Scaled or Native)
+                    // ... (keep scaling logic for minor overflows) ...
+
+                    // Only apply scaling if minor overflow, else it should have been caught above.
+                    // Since we improved criteria, let's keep the minor scaling just in case.
+
+                    let finalWidth = 210;
+                    let finalHeight = imgHeight;
+                    let xOffset = 0;
+
+                    // Recalculate if it STILL overflows slightly (e.g. edge cases not caught by slicing threshold if any)
+                    // But assume slicing handled big overflows. 
+
+                    // If it is SMALLER than page, just add.
+                    if (imgHeight > availableHeight) {
+                        // Fallback scale for small overflows < threshold if not sliced
+                        const ratio = availableHeight / imgHeight;
+                        finalHeight = availableHeight;
+                        finalWidth = 210 * ratio;
+                        xOffset = (210 - finalWidth) / 2;
+                    }
+
+                    this.addHeaderV2(pdf, viewNum, sectionTitle);
+                    this.addFooterV2(pdf, pageCount + i);
+
+                    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+                }
             }
 
             // 5. Back Cover

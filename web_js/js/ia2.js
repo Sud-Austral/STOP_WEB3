@@ -30,6 +30,11 @@ window.IAModuleV2 = {
                 this.updateAllViews();
             }
         });
+
+        // REACTION: Populate views as they are loaded into the DOM
+        window.addEventListener('viewLoaded', () => {
+            this.updateAllViews();
+        });
     },
 
     loadCache() {
@@ -142,6 +147,7 @@ window.IAModuleV2 = {
         }
 
         try {
+            console.log("Comienza el prompt")
             const prompt = `
 Eres un analista de inteligencia policial experto en el sistema STOP y CEAD de Carabineros de Chile.
 Genera interpretaciones estratégicas breves para el dashboard de seguridad de la comuna de ${context.comuna}.
@@ -198,6 +204,7 @@ JSON CRUDO con claves "vista1" a "vista25". Sin markdown.
             console.error('IA Error:', e);
             this.updateAllViews(true);
         } finally {
+            console.log("Termina el prompt")
             this.fetching = false;
         }
     },

@@ -93,6 +93,7 @@ window.COLS = {
     RANK_NAC_SEM_ANT: 'ranking_nacional_semanal_anterior',
     RANK_NAC_PROY: 'ranking_nacional_proy_anual',
     RANK_NAC_PROY_ANT: 'ranking_nacional_proy_anual_anterior',
+    RANK_NAC_ACUM: 'ranking_nacional_acum',
 
     // Rankings Tasa (Nuevos)
     RANK_REG_TASA_SEM: 'ranking_regional_tasa_sem',
@@ -109,6 +110,7 @@ window.COLS = {
     RANK_CLUSTER_PROY_ANT: 'ranking_cluster_proy_anual_anterior',
     RANK_CLUSTER_SEM: 'ranking_cluster_semanal',
     RANK_CLUSTER_SEM_ANT: 'ranking_cluster_semanal_anterior',
+    RANK_CLUSTER_ACUM: 'ranking_cluster_acum',
 
     // Diagnósticos T19/T20
     T19_DELITO: 't19_delito_sem',

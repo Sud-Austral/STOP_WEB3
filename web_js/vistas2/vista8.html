@@ -10,8 +10,9 @@
         <div id="sourceBadgeContainer"></div>
     </div>
 
-    <div class="question-section" style="background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #4f46e5; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+    <div class="question-section"
+        style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Qué delitos suelen moverse juntos?
         </h2>
@@ -109,9 +110,18 @@
 
         // --- Correlation Logic ---
         const last12Weeks = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
-        const topDelitos = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
-            .map(d => ({ name: d, total: S.allDataHistory.filter(r => r[C.DELITO] === d && r[C.ID_SEMANA] === S.currentSemana).reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0) }))
-            .sort((a, b) => b.total - a.total).slice(0, 8).map(d => d.name);
+        const topDelitosData = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
+            .map(d => {
+                const total = S.allDataHistory
+                    .filter(r => r[C.DELITO] === d && last12Weeks.includes(r[C.ID_SEMANA]))
+                    .reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
+                return { name: d, total };
+            })
+            .filter(d => d.name !== 'Total' && d.name !== 'TOTAL') // Exclude explicit totals
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 8);
+
+        const topDelitos = topDelitosData.map(d => d.name);
 
         const series = topDelitos.map(delito => {
             return last12Weeks.map(id => {
@@ -122,10 +132,13 @@
 
         const pearson = (x, y) => {
             const n = x.length;
-            const mx = x.reduce((a, b) => a + b, 0) / n, my = y.reduce((a, b) => a + b, 0) / n;
+            if (n === 0) return 0;
+            const mx = x.reduce((a, b) => a + b, 0) / n;
+            const my = y.reduce((a, b) => a + b, 0) / n;
             const num = x.reduce((s, _, i) => s + (x[i] - mx) * (y[i] - my), 0);
             const den = Math.sqrt(x.reduce((s, v) => s + Math.pow(v - mx, 2), 0)) * Math.sqrt(y.reduce((s, v) => s + Math.pow(v - my, 2), 0));
-            return den === 0 ? 0 : num / den;
+            if (den === 0) return 0; // Prevent NaN for constant arrays
+            return num / den;
         };
 
         const matrix = series.map((s1, i) => series.map((s2, j) => i === j ? 1 : pearson(s1, s2)));
@@ -133,10 +146,17 @@
         // --- Render Heatmap ---
         const head = document.getElementById('v8_head');
         const body = document.getElementById('v8_body');
-        head.innerHTML = '<th></th>' + displayNames.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 2px; border: 1px solid #f1f5f9; background: #f8fafc; vertical-align: bottom; height: auto;"><div style="white-space: normal; text-align: center; width: 100%; min-width: 60px; line-height: 1.1;">${n}</div></th>`).join('');
+
+        if (topDelitos.length === 0) {
+            body.innerHTML = '<tr><td colspan="9" style="padding:20px; text-align:center; color:#64748b;">No hay suficientes datos para generar correlaciones.</td></tr>';
+            return;
+        }
+
+        head.innerHTML = '<th></th>' + topDelitos.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 2px; border: 1px solid #f1f5f9; background: #f8fafc; vertical-align: bottom; height: auto;"><div style="white-space: normal; text-align: center; width: 100%; min-width: 60px; line-height: 1.1;">${n}</div></th>`).join('');
 
         const getColor = (v) => {
             const val = Math.abs(v);
+            if (isNaN(val)) return { bg: '#f8fafc', text: '#94a3b8' };
             if (val >= 0.8) return { bg: '#ef4444', text: 'white' }; // Red
             if (val >= 0.6) return { bg: '#f97316', text: 'white' }; // Orange
             if (val >= 0.4) return { bg: '#fcd34d', text: '#78350f' }; // Yellow
@@ -146,7 +166,7 @@
 
         body.innerHTML = matrix.map((row, i) => `
             <tr>
-                <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc; white-space: normal; max-width: 150px;">${displayNames[i]}</td>
+                <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc; white-space: normal; max-width: 150px;">${topDelitos[i]}</td>
                 ${row.map((v, j) => {
             if (i === j) return `<td style="background: #cbd5e1; color: #64748b; font-size: 0.7rem; font-weight: 600; text-align: center; border: 1px solid #fff;">-</td>`;
             const c = getColor(v);

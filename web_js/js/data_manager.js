@@ -290,7 +290,7 @@ window.DataManager = {
                 const year = row.año || row['año'];
 
                 if (weekNum && year) {
-                    return `SEM ${String(weekNum).padStart(2, '0')}/${year}`;
+                    return `Semana ${String(weekNum).padStart(2, '0')}/${year}`;
                 }
 
                 // Fallback: YYYY/MM

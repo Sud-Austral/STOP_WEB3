@@ -85,7 +85,14 @@
 
         fillHeaders(comuna, semana) {
             document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = comuna || 'Cargando...');
-            document.querySelectorAll('.semana-fill').forEach(el => el.textContent = semana || '--');
+
+            // Standardize week format to "Semana XX/YYYY"
+            let formattedSemana = semana || '--';
+            if (formattedSemana && formattedSemana.includes(' del ')) {
+                formattedSemana = formattedSemana.replace(/ del /i, '/').replace(/Semana /i, 'Semana ');
+            }
+
+            document.querySelectorAll('.semana-fill').forEach(el => el.textContent = formattedSemana);
         },
 
         formatNumber(n) { return (n !== null && n !== undefined) ? fmt.format(n) : '--'; }
