@@ -301,10 +301,15 @@ def ejecutar_proceso():
         df = df.merge(total_anual, on=['codcom', 'delito', 'año'], how='left')
         
         # Rankear sobre dataframe reducido para eficiencia y luego merge
-        ranking_anual_df = df[['codcom', 'Codreg', 'delito', 'año', 'total_año_real']].drop_duplicates()
-        ranking_anual_df['ranking_regional_anual_metric'] = ranking_anual_df.groupby(['Codreg', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
+        ranking_anual_df = df[['codcom', 'Codreg', 'delito', 'año', 'total_año_real', 'factor_poblacion']].drop_duplicates()
         
-        df = df.merge(ranking_anual_df[['codcom', 'delito', 'año', 'ranking_regional_anual_metric']], on=['codcom', 'delito', 'año'], how='left')
+        # Tasa Anual
+        ranking_anual_df['tasa_anual_real'] = ranking_anual_df['total_año_real'] / ranking_anual_df['factor_poblacion'].replace(0, np.nan)
+        
+        ranking_anual_df['ranking_regional_anual_metric'] = ranking_anual_df.groupby(['Codreg', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
+        ranking_anual_df['ranking_regional_anual_tasa'] = ranking_anual_df.groupby(['Codreg', 'delito', 'año'])['tasa_anual_real'].rank(method='dense', ascending=False)
+        
+        df = df.merge(ranking_anual_df[['codcom', 'delito', 'año', 'ranking_regional_anual_metric', 'ranking_regional_anual_tasa']], on=['codcom', 'delito', 'año'], how='left')
         
     # Ranking Nacional Mensual
     df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'])['frecuencia'].rank(method='dense', ascending=False)

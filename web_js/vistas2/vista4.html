@@ -70,12 +70,21 @@
 </div>
 
 
+<!-- Nota Metodológica -->
 <div class="methodological-note"
-    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #475569; line-height: 1.5; margin-top: 2rem;">
-    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>
-    <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Estacionalidad
-        Mensual</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
-    basadas en evidencia.
+    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1.25rem; border-radius: 0 8px 8px 0; margin-top: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-top: 3px;"></i>
+    <div>
+        <h4 style="margin: 0 0 0.25rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-text);">Explicación
+            del Índice Estacional (100%)</h4>
+        <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5;">
+            El índice compara cada mes contra el promedio anual (línea del 100%). Para detectar patrones confiables,
+            cruzamos dos fuentes:
+            <br>• <strong>CEAD:</strong> Visión estructural basada en <strong>20 años de datos históricos</strong>.
+            <br>• <strong>STOP:</strong> Visión operativa reciente basada en datos <strong>desde el año 2023</strong>.
+            <br>Si ambas líneas sobresalen del 100% en el mismo mes, indica un patrón de alta certeza estadística.
+        </p>
+    </div>
 </div>
 
 <script>
@@ -130,7 +139,7 @@
         // STOP data might need 'mes' from date if not explicit. Assuming 'mes' exists as per config.
         const idxSTOP = calcSeasonalIndex(S_STOP.allDataHistory_total, 'mes', C_STOP.CASOS_ACTUAL);
 
-        const monthNames = ['En', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
         // --- Top Months (Using CEAD as primary reference for list, but considering both) ---
         // We stick to CEAD for the "Top Months" list to keep it simple, or average them?

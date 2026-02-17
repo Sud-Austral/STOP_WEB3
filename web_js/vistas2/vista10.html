@@ -212,8 +212,9 @@
         // Tasa comparison
         const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
         const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
-        const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob * 100000).toFixed(1); // Corrección fórmula tasa
-        const tasaReg = ((totalRow[C.CASOS_SEM_REG] || 5000) / (S.totalPobReg || 8000000) * 100000).toFixed(1);
+        const tasaCom = (totalRow[C.CASOS_ACTUAL] / (factorPob || 1)).toFixed(1);
+        const factorPobReg = (S.totalPobReg || 8000000) / 100000;
+        const tasaReg = ((totalRow[C.CASOS_SEM_REG] || 5000) / factorPobReg).toFixed(1);
 
         document.getElementById('v10_tasa_com').textContent = tasaCom;
         document.getElementById('v10_tasa_reg').textContent = tasaReg;
@@ -255,7 +256,7 @@
             infoCard.style.borderLeft = "4px solid #f97316";
         } else if (diffPct < -5) {
             infoStatus.innerHTML = `<span style="color:#10b981;">BAJO REGIÓN (>5%)</span>`;
-            infoIcon.innerHTML = `<i class="fa-solid fa-arrow-trend-down" style="color:#10b981;"></i>`;
+            infoIcon.innerHTML = `<i class="fa-solid fa-arrow_trend-down" style="color:#10b981;"></i>`;
             infoCard.style.borderLeft = "4px solid #10b981";
         } else if (diffPct < -3) {
             infoStatus.innerHTML = `<span style="color:#3b82f6;">BAJO REGIÓN (3-5%)</span>`;

@@ -184,21 +184,15 @@
         });
 
 
-        // --- Historical Matrix (Simulated) ---
-        const years = Array.from({ length: 10 }, (_, i) => 2016 + i);
-        const heatmap = document.getElementById('v16_heatmap_years');
 
-        heatmap.innerHTML = years.map(yr => {
-            // TODO: Connect to real historical ranking data
-            return `
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                    <div style="width: 38px; height: 38px; background: #e2e8f0; color: #64748b; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; border: 1px dashed #cbd5e1;">
-                        --
-                    </div>
-                    <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
-                </div>
-                `;
-        }).join('');
+        // --- Historical Matrix (Data Not Available) ---
+        const heatmap = document.getElementById('v16_heatmap_years');
+        heatmap.innerHTML = `
+            <div style="grid-column: 1/-1; padding: 2rem; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                <i class="fa-solid fa-database" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.3;"></i>
+                <div>Datos históricos de ranking no disponibles actualmente</div>
+            </div>
+        `;
 
 
         // IA Integration

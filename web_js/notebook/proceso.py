@@ -410,8 +410,25 @@ df3['proyeccion_anual'] = df3['acumulado_anual'] * df3['factor_expansion_anual']
 
 # Tasas
 # Usar factor_poblacion para tasas
-df3['tasa_semanal'] = df3['frecuencia'] / df3['factor_poblacion'] * 100000 
-df3['tasa_proyectada_anual'] = df3['proyeccion_anual'] / df3['factor_poblacion'] * 100000
+df3['tasa_semanal'] = df3['frecuencia'] / df3['factor_poblacion']
+df3['tasa_proyectada_anual'] = df3['proyeccion_anual'] / df3['factor_poblacion']
+
+# Tasas Regionales y Nacionales por Delito y Semana
+print("Calculando Tasas Regionales y Nacionales por Delito...")
+# Regional
+# Sumar factores de poblacion unicos por comuna dentro de la region
+df_reg_pob = df3.groupby(['Codreg', 'id_semana', 'codcom'])['factor_poblacion'].max().reset_index().groupby(['Codreg', 'id_semana'])['factor_poblacion'].sum().reset_index(name='pob_total_reg')
+df_reg_cases = df3.groupby(['Codreg', 'id_semana', 'delito'])['frecuencia'].sum().reset_index(name='frecuencia_total_reg')
+df_reg_tasa = df_reg_cases.merge(df_reg_pob, on=['Codreg', 'id_semana'])
+df_reg_tasa['tasa_semanal_regional'] = df_reg_tasa['frecuencia_total_reg'] / df_reg_tasa['pob_total_reg'].replace(0, np.nan)
+df3 = df3.merge(df_reg_tasa[['Codreg', 'id_semana', 'delito', 'tasa_semanal_regional']], on=['Codreg', 'id_semana', 'delito'], how='left')
+
+# Nacional
+df_nac_pob = df3.groupby(['id_semana', 'codcom'])['factor_poblacion'].max().reset_index().groupby(['id_semana'])['factor_poblacion'].sum().reset_index(name='pob_total_nac')
+df_nac_cases = df3.groupby(['id_semana', 'delito'])['frecuencia'].sum().reset_index(name='frecuencia_total_nac')
+df_nac_tasa = df_nac_cases.merge(df_nac_pob, on=['id_semana'])
+df_nac_tasa['tasa_semanal_nacional'] = df_nac_tasa['frecuencia_total_nac'] / df_nac_tasa['pob_total_nac'].replace(0, np.nan)
+df3 = df3.merge(df_nac_tasa[['id_semana', 'delito', 'tasa_semanal_nacional']], on=['id_semana', 'delito'], how='left')
 
 # Rankings (Regional/Nacional/Cluster Proy) - VOLUMEN
 if 'Codreg' in df3.columns:

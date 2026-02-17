@@ -94,49 +94,42 @@
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // --- Data Simulation (since arrests are not always in basic view) ---
-
-
-        // --- Data Simulation (using year aggregation) ---
+        // --- Real Data Processing (No Simulation) ---
         let years = [];
         let data = [];
 
         try {
-            // Attempt to get real years
+            // Get real years from data
             years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort().slice(-10);
 
-            // If too few years (e.g. initial load or empty data), mock the last 5 years
-            if (years.length < 2) {
-                const curYear = new Date().getFullYear();
-                years = Array.from({ length: 5 }, (_, i) => curYear - 4 + i);
+            // Only proceed if we have actual data
+            if (years.length > 0) {
+                data = years.map(yr => {
+                    // Aggregate cases for the entire year
+                    const yearRows = S.allDataHistory_total.filter(r => r[C.ANIO] === yr);
+                    const cases = yearRows.reduce((acc, r) => acc + (r[C.CASOS_ACTUAL] || 0), 0);
+
+                    // Try to get arrest data if available in the dataset
+                    const arrests = yearRows.reduce((acc, r) => acc + (r[C.DETENIDOS] || 0), 0);
+                    const ratio = cases > 0 ? (arrests / cases * 100) : 0;
+
+                    return { year: yr, cases, arrests, ratio };
+                }).filter(d => d.cases > 0); // Only include years with actual data
             }
-
-            data = years.map(yr => {
-                // Aggregate cases for the entire year
-                let cases = 0;
-                if (S.allDataHistory_total && S.allDataHistory_total.length > 0) {
-                    cases = S.allDataHistory_total
-                        .filter(r => r[C.ANIO] === yr)
-                        .reduce((acc, r) => acc + (r[C.CASOS_ACTUAL] || 0), 0);
-                }
-
-                // If cases is 0 or missing, mock it for visualization
-                if (!cases || cases === 0) cases = 500 + Math.floor(Math.random() * 300);
-
-                // Simulated arrest ratio between 15% and 35%
-                const ratio = 18 + Math.random() * 12;
-                const arrests = Math.round(cases * (ratio / 100));
-
-                return { year: yr, cases, arrests, ratio };
-            });
-
         } catch (e) {
-            console.warn("Vista15: Error processing data. Using fallbacks.", e);
-            // Fallback completely
-            const curYear = new Date().getFullYear();
-            years = [curYear - 2, curYear - 1, curYear];
-            data = years.map(yr => ({ year: yr, cases: 800, arrests: 200, ratio: 25.0 }));
+            console.warn('Vista 15: Error processing data', e);
         }
+
+        // If no valid data, show message instead of rendering
+        if (data.length === 0) {
+            document.getElementById('v15_casos').textContent = '--';
+            document.getElementById('v15_detenidos').textContent = '--';
+            document.getElementById('v15_ratio').textContent = '--';
+            console.warn('Vista 15: No hay datos disponibles para mostrar');
+            return;
+        }
+
+        // Continue with rendering if we have data
 
         if (data.length > 0) {
             const current = data[data.length - 1];

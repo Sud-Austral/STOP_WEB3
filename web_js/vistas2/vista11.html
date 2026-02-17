@@ -30,25 +30,25 @@
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
                 Promedio Posición</div>
-            <div id="v11_stat_avg" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+            <div id="v11_stat_avg" style="font-size: 1.4rem; font-weight: 950; color: #1e293b;">--</div>
         </div>
         <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: #94a3b8 solid 4px;">
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
-                Moda Posición</div>
-            <div id="v11_stat_mode" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+                Posición Actual</div>
+            <div id="v11_stat_current" style="font-size: 1.4rem; font-weight: 950; color: #1e293b;">--</div>
         </div>
         <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #10b981;">
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
                 Mejor Posición</div>
-            <div id="v11_stat_best" style="font-size: 1.3rem; font-weight: 900; color: #1e293b;">--</div>
+            <div id="v11_stat_best" style="font-size: 1.1rem; font-weight: 900; color: #1e293b;">--</div>
         </div>
         <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #ef4444;">
             <div
                 style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
                 Peor Posición</div>
-            <div id="v11_stat_worst" style="font-size: 1.3rem; font-weight: 900; color: #1e293b;">--</div>
+            <div id="v11_stat_worst" style="font-size: 1.1rem; font-weight: 900; color: #1e293b;">--</div>
         </div>
     </div>
 
@@ -56,7 +56,7 @@
     <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
         <h3 class="section-title mb-lg"
             style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
-            <span><i class="fa-solid fa-chart-line" style="color: #f59e0b;"></i> Trayectoria Histórica de
+            <span><i class="fa-solid fa-chart-line" style="color: #f59e0b;"></i> Trayectoria Histórica Regional de
                 Ranking
                 (Anual)</span>
             <div id="v11_trajectory_badge"
@@ -86,12 +86,16 @@
 </div>
 
 
-<div class="methodological-note"
-    style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #475569; line-height: 1.5; margin-top: 2rem;">
-    <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>
-    <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Ranking
-        Histórico</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
-    estratégicas basadas en evidencia.
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica (Análisis 20 Años):</strong> Esta vista presenta un benchmark histórico profundo que
+        integra dos metodologías de evaluación: 1. Ranking por Volumen (carga operativa bruta) y 2. Ranking por Tasa
+        (normalizada x 100k hab.). La comparación de ambas trayectorias permite distinguir mejoras en la gestión de
+        seguridad real frente a variaciones demográficas o sistémicas, identificando si la posición relativa es
+        estructural o circunstancial.
+    </div>
 </div>
 
 <script>
@@ -112,47 +116,52 @@
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // Process Ranking by Year
+        const totalComunas = (window.STATE_DATA && window.STATE_DATA.totalComunasReg) || 52;
+
+        // Process Rankings by Year
         const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
-        const rankings = years.map(yr => {
+        const rankingsVol = years.map(yr => {
             const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0];
-            const rankVal = row ? (row[C.RANKING_REG_ANUAL] || row['ranking_regional_anual_metric'] || row[C.RANKING] || 25) : 25;
+            const rankVal = row ? (row[C.RANKING_REG_ANUAL] || row[C.RANKING] || 25) : 25;
             return Math.round(rankVal);
         });
 
-        // --- Calculate Stats ---
-        const avg = Math.round(rankings.reduce((a, b) => a + b, 0) / rankings.length);
-
-        // Mode Calculation
-        const modeMap = {};
-        let maxCount = 0;
-        let modeVal = rankings[0];
-        rankings.forEach(val => {
-            modeMap[val] = (modeMap[val] || 0) + 1;
-            if (modeMap[val] > maxCount) {
-                maxCount = modeMap[val];
-                modeVal = val;
-            }
+        const rankingsTasa = years.map(yr => {
+            const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0];
+            const rankValTasa = row ? (row[C.RANKING_REG_ANUAL_TASA] || row[C.RANK_REG_TASA] || row[C.RANKING] || 25) : 25;
+            return Math.round(rankValTasa);
         });
 
-        // Best/Worst Logic: 1 is BAD (More Crime), 52 is GOOD (Less Crime)
-        // Thus, Best = Higher Number, Worst = Lower Number
-        const best = Math.max(...rankings);
-        const worst = Math.min(...rankings);
+        // --- Calculate Stats ---
+        const avgVol = Math.round(rankingsVol.reduce((a, b) => a + b, 0) / rankingsVol.length);
+        const avgTasa = Math.round(rankingsTasa.reduce((a, b) => a + b, 0) / rankingsTasa.length);
 
-        const bestYear = years[rankings.lastIndexOf(best)];
-        const worstYear = years[rankings.lastIndexOf(worst)];
+        const currentVol = rankingsVol[rankingsVol.length - 1];
+        const currentTasa = rankingsTasa[rankingsTasa.length - 1];
 
-        document.getElementById('v11_stat_avg').textContent = `${avg}°`;
-        document.getElementById('v11_stat_mode').textContent = `${modeVal}°`;
-        document.getElementById('v11_stat_best').innerHTML = `${best}° <div style="font-size:0.75rem; color:#10b981; font-weight:600;">EN AÑO ${bestYear}</div>`;
-        document.getElementById('v11_stat_worst').innerHTML = `${worst}° <div style="font-size:0.75rem; color:#ef4444; font-weight:600;">EN AÑO ${worstYear}</div>`;
+        // Best/Worst Logic: 1 (BAD), 52 (GOOD). Higher is better.
+        const bestVol = Math.max(...rankingsVol);
+        const bestTasa = Math.max(...rankingsTasa);
+        const worstVol = Math.min(...rankingsVol);
+        const worstTasa = Math.min(...rankingsTasa);
+
+        const renderDoubleVal = (v1, v2, label1 = 'Vol', label2 = 'Tasa') => `
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="font-size: 1.2rem; font-weight: 950; color: #1e293b;">${v1}° <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 700;">(${label1})</span></div>
+                <div style="font-size: 1.2rem; font-weight: 950; color: #f59e0b;">${v2}° <span style="font-size: 0.65rem; color: #f59e0b; font-weight: 700;">(${label2})</span></div>
+            </div>
+        `;
+
+        document.getElementById('v11_stat_avg').innerHTML = renderDoubleVal(avgVol, avgTasa);
+        document.getElementById('v11_stat_current').innerHTML = renderDoubleVal(currentVol, currentTasa);
+        document.getElementById('v11_stat_best').innerHTML = renderDoubleVal(bestVol, bestTasa);
+        document.getElementById('v11_stat_worst').innerHTML = renderDoubleVal(worstVol, worstTasa);
 
 
-        // Trajectory Logic
+        // Trajectory Logic (based on volume)
         const badge = document.getElementById('v11_trajectory_badge');
-        const first = rankings[0], last = rankings[rankings.length - 1];
-        const diff = last - first; // Positive = Improvement (Higher rank number), Negative = Worsening
+        const first = rankingsVol[0], last = rankingsVol[rankingsVol.length - 1];
+        const diff = last - first;
 
         if (diff > 3) { badge.textContent = 'MEJORA SOSTENIDA'; badge.style.background = '#10b981'; } // High rank # is good
         else if (diff < -3) { badge.textContent = 'DETERIORO RELATIVO'; badge.style.background = '#ef4444'; }
@@ -164,18 +173,27 @@
             type: 'line',
             data: {
                 labels: years,
-                datasets: [{
-                    label: 'Posición (Más es Mejor)',
-                    data: rankings,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 6,
-                    pointBackgroundColor: '#fff',
-                    pointBorderWidth: 3,
-                    borderWidth: 4
-                }]
+                datasets: [
+                    {
+                        label: 'Ranking por Volumen',
+                        data: rankingsVol,
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'transparent',
+                        tension: 0.4,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Ranking por Tasa',
+                        data: rankingsTasa,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        borderWidth: 3
+                    }
+                ]
             },
             options: {
                 responsive: true,
@@ -184,19 +202,19 @@
                     y: {
                         reverse: true, // 1 at top
                         min: 1,
-                        max: 52,
+                        max: totalComunas,
                         ticks: { stepSize: 10, font: { family: 'Outfit' } },
                         grid: { color: '#f1f5f9' },
-                        title: { display: true, text: 'Posición (1 = Más Delitos)', font: { weight: '800' } }
+                        title: { display: true, text: 'Posición (1 = Peor / Menos es Mejor)', font: { weight: '800' } }
                     },
                     x: { grid: { display: false } }
                 },
                 plugins: {
-                    legend: { display: false },
+                    legend: { display: true, position: 'top', labels: { font: { family: 'Outfit', weight: '700' } } },
                     tooltip: {
                         backgroundColor: 'rgba(15, 23, 42, 0.9)',
                         callbacks: {
-                            label: (c) => ` Posición: ${c.raw} de 52 comunas`
+                            label: (c) => ` ${c.dataset.label}: ${c.raw}°`
                         }
                     }
                 }
@@ -206,12 +224,12 @@
         // --- Heatmap Years (Variation) ---
         const heatmap = document.getElementById('v11_heatmap_years');
         heatmap.innerHTML = years.map((yr, i) => {
-            const rank = rankings[i];
+            const rank = rankingsVol[i];
             let color = '#94a3b8';
             let icon = ''; // Dot
 
             if (i > 0) {
-                const prev = rankings[i - 1];
+                const prev = rankingsVol[i - 1];
                 if (rank > prev) { color = '#10b981'; icon = '<i class="fa-solid fa-arrow-up" style="font-size:0.6rem"></i>'; } // Improved
                 else if (rank < prev) { color = '#ef4444'; icon = '<i class="fa-solid fa-arrow-down" style="font-size:0.6rem"></i>'; } // Worsened
                 else { color = '#cbd5e1'; icon = '<i class="fa-solid fa-minus" style="font-size:0.6rem"></i>'; } // Same

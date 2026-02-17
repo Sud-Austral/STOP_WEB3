@@ -141,14 +141,14 @@
         const cases = totalRow[C.CASOS_ACTUAL] || 0;
         const prev = totalRow[C.CASOS_ANT] || 0;
         const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
-        const rank = totalRow[C.RANK_REG] || 15; // Mock/Default
+        const rank = totalRow[C.RANK_REG] || null;
 
         // Populate KPIs
         document.getElementById('v24_kpi_total').textContent = cases; // Removed ChartHelper dependency for safety if not loaded
         const dEl = document.getElementById('v24_kpi_delta');
         dEl.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% vs ant.`;
         dEl.style.color = delta > 0 ? '#ef4444' : '#10b981';
-        document.getElementById('v24_kpi_rank').textContent = rank;
+        document.getElementById('v24_kpi_rank').textContent = rank || '--';
 
         // Status Badge Logic
         const status = document.getElementById('v24_status_badge');

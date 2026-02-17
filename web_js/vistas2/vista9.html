@@ -16,9 +16,10 @@
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿En qué delitos específicos somos críticos?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Identificación de delitos
-            donde la comuna ocupa los peores rankings regionales o nacionales, independientemente del volumen total de
-            casos.</p>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Identificación de delitos donde la comuna ocupa los peores rankings regionales o nacionales,
+            independientemente del volumen total de casos.
+        </p>
     </div>
 
     <div class="alert alert--info" style="margin-top: 1.5rem;">
@@ -41,25 +42,23 @@
         </div>
     </div>
 
-    <div
-        style="margin-top: 1.5rem; padding: 1rem; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 8px; display: flex; gap: 10px; align-items: flex-start;">
-        <i class="fa-solid fa-circle-exclamation" style="color: #e11d48; margin-top: 3px;"></i>
-        <div style="font-size: 0.85rem; color: #9f1239; line-height: 1.5;">
-            <strong>Nota de Alerta:</strong> Los rankings se calculan en base a la tasa por cada 100.000 habitantes. Si
-            una tipología aparece con un ranking regional menor a 5, se considera un <strong>punto débil
-                estructural</strong> que requiere coordinación con delegaciones provinciales o ministeriales.
+    <!-- Nota Metodológica -->
+    <div class="methodological-note"
+        style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1.25rem; border-radius: 0 8px 8px 0; margin-top: 2rem; display: flex; gap: 1rem; align-items: flex-start;">
+        <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-top: 3px;"></i>
+        <div>
+            <h4 style="margin: 0 0 0.25rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-text);">Nota
+                Metodológica</h4>
+            <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5;">
+                Este modelo analítico trabaja en dos fases: primero, prioriza los delitos con rankings críticos a nivel
+                regional y nacional para identificar vulnerabilidades de seguridad en la zona. Luego, evalúa las
+                categorías con mayor cantidad de casos usando tasas normalizadas (por cada 100.000 habitantes), lo que
+                permite eliminar el efecto de la población y comparar nuestro desempeño frente a los datos reales de la
+                región y el país en la misma semana operativa del sistema STOP. Al evitar proyecciones o
+                extrapolaciones, este análisis entrega evidencia técnica directa para ayudar a priorizar recursos y
+                tomar decisiones estratégicas a nivel directivo.
+            </p>
         </div>
-    </div>
-</div>
-
-
-<!-- Nota Metodológica -->
-<div class="row" style="margin-top: 2rem;">
-    <div
-        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Puntos
-            Débiles</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
-        basadas en evidencia.
     </div>
 </div>
 
@@ -123,24 +122,36 @@
                 labels: labels,
                 datasets: [
                     {
-                        label: 'Tasa Comunal (Est.)',
-                        // Estimate rate if not available directly: (Cases / Pop) * 100k
-                        data: top3ForChart.map(d => ((d[C.CASOS_ACTUAL] || 0) / (factorPob || 100000) * 100000).toFixed(1)),
+                        label: 'Tasa Comunal',
+                        data: top3ForChart.map(d => (d[C.TASA_COMUNAL] || 0).toFixed(1)),
                         backgroundColor: '#ef4444',
                         borderRadius: 4,
                         datalabels: {
-                            color: 'white',
+                            color: '#ef4444',
                             font: { weight: 'bold', size: 10 },
                             anchor: 'end',
-                            align: 'start',
-                            offset: -20,
+                            align: 'top',
+                            offset: 0,
                             formatter: (v) => v > 0 ? v : ''
                         }
                     },
                     {
-                        label: 'Ref. Región',
-                        // Default dummy values for Region if missing, to prevent crash
-                        data: top3ForChart.map(d => ((d[C.CASOS_ANT] || 0) / (factorPob || 100000) * 100000 * 0.8).toFixed(1)), // Mock comparison if real reg data missing
+                        label: 'Tasa Regional',
+                        data: top3ForChart.map(d => (d[C.TASA_REGIONAL] || 0).toFixed(1)),
+                        backgroundColor: '#94a3b8',
+                        borderRadius: 4,
+                        datalabels: {
+                            color: '#1e293b',
+                            font: { weight: 'bold', size: 10 },
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 0,
+                            formatter: (v) => v > 0 ? v : ''
+                        }
+                    },
+                    {
+                        label: 'Tasa Nacional',
+                        data: top3ForChart.map(d => (d[C.TASA_NACIONAL] || 0).toFixed(1)),
                         backgroundColor: '#e2e8f0',
                         borderRadius: 4,
                         datalabels: {

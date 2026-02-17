@@ -10,6 +10,7 @@ window.DataManager = {
         stopPath: 'data/stop',
         ceadPath: 'data/cead_split',
         unionPath: 'config/union.json',
+        clusterPath: 'config/cluster.json',
         defaultComuna: 13101
     },
 
@@ -50,7 +51,8 @@ window.DataManager = {
         meta: {
             comuna: 'Cargando...',
             region: '',
-            provincia: ''
+            provincia: '',
+            clusterConfig: {}
         }
     },
 
@@ -74,10 +76,11 @@ window.DataManager = {
             // Priority: Load Union Taxonomy FIRST
             await this.loadUnionData();
 
-            // Load both sources in parallel
+            // Load multiple sources in parallel
             await Promise.all([
                 this.loadStopData(this.state.comunaId),
-                this.loadCeadData(this.state.comunaId)
+                this.loadCeadData(this.state.comunaId),
+                this.loadClusterConfig()
             ]);
 
             this.state.isLoaded = true;
@@ -132,6 +135,21 @@ window.DataManager = {
             console.log(`🔗 DataManager: Taxonomy Union Loaded. ${data.length} mappings.`);
         } catch (e) {
             console.warn("⚠️ DataManager: Failed to load Union taxonomy.", e);
+        }
+    },
+
+    /**
+     * Load Cluster Totals Configuration
+     */
+    async loadClusterConfig() {
+        try {
+            const res = await fetch(this.config.clusterPath);
+            if (!res.ok) throw new Error("Cluster config not found");
+            const data = await res.json();
+            this.state.meta.clusterConfig = data;
+            console.log("📊 DataManager: Cluster Configuration Loaded.");
+        } catch (e) {
+            console.warn("⚠️ DataManager: Failed to load Cluster config.", e);
         }
     },
 
@@ -334,6 +352,7 @@ window.DataManager = {
             allData: this.state.stop.history,
             allDataHistory: this.state.stop.history,
             allDataHistory_total: this.state.stop.totalHistory,
+            clusterConfig: this.state.meta.clusterConfig,
 
             // Helper for access
             getRaw: () => this.state.stop.data,
@@ -365,9 +384,21 @@ window.DataManager = {
         window.COLS.CASOS_YEAR_ANT = 'casos_misma_semana_año_anterior';
         window.COLS.DELITO = 'delito';
         window.COLS.SEMANA_DETALLE = 'semana_detalle';
+        window.COLS.SEMANA = 'semana_numero';
+        window.COLS.SEMANA_ANO = 'semana_numero'; // Alias used in some views
+        window.COLS.ANIO = 'año';
         window.COLS.FACTOR_POBLACION = 'factor_poblacion';
         window.COLS.Z_SCORE = 'z_score';
         window.COLS.ALERTA = 'alerta_aumento_critico';
+        window.COLS.TASA_REGIONAL = 'tasa_semanal_regional';
+        window.COLS.TASA_NACIONAL = 'tasa_semanal_nacional';
+        window.COLS.TASA_COMUNAL = 'tasa_semanal';
+        window.COLS.RANK_REG_TASA = 'ranking_regional_tasa_sem';
+
+        // Ensure Cluster Rankings are mapped correctly
+        window.COLS.RANK_CLUSTER_SEM = 'ranking_cluster_semanal';
+        window.COLS.RANK_CLUSTER_ACUM = 'ranking_cluster_acum';
+        window.COLS.RANK_CLUSTER_TASA_SEM = 'ranking_cluster_tasa_sem';
 
         // COLS_CEAD: Defined primarily in data_cead.js. DataManager respects existing definition.
         if (!window.COLS_CEAD) window.COLS_CEAD = {};

@@ -63,12 +63,19 @@
                     en la estrategia preventiva.</p>
             </div>
 
+            <!-- Nota Metodológica -->
             <div class="methodological-note"
-                style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1rem; border-radius: 0 8px 8px 0; font-size: 0.8rem; color: #475569; line-height: 1.5;">
-                <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-right: 6px;"></i>
-                <strong>Nota Metodológica:</strong> El gráfico representa el peso porcentual relativo de cada delito
-                sobre el total anual. Estas cifras se mantienen estables entre los ciclos de actualización del CEAD
-                (desfase operativo de aprox. 6 meses).
+                style="background: rgba(59, 130, 246, 0.05); border-left: 3px solid var(--color-primary); padding: 1.25rem; border-radius: 0 8px 8px 0; margin-top: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-top: 3px;"></i>
+                <div>
+                    <h4 style="margin: 0 0 0.25rem 0; font-size: 0.9rem; font-weight: 800; color: var(--color-text);">
+                        Nota Metodológica</h4>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5;">
+                        El gráfico representa el peso porcentual relativo de cada delito sobre el total anual de delitos
+                        categorizados STOP. Estas cifras revelan cambios estructurales que se mantienen estables entre
+                        los ciclos de actualización (desfase operativo de aprox. 6 meses).
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -92,34 +99,37 @@
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // Process data by year and crime Group
-        const years = [...new Set(S.allDataHistory.map(r => r[C.ANIO]))].sort();
-        const topDelitos = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
-            .map(delito => {
-                const firstRow = S.allDataHistory.find(r => r[C.DELITO] === delito);
-                const total = S.allDataHistory.filter(r => r[C.DELITO] === delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
-                return { delito, total, Delito_STOP_Ref: firstRow ? firstRow.Delito_STOP_Ref : null };
-            })
-            .sort((a, b) => b.total - a.total)
-            .slice(0, 8); // Top 8 structural crimes
+        // process only crimes with valid STOP mapping
+        const filteredRows = S.allDataHistory.filter(r => r.Delito_STOP_Ref && r.Delito_STOP_Ref !== 'OTRO');
+        const years = [...new Set(filteredRows.map(r => r[C.ANIO]))].sort();
 
-        // Create Datasets with Raw Counts for Tooltips
+        // Group by Delito_STOP_Ref
+        const stopGroups = [...new Set(filteredRows.map(r => r.Delito_STOP_Ref))];
+        const groupPerformance = stopGroups.map(name => {
+            const rows = filteredRows.filter(r => r.Delito_STOP_Ref === name);
+            const total = rows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+            return { name, total };
+        }).sort((a, b) => b.total - a.total);
+
+        const topDelitos = groupPerformance.slice(0, 8); // Top 8 STOP categories
+        const topNames = topDelitos.map(d => d.name);
+
+        // Create Datasets
         const datasets = topDelitos.map((d, i) => {
             const counts = [];
             const percentages = years.map(yr => {
-                const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
+                const yrRows = filteredRows.filter(r => r[C.ANIO] === yr);
                 const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
-                const dRow = yrRows.filter(r => r[C.DELITO] === d.delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                const dRow = yrRows.filter(r => r.Delito_STOP_Ref === d.name).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
 
-                counts.push(dRow); // Store raw count
+                counts.push(dRow);
                 return yrTotal > 0 ? (dRow / yrTotal * 100) : 0;
             });
 
-            const label = d.Delito_STOP_Ref ? `${d.delito} / ${d.Delito_STOP_Ref}` : d.delito;
             return {
-                label: label,
+                label: d.name, // Only show STOP name
                 data: percentages,
-                rawCounts: counts, // Custom property
+                rawCounts: counts,
                 backgroundColor: ChartHelper.colors.categorical[i % ChartHelper.colors.categorical.length],
                 borderColor: 'white',
                 borderWidth: 0.5,
@@ -128,28 +138,29 @@
             };
         });
 
-        // Add "Others"
+        // Add "Otros" (within the filtered set)
         const othersCounts = [];
         const othersData = years.map(yr => {
-            const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
+            const yrRows = filteredRows.filter(r => r[C.ANIO] === yr);
             const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
-            const topNames = topDelitos.map(t => t.delito);
-            const othersRow = yrRows.filter(r => !topNames.includes(r[C.DELITO])).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+            const othersRow = yrRows.filter(r => !topNames.includes(r.Delito_STOP_Ref)).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
 
             othersCounts.push(othersRow);
             return yrTotal > 0 ? (othersRow / yrTotal * 100) : 0;
         });
 
-        datasets.push({
-            label: 'Otros Delitos',
-            data: othersData,
-            rawCounts: othersCounts,
-            backgroundColor: '#cbd5e1',
-            borderColor: 'white',
-            borderWidth: 0.5,
-            fill: true,
-            pointRadius: 0
-        });
+        if (othersData.some(v => v > 0)) {
+            datasets.push({
+                label: 'Otros Delitos STOP',
+                data: othersData,
+                rawCounts: othersCounts,
+                backgroundColor: '#cbd5e1',
+                borderColor: 'white',
+                borderWidth: 0.5,
+                fill: true,
+                pointRadius: 0
+            });
+        }
 
         // --- Transformation Table ---
         const table = document.getElementById('v7_stats_table');
@@ -158,15 +169,14 @@
 
         const structuralChanges = topDelitos.slice(0, 5).map(d => {
             const getPct = (yr) => {
-                const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
+                const yrRows = filteredRows.filter(r => r[C.ANIO] === yr);
                 const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
-                const dRow = yrRows.filter(r => r[C.DELITO] === d.delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+                const dRow = yrRows.filter(r => r.Delito_STOP_Ref === d.name).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
                 return yrTotal > 0 ? (dRow / yrTotal * 100) : 0;
             };
             const p1 = getPct(firstYr);
             const p2 = getPct(lastYr);
-            const name = d.Delito_STOP_Ref ? `${d.delito} <span style="font-weight:400; color:#64748b;">/ ${d.Delito_STOP_Ref}</span>` : d.delito;
-            return { name: name, rawName: d.delito, p1, p2, diff: p2 - p1 };
+            return { name: d.name, p1, p2, diff: p2 - p1 };
         });
 
         table.innerHTML = structuralChanges.map(c => `

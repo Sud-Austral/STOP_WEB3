@@ -269,9 +269,10 @@ const App = {
         const sources = [];
 
         // Determine sources based on view number (STOP vs CEAD)
-        const ceadViews = [4, 7, 10, 11, 12, 15, 16, 19, 20, 21, 25];
-        const stopViews = [0, 1, 2, 3, 5, 6, 8, 9, 13, 14, 17, 18, 22, 23, 24];
-        const hybridViews = [41, 42, 43, 44, 45];
+        // Vistas 2 Strategic categorization
+        const ceadViews = [4, 7, 11, 15, 16, 17, 18, 19, 20];
+        const stopViews = [1, 2, 3, 5, 6, 8, 9, 12, 13, 14, 21, 22, 23, 24];
+        const hybridViews = [10, 25]; // Views that explicitly merge both worlds
 
         if (stopViews.includes(viewNum) || hybridViews.includes(viewNum)) {
             sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });
@@ -280,8 +281,8 @@ const App = {
             sources.push({ name: 'CEAD (Centro de Análisis del Delito)', class: 'cead' });
         }
 
-        // Add INE for views that use population/rate data (Confirmed via content analysis)
-        const ineViews = [1, 9, 10, 12, 13, 17];
+        // Add INE for views that use population/rate data
+        const ineViews = [1, 9, 10, 11, 12, 13, 17, 19];
         if (ineViews.includes(viewNum)) {
             sources.push({ name: 'INE (Instituto Nacional de Estadísticas)', class: 'ine' });
         }

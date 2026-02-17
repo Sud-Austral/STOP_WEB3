@@ -62,7 +62,7 @@
             <i class="fa-solid fa-chart-bar" style="color: var(--color-primary);"></i> Espectro Completo de Variación
             (Δ% Semanal)
         </h3>
-        <div class="chart-wrapper" style="height: 450px;">
+        <div class="chart-wrapper" style="height: 400px;">
             <canvas id="v6_chart_spectrum"></canvas>
         </div>
     </div>
@@ -134,7 +134,7 @@
         const top5Worst = allCrimes.slice(0, 5);
 
         vWorst.innerHTML = top5Worst.length > 0 ? top5Worst.map(d => `
-            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 16px; background: #fff; border-bottom: 1px solid #fdf2f2; margin-bottom: 8px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 10px 16px; background: #fff; border-bottom: 1px solid #fdf2f2; margin-bottom: 6px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                 <div>
                     <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 4px;">${d.delito}</div>
                     <div style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px;">
@@ -143,7 +143,7 @@
                         <span style="background: #fee2e2; color: #ef4444; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${d.act} casos</span>
                     </div>
                 </div>
-                <div style="font-size: 1.4rem; font-weight: 900; color: #ef4444; letter-spacing: -0.5px;">+${d.delta.toFixed(0)}%</div>
+                <div style="font-size: 1rem; font-weight: 900; color: #ef4444; letter-spacing: -0.5px;">+${d.delta.toFixed(0)}%</div>
             </div>
         `).join('') : '<div style="padding:10px; color:#94a3b8;">Sin aumentos significativos.</div>';
 
@@ -154,7 +154,7 @@
         const decreases = bestSorted.filter(d => d.delta <= 0).slice(0, 5);
 
         vBest.innerHTML = decreases.length > 0 ? decreases.map(d => `
-            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 16px; background: #fff; border-bottom: 1px solid #f0fdf4; margin-bottom: 8px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 10px 16px; background: #fff; border-bottom: 1px solid #f0fdf4; margin-bottom: 6px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                 <div>
                     <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 4px;">${d.delito}</div>
                     <div style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px;">
@@ -163,7 +163,7 @@
                         <span style="background: #dcfce7; color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${d.act} casos</span>
                     </div>
                 </div>
-                <div style="font-size: 1.4rem; font-weight: 900; color: #10b981; letter-spacing: -0.5px;">${d.delta.toFixed(0)}%</div>
+                <div style="font-size: 1rem; font-weight: 900; color: #10b981; letter-spacing: -0.5px;">${d.delta.toFixed(0)}%</div>
             </div>
         `).join('') : '<div style="padding:10px; color:#94a3b8;">Sin disminuciones registradas.</div>';
 
