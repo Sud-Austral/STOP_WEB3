@@ -18,68 +18,51 @@
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evaluación de la
             integridad, consistencia y completitud de los datos históricos de CEAD para garantizar la validez de los
             modelos predictivos.</p>
+        <div style="font-size: 2rem; color: #3b82f6; margin-bottom: 10px;"><i class="fa-solid fa-list-check"></i>
+        </div>
+        <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Completitud Mensual</h4>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Presencia de datos en los últimos 20
+            años.</p>
+        <div id="v25_kpi_completion" style="font-size: 1.5rem; font-weight: 900; color: #334155;">--/--</div>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v25_ia_analysis">Cargando análisis...</span>
+    <!-- Pillar 2: Outliers -->
+    <div class="card" style="padding: 1.5rem;">
+        <div style="font-size: 2rem; color: #f59e0b; margin-bottom: 10px;"><i
+                class="fa-solid fa-magnifying-glass-chart"></i></div>
+        <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Detección de Outliers
+        </h4>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Valores anómalos detectados (Ruido).</p>
+        <div id="v25_kpi_outliers" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- eventos</div>
+    </div>
+
+    <!-- Pillar 3: Latencia -->
+    <div class="card" style="padding: 1.5rem;">
+        <div style="font-size: 2rem; color: #10b981; margin-bottom: 10px;"><i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Latencia de Carga</h4>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Actualización de la última data.</p>
+        <div id="v25_kpi_latency" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- días</div>
+    </div>
+
 </div>
 
-    <!-- Health Score Header -->
-    <div class="card"
-        style="padding: 2rem; background: #1e293b; color: white; margin-bottom: 2rem; display: flex; align-items: center; gap: 3rem;">
-        <div style="text-align: center; flex-shrink: 0;">
-            <div
-                style="font-size: 0.8rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px;">
-                Data Health Score</div>
-            <div id="v25_health_score" style="font-size: 4rem; font-weight: 950; color: #10b981; line-height: 1;">--%
-            </div>
-        </div>
-        <div style="flex: 1;">
-            <h4 style="margin: 0 0 10px 0; font-size: 1.1rem; font-weight: 800; color: #fff;">Diagnóstico de Integridad
-            </h4>
-            <p id="v25_health_desc" style="margin: 0; font-size: 0.9rem; color: #94a3b8; line-height: 1.5;">Analizando
-                la serie de tiempo para detectar vacíos de información o anomalías de reporte...</p>
-        </div>
-    </div>
+<!-- Technical disclaimer -->
+<div
+    style="margin-top: 2rem; padding: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
+    Esta auditoría verifica que el dataset cargado en memoria coincida con los parámetros del modelo SARIMA.
+    Puntuaciones menores al 70% invalidan las proyecciones de largo plazo.
+</div>
+</div>
 
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
 
-        <!-- Pillar 1: Completitud -->
-        <div class="card" style="padding: 1.5rem;">
-            <div style="font-size: 2rem; color: #3b82f6; margin-bottom: 10px;"><i class="fa-solid fa-list-check"></i>
-            </div>
-            <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Completitud Mensual</h4>
-            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Presencia de datos en los últimos 20
-                años.</p>
-            <div id="v25_kpi_completion" style="font-size: 1.5rem; font-weight: 900; color: #334155;">--/--</div>
-        </div>
-
-        <!-- Pillar 2: Outliers -->
-        <div class="card" style="padding: 1.5rem;">
-            <div style="font-size: 2rem; color: #f59e0b; margin-bottom: 10px;"><i
-                    class="fa-solid fa-magnifying-glass-chart"></i></div>
-            <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Detección de Outliers
-            </h4>
-            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Valores anómalos detectados (Ruido).</p>
-            <div id="v25_kpi_outliers" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- eventos</div>
-        </div>
-
-        <!-- Pillar 3: Latencia -->
-        <div class="card" style="padding: 1.5rem;">
-            <div style="font-size: 2rem; color: #10b981; margin-bottom: 10px;"><i
-                    class="fa-solid fa-clock-rotate-left"></i></div>
-            <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Latencia de Carga</h4>
-            <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Actualización de la última data.</p>
-            <div id="v25_kpi_latency" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- días</div>
-        </div>
-
-    </div>
-
-    <!-- Technical disclaimer -->
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
     <div
-        style="margin-top: 2rem; padding: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
-        Esta auditoría verifica que el dataset cargado en memoria coincida con los parámetros del modelo SARIMA.
-        Puntuaciones menores al 70% invalidan las proyecciones de largo plazo.
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Auditoría
+            Técnica</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia.
     </div>
 </div>
 
@@ -137,6 +120,15 @@
             desc.textContent = "Integridad aceptable. Se detectan algunos periodos vacíos o valores atípicos que podrían reducir la precisión marginal del pronóstico.";
         } else {
             desc.textContent = "Integridad comprometida. Los vacíos de información o el ruido excesivo sugieren cautela en la interpretación de los modelos de tendencia.";
+        }
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista25').then(txt => {
+                const el = document.getElementById('v25_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
         }
 
     })();

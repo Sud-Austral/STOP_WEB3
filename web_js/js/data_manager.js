@@ -85,11 +85,11 @@ window.DataManager = {
 
             console.log("✅ DataManager: All data loaded successfully.");
 
-            // Dispatch unified event
-            window.dispatchEvent(new CustomEvent('dataManagerLoaded', { detail: this.state }));
-
             // Backward Compatibility: Dispatch old events for existing views
             this.dispatchLegacyEvents();
+
+            // Dispatch unified event
+            window.dispatchEvent(new CustomEvent('dataManagerLoaded', { detail: this.state }));
 
         } catch (error) {
             console.error("❌ DataManager Error:", error);
@@ -285,7 +285,15 @@ window.DataManager = {
         window.getFormattedDate = (weekId) => {
             const row = this.state.stop.totalHistory.find(r => r.id_semana === weekId);
             if (row) {
-                // Preferred: Use 'fecha' field (YYYY-MM-DD)
+                // Format requested: "SEM XX/YYYY"
+                const weekNum = row.semana_numero || row['semana_numero'];
+                const year = row.año || row['año'];
+
+                if (weekNum && year) {
+                    return `SEM ${String(weekNum).padStart(2, '0')}/${year}`;
+                }
+
+                // Fallback: YYYY/MM
                 if (row.fecha) {
                     // Fix timezone issue by parsing components directly if string is YYYY-MM-DD
                     // to avoid getting previous day due to UTC conversion

@@ -62,6 +62,7 @@ window.COLS_CEAD = {
     ID_PERIODO: 'id_periodo',
     FECHA: 'fecha',
     PERIODO_DETALLE: 'periodo_detalle',
+    IS_FORECAST: 'is_forecast',
 
     // Métricas Base
     FRECUENCIA: 'frecuencia',

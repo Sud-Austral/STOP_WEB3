@@ -182,7 +182,7 @@ const PDFModule = {
         pdf.line(80, 45, 130, 45);
 
         let yPos = 60;
-        const lineHeight = 8;
+        const lineHeight = 6.5; // Reduced from 8
         const dotGap = 2;
 
         // Group sections by category
@@ -216,9 +216,9 @@ const PDFModule = {
 
             // Dotted line
             const titleEndX = titleX + pdf.getTextWidth(truncatedTitle) + dotGap;
-            const pageNumX = pageWidth - margins.right - 10;
+            const pageNumX = pageWidth - margins.right - 12; // Increased gap to 12mm
             pdf.setDrawColor(200, 200, 200);
-            pdf.setLineDashPattern([1, 2], 0);
+            pdf.setLineDashPattern([0.5, 3], 0);
             pdf.line(titleEndX, yPos - 1, pageNumX, yPos - 1);
             pdf.setLineDashPattern([], 0);
 

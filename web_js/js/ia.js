@@ -27,10 +27,10 @@ const IAModule = {
     // API Configuration (initialized in init())
     API_KEY: null,
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
-    MODEL_NAME: "GLM-4.7-Flash",
+    MODEL_NAME: "glm-4-flash",
 
     // Cache Configuration
-    CACHE_PREFIX: 'ia_interp_',
+    CACHE_PREFIX: 'ia_v3_',
     CACHE_TTL_MS: 7 * 24 * 60 * 60 * 1000, // 7 días
 
     // State to store interpretations
@@ -49,8 +49,8 @@ const IAModule = {
      * Build cache key based on codcom + semanaId
      */
     getCacheKey() {
-        const codcom = window.STATE_DATA?.codcom || 'default';
-        const semana = window.STATE_DATA?.semanaId || 'unknown';
+        const codcom = (window.STATE_DATA?.codcom || window.STATE_DATA_CEAD?.codcom) || 'default';
+        const semana = (window.STATE_DATA?.semanaId || window.STATE_DATA_CEAD?.periodoId) || 'unknown';
         return this.CACHE_PREFIX + codcom + '_' + semana;
     },
 
@@ -112,134 +112,135 @@ const IAModule = {
     },
 
     /**
-     * Build the context from current data for AI interpretation
+     * Build the context from current data (STOP or CEAD) for AI interpretation
      */
     buildDataContext() {
-        if (!window.STATE_DATA || !window.STATE_DATA.allDataHistory || window.STATE_DATA.allDataHistory.length === 0) {
+        // Source 1: STOP Data (Weekly)
+        const hasStop = window.STATE_DATA && window.STATE_DATA.allDataHistory && window.STATE_DATA.allDataHistory.length > 0;
+        // Source 2: CEAD Data (Monthly)
+        const hasCead = window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded && window.STATE_DATA_CEAD.allDataHistory && window.STATE_DATA_CEAD.allDataHistory.length > 0;
+
+        if (!hasStop && !hasCead) {
             return null;
         }
 
-        const data = window.STATE_DATA.allDataHistory;
-        const COLS = window.COLS;
-        const comunaName = window.STATE_DATA.comunaName || 'La comuna';
+        const context = {
+            comunaName: (window.STATE_DATA?.comunaName !== 'Cargando...' ? window.STATE_DATA?.comunaName : window.STATE_DATA_CEAD?.comunaName) || 'La comuna',
+            semanaId: 'N/A',
+            totalCasos: 0,
+            totalCasosAnt: 0,
+            totalCasosYearAnt: 0,
+            varSemanal: 0,
+            varAnual: 0,
+            avgZScore: '0.00',
+            topDelitos: [],
+            alertas: 0,
+            alertasCriticas: 0,
+            highRiskDelitos: [],
+            numDelitos: 0,
+            v15_risk: 'BAJO',
+            promHist: '0',
+            varVsProm: 0,
+            mm4s: '0',
+            mm8s: '0',
+            aceleracion: '0',
+            zScoreTotal: '0.00',
+            anomalias: 0,
+            ceadSummary: "Datos CEAD no disponibles",
+            ceadTrend: "Desconocida"
+        };
 
-        // Get max week
-        const maxSemana = Math.max(...data.map(row => row[COLS.ID_SEMANA]));
-        const currentWeekData = data.filter(row => row[COLS.ID_SEMANA] === maxSemana);
+        // --- Process STOP Data (Primary for weekly views) ---
+        if (hasStop) {
+            const data = window.STATE_DATA.allDataHistory;
+            const COLS = window.COLS;
+            context.comunaName = window.STATE_DATA.comunaName || context.comunaName;
 
-        // Calculate key metrics
-        const totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
-        const totalCasosAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
-        const totalCasosYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
+            const semanaIds = data.map(row => row[COLS.ID_SEMANA]).filter(id => id != null);
+            if (semanaIds.length === 0) return context;
 
-        // ... existing STOP data processing ...
-        const varSemanal = totalCasosAnt > 0 ? ((totalCasos - totalCasosAnt) / totalCasosAnt * 100).toFixed(1) : 0;
-        const varAnual = totalCasosYearAnt > 0 ? ((totalCasos - totalCasosYearAnt) / totalCasosYearAnt * 100).toFixed(1) : 0;
+            const maxSemana = Math.max(...semanaIds);
+            context.semanaId = maxSemana;
+            const currentWeekData = data.filter(row => row[COLS.ID_SEMANA] === maxSemana);
 
-        // Average Z-Score (Weighted by Cases)
-        let weightedZSum = 0;
-        let totalCasesForZ = 0;
+            context.totalCasos = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ACTUAL] || 0), 0);
+            context.totalCasosAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_ANT] || 0), 0);
+            context.totalCasosYearAnt = currentWeekData.reduce((sum, row) => sum + (row[COLS.CASOS_YEAR_ANT] || 0), 0);
+            context.varSemanal = context.totalCasosAnt > 0 ? ((context.totalCasos - context.totalCasosAnt) / context.totalCasosAnt * 100).toFixed(1) : 0;
+            context.varAnual = context.totalCasosYearAnt > 0 ? ((context.totalCasos - context.totalCasosYearAnt) / context.totalCasosYearAnt * 100).toFixed(1) : 0;
 
-        currentWeekData.forEach(row => {
-            const z = row[COLS.Z_SCORE] || 0;
-            const c = row[COLS.CASOS_ACTUAL] || 0;
-            weightedZSum += z * c;
-            totalCasesForZ += c;
-        });
+            let weightedZSum = 0;
+            let totalCasesForZ = 0;
+            const delitoGroups = {};
 
-        const avgZScore = totalCasesForZ > 0 ? (weightedZSum / totalCasesForZ) : 0;
-        // Top delitos
-        const delitoGroups = {};
-        currentWeekData.forEach(row => {
-            const delito = row[COLS.DELITO];
-            const casos = row[COLS.CASOS_ACTUAL] || 0;
-            delitoGroups[delito] = (delitoGroups[delito] || 0) + casos;
-        });
+            currentWeekData.forEach(row => {
+                const z = row[COLS.Z_SCORE] || 0;
+                const c = row[COLS.CASOS_ACTUAL] || 0;
+                weightedZSum += z * c;
+                totalCasesForZ += c;
 
-        const topDelitos = Object.entries(delitoGroups)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([name, count]) => `${name}: ${count} casos`);
+                const delito = row[COLS.DELITO];
+                delitoGroups[delito] = (delitoGroups[delito] || 0) + c;
+            });
 
-        // Alertas
-        const alertas = currentWeekData.filter(row => row[COLS.Z_SCORE] > 1).length;
-        const alertasCriticas = currentWeekData.filter(row => row[COLS.Z_SCORE] > 2).length;
+            context.avgZScore = totalCasesForZ > 0 ? (weightedZSum / totalCasesForZ).toFixed(2) : "0.00";
+            context.topDelitos = Object.entries(delitoGroups)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([name, count]) => `${name}: ${count} casos`);
 
-        // High risk delitos
-        const highRiskDelitos = currentWeekData
-            .filter(row => row[COLS.Z_SCORE] > 0.5)
-            .sort((a, b) => (b[COLS.Z_SCORE] || 0) - (a[COLS.Z_SCORE] || 0))
-            .slice(0, 3)
-            .map(row => `${row[COLS.DELITO]} (Z=${(row[COLS.Z_SCORE] || 0).toFixed(2)})`);
+            context.alertas = currentWeekData.filter(row => row[COLS.Z_SCORE] > 1).length;
+            context.alertasCriticas = currentWeekData.filter(row => row[COLS.Z_SCORE] > 2).length;
+            context.highRiskDelitos = currentWeekData
+                .filter(row => row[COLS.Z_SCORE] > 0.5)
+                .sort((a, b) => (b[COLS.Z_SCORE] || 0) - (a[COLS.Z_SCORE] || 0))
+                .slice(0, 3)
+                .map(row => `${row[COLS.DELITO]} (Z=${(row[COLS.Z_SCORE] || 0).toFixed(2)})`);
 
-        // CEAD Data Integration
-        let ceadSummary = "Datos CEAD no disponibles";
-        let ceadTrend = "Desconocida";
+            context.numDelitos = currentWeekData.length;
+            context.v15_risk = context.avgZScore > 1 ? 'ALTO' : (context.avgZScore > 0.5 ? 'MEDIO' : 'BAJO');
 
-        if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded && window.STATE_DATA_CEAD.allData.length > 0) {
-            const ceadData = window.STATE_DATA_CEAD.allData;
+            context.promHist = (currentWeekData.reduce((s, r) => s + (r[COLS.PROMEDIO_HIST] || 0), 0)).toFixed(0);
+            context.varVsProm = context.promHist > 0 ? ((context.totalCasos - context.promHist) / context.promHist * 100).toFixed(1) : 0;
+
+            const totalRow = (window.STATE_DATA.allDataHistory_total || []).find(r => r[COLS.ID_SEMANA] === maxSemana);
+            context.zScoreTotal = totalRow ? parseFloat(totalRow[COLS.Z_SCORE] || 0).toFixed(2) : "0.00";
+            context.anomalias = currentWeekData.filter(r => Math.abs(r[COLS.Z_SCORE] || 0) > 1.5).length;
+
+            const mm4s = totalRow ? (totalRow[COLS.MEDIA_MOVIL_4S] || 0) : 0;
+            const mm8s = totalRow ? (totalRow[COLS.MEDIA_MOVIL_8S] || 0) : 0;
+            context.mm4s = mm4s.toFixed(1);
+            context.mm8s = mm8s.toFixed(1);
+            context.aceleracion = mm8s > 0 ? ((mm4s - mm8s) / mm8s * 100).toFixed(1) : 0;
+        }
+
+        // --- Process CEAD Data (Integration or Fallback) ---
+        if (hasCead) {
+            const cead = window.STATE_DATA_CEAD;
             const idxCead = window.COLS_CEAD;
+            const ceadData = cead.allDataHistory_total;
 
-            // Basic CEAD Stats from latest month
-            // Assuming sorted by date desc
-            const latestCead = ceadData[0];
-            const totalCeadMes = ceadData.filter(r => r[idxCead.ANIO] === latestCead[idxCead.ANIO] && r[idxCead.MES_NUM] === latestCead[idxCead.MES_NUM])
-                .reduce((acc, r) => acc + (r[idxCead.CASOS_MES_ACTUAL] || 0), 0);
+            // If No STOP data, use CEAD for basic context strings
+            if (!hasStop) {
+                context.comunaName = cead.comunaName || context.comunaName;
+            }
 
-            ceadSummary = `Total Delitos (Último Mes CEAD): ${totalCeadMes}. Alerta: ${latestCead[idxCead.ALERTA_AUMENTO_CRITICO] || 'Normal'}`;
+            const latestCead = ceadData.filter(r => !r[idxCead.IS_FORECAST]).sort((a, b) => b[idxCead.ID_PERIODO] - a[idxCead.ID_PERIODO])[0];
 
-            // Simple trend check (comparing with 3 months ago)
-            if (ceadData.length > 3) {
-                const prev = ceadData.find(r => r[idxCead.MES_NUM] === ((latestCead[idxCead.MES_NUM] - 3 + 12) % 12) || 12); // Approximate
-                // actually just take simple slice if sorted
-                // let's just say specific analysis questions cover this.
-                ceadTrend = latestCead[idxCead.TENDENCIA_CORTO_PLAZO] || "Estable";
+            if (latestCead) {
+                context.ceadSummary = `Total Delitos (${latestCead[idxCead.PERIODO_DETALLE] || 'Último Mes'}): ${latestCead[idxCead.CASOS_ACTUAL]}. Alerta: ${latestCead[idxCead.ALERTA] || 'Normal'}.`;
+                context.ceadTrend = latestCead[idxCead.TENDENCIA] || "Estable";
+
+                // Fallback for KPIs if STOP is missing
+                if (!hasStop) {
+                    context.totalCasos = latestCead[idxCead.CASOS_ACTUAL] || 0;
+                    context.varSemanal = latestCead[idxCead.VAR_PCT_MES] || 0;
+                    context.zScoreTotal = parseFloat(latestCead[idxCead.Z_SCORE] || 0).toFixed(2);
+                }
             }
         }
 
-        // Vista 3 - Comparativo Temporal
-        const promHist = currentWeekData.reduce((s, r) => s + (r[COLS.PROMEDIO_HIST] || 0), 0);
-        const varVsProm = promHist > 0 ? ((totalCasos - promHist) / promHist * 100).toFixed(1) : 0;
-
-        // Vista 19 - Z-Score Total
-        const totalRow = (window.STATE_DATA.allDataHistory_total || []).find(r => r[COLS.ID_SEMANA] === maxSemana);
-        const zScoreTotal = totalRow ? (totalRow[COLS.Z_SCORE] || 0) : 0;
-        const anomalias = currentWeekData.filter(r => Math.abs(r[COLS.Z_SCORE] || 0) > 1.5).length;
-
-        // Vista 18 - Aceleración (media móvil 4s vs 8s)
-        const mm4s = totalRow ? (totalRow[COLS.MEDIA_MOVIL_4S] || 0) : 0;
-        const mm8s = totalRow ? (totalRow[COLS.MEDIA_MOVIL_8S] || 0) : 0;
-        const aceleracion = mm8s > 0 ? ((mm4s - mm8s) / mm8s * 100).toFixed(1) : 0;
-
-        return {
-            comunaName,
-            semanaId: maxSemana,
-            totalCasos,
-            totalCasosAnt,
-            totalCasosYearAnt,
-            varSemanal,
-            varAnual,
-            avgZScore: avgZScore.toFixed(2),
-            topDelitos,
-            alertas,
-            alertasCriticas,
-            highRiskDelitos,
-            numDelitos: currentWeekData.length,
-            v15_risk: avgZScore > 1 ? 'ALTO' : (avgZScore > 0.5 ? 'MEDIO' : 'BAJO'),
-            // Vista 3
-            promHist: promHist.toFixed(0),
-            varVsProm,
-            // Vista 18
-            mm4s: mm4s.toFixed(1),
-            mm8s: mm8s.toFixed(1),
-            aceleracion,
-            // Vista 19
-            zScoreTotal: parseFloat(zScoreTotal).toFixed(2),
-            anomalias,
-            // CEAD
-            ceadSummary,
-            ceadTrend
-        };
+        return context;
     },
 
     /**
@@ -332,75 +333,48 @@ const IAModule = {
 
     buildPrompt(context) {
         return `
-Analiza los siguientes datos delictuales de ${context.comunaName} y genera interpretaciones para 13 vistas de un dashboard de seguridad.
+Analiza los siguientes datos delictuales de ${context.comunaName} y genera interpretaciones estratégicas para las vistas del dashboard.
 
-DATOS ACTUALES:
+DATOS DE REFERENCIA:
 - Comuna: ${context.comunaName}
-- Semana ID: ${context.semanaId}
-- Total casos semana: ${context.totalCasos}
-- Variación semanal: ${context.varSemanal}%
-- Variación anual: ${context.varAnual}%
-- Z-Score promedio: ${context.avgZScore}
-- Alertas activas: ${context.alertas}
-- Alertas críticas: ${context.alertasCriticas}
-- Top 5 delitos: ${context.topDelitos.join(', ')}
-- Delitos alto riesgo: ${context.highRiskDelitos.join(', ')}
-- Promedio histórico semanal: ${context.promHist}
-- Variación vs promedio histórico: ${context.varVsProm}%
-- Media Móvil 4S: ${context.mm4s}, Media Móvil 8S: ${context.mm8s}
-- Aceleración (4S vs 8S): ${context.aceleracion}%
-- Z-Score Total: ${context.zScoreTotal}
-- Anomalías (|Z|>1.5): ${context.anomalias}
-- Info CEAD: ${context.ceadSummary}, Tendencia: ${context.ceadTrend}
+- Total casos semana (STOP): ${context.totalCasos}
+- Variación semanal: ${context.varSemanal}% | Variación anual: ${context.varAnual}%
+- Z-Score Promedio: ${context.avgZScore}
+- Alertas STOP: ${context.alertas} (${context.alertasCriticas} críticas)
+- Top Delitos: ${context.topDelitos.join(', ')}
+- Resumen CEAD: ${context.ceadSummary}
 
-Data para vista15 (Diagnóstico Inmediato):
-- Casos Actuales: ${context.totalCasos}
-- Casos Semana Anterior: ${context.totalCasosAnt}
-- Casos Año Anterior: ${context.totalCasosYearAnt}
-- Variación Semanal: ${context.varSemanal}%
-- Variación Anual: ${context.varAnual}%
-- Z-Score Global: ${context.avgZScore}
-- Riesgo Global Estimado: ${context.v15_risk}
-- Principales Delitos: ${context.topDelitos.slice(0, 3).join(', ')}
-
-Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser de 1-2 oraciones, profesional y específica:
+Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser profesional, de 1-2 oraciones y orientada a la toma de decisiones:
 
 {
-  "vista1": "Interpretación sobre la situación general de seguridad",
-  "vista2": "Interpretación sobre alertas activas y anomalías detectadas",
-  "vista3": "COMPARATIVO TEMPORAL: Compara los ${context.totalCasos} casos actuales vs semana anterior (${context.totalCasosAnt}, Δ${context.varSemanal}%), vs misma semana año anterior (${context.totalCasosYearAnt}, Δ${context.varAnual}%), y vs promedio histórico (${context.promHist}, Δ${context.varVsProm}%). Diagnostica si hay alza consistente, baja o sin patrón claro.",
-  "vista4": "Interpretación sobre la gravedad del perfil delictual (matriz de riesgo)",
-  "vista5": "Interpretación sobre violencia vs delitos menores",
-  "vista6": "CORRELACIONES DELICTUALES: Analiza los patrones de co-movimiento entre delitos usando los Top 5 (${context.topDelitos.join(', ')}). Identifica qué pares podrían compartir causas comunes y qué implica para la estrategia de prevención. Menciona si las correlaciones sugieren fenómenos interconectados.",
-  "vista7": "Interpretación sobre tendencias a largo plazo (10 años)",
-  "vista8": "Interpretación sobre estacionalidad de los delitos",
-  "vista9": "Interpretación sobre correlación entre tipos de delitos",
-  "vista10": "Generando pronóstico hacia fin de año (STOP)",
-  "vista11": "Interpretación sobre simulador de impacto",
-  "vista12": "Interpretación sobre predicción del próximo peak delictual (STOP)",
-  "vista13": "Notas metodológicas y fuentes de datos",
-  "vista14": "Interpretación sobre la proyección futura (regresión lineal) y tendencia",
-  "vista15": "Utiliza EXCLUSIVAMENTE la sección 'Data para vista15' para generar un diagnóstico situacional objetivo.",
-  "vista16": "Interpretación sobre demografía y tasas delictuales por habitante",
-  "vista17": "Interpretación sobre ranking regional y contexto geográfico",
-  "vista18": "ACELERACIÓN DEL CRECIMIENTO: La media móvil 4S es ${context.mm4s} y la 8S es ${context.mm8s} (aceleración: ${context.aceleracion}%). Interpreta si el crecimiento delictual se está acelerando o desacelerando, y qué implica operativamente.",
-  "vista19": "NORMALIDAD ESTADÍSTICA Z-SCORE: El Z-Score total es ${context.zScoreTotal} con ${context.anomalias} anomalías detectadas (|Z|>1.5). Clasifica la semana (normal/atípica/extrema) e interpreta la probabilidad estadística de este nivel de delincuencia.",
-  "vista20": "Resumen ejecutivo integral y estado de alertas críticas",
-  "vista21": "Análisis de evolución mensual CEAD",
-  "vista22": "Comparativa anual/mensual CEAD",
-  "vista23": "¿Es un hecho delictivo o una tendencia sostenida (CEAD)? Analiza si la tendencia mensual es creciente o estable.",
-  "vista24": "Interpretación de matriz de variaciones CEAD",
-  "vista25": "Análisis de distribución territorial CEAD",
-  "vista26": "Comparación comunal vs regional CEAD",
-  "vista27": "Tendencia histórica CEAD (Largo plazo)",
-  "vista28": "Estacionalidad y patrones mensuales CEAD",
-  "vista29": "Correlaciones delictuales en datos CEAD",
-  "vista30": "¿Qué esperar hacia fin de año? (CEAD). Proyecta basado en la tendencia actual.",
-  "vista31": "Simulación de escenarios CEAD",
-  "vista32": "¿Cuándo es posible el próximo peak? (CEAD). Identifica patrones cíclicos probables."
+  "vista1": "Interpretación general...", 
+  "vista2": "Análisis de alertas...",
+  "vista3": "Análisis comparativo (${context.totalCasos} casos, Δ${context.varSemanal}% semanal)...",
+  "vista4": "Perfil de gravedad y riesgo...",
+  "vista5": "Distribución de violencia vs delitos menores...",
+  "vista6": "Análisis de correlaciones entre delitos...",
+  "vista7": "Tendencia histórica ( STOP )...",
+  "vista8": "Patrones estacionales detectados...",
+  "vista9": "Correlaciones delictuales...",
+  "vista10": "Pronóstico de tendencia ( STOP )...",
+  "vista11": "Impacto y simulación...",
+  "vista12": "Predicción de peaks...",
+  "vista13": "Notas metodológicas...",
+  "vista14": "Proyección y regresión lineal...",
+  "vista15": "Diagnóstico inmediato de riesgo: ${context.v15_risk}...",
+  "vista16": "Análisis demográfico y tasas...",
+  "vista17": "Contexto regional y ranking...",
+  "vista18": "Aceleración delictual (${context.aceleracion}%)...",
+  "vista19": "Normalidad estadística (Z=${context.zScoreTotal})...",
+  "vista20": "Resumen ejecutivo integral...",
+  "vista21": "Evolución mensual (CEAD)...",
+  "vista22": "Comparativa anual (CEAD)...",
+  "vista23": "Tendencia sostenida vs hechos aislados...",
+  "vista24": "Matriz de variaciones...",
+  "vista25": "Distribución territorial..."
 }
 
-Responde ÚNICAMENTE con el JSON, sin texto adicional.`;
+Responde ÚNICAMENTE con el objeto JSON.`;
     },
 
     /**

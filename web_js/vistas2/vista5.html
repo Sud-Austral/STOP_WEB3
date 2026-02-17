@@ -15,14 +15,15 @@
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
             ¿Qué delitos concentran la mayor parte del problema?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis 80/20:
-            identificación de los delitos que generan la mayor carga operativa para priorizar intervenciones
-            focalizadas.</p>
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+            Análisis de Pareto sobre el <strong>Acumulado del Año (YTD)</strong>: desde la Semana 1 hasta la Semana
+            Actual. Identifica qué delitos generan la mayor carga operativa anual.
+        </p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v5_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v5_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <!-- Alert Concentration -->
     <div id="v5_concentration_alert" style="margin-bottom: 1.5rem; display: none;">
@@ -43,8 +44,8 @@
     <!-- Main Chart -->
     <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
         <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
-            <i class="fa-solid fa-chart-bar" style="color: var(--color-primary);"></i> Diagrama de Pareto (Frecuencia vs
-            Acumulado)
+            <i class="fa-solid fa-chart-bar" style="color: var(--color-primary);"></i> Diagrama de Pareto (Frecuencia
+            Acumulada)
         </h3>
         <div class="chart-wrapper" style="height: 400px;">
             <canvas id="v5_chart_pareto"></canvas>
@@ -56,7 +57,7 @@
         <div class="card" style="padding: 1.5rem;">
             <h4
                 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;">
-                Top 5 Delitos Críticos</h4>
+                Top 5 Delitos (Acumulado Anual)</h4>
             <div id="v5_top_table" style="display: flex; flex-direction: column; gap: 8px;">
                 <!-- Filled by JS -->
             </div>
@@ -69,7 +70,7 @@
                     CONCENTRACIÓN PARETO</div>
                 <div id="v5_concentration_val" style="font-size: 2.8rem; font-weight: 950; color: #1e293b;">--%</div>
                 <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">Participación de los 3 delitos
-                    principales</div>
+                    principales (YTD)</div>
             </div>
 
             <div
@@ -79,6 +80,17 @@
                 <strong>hiper-focalizada</strong> en esos puntos específicos.
             </div>
         </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Delitos Críticos
+            (YTD)</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia acumulada durante el año.
     </div>
 </div>
 
@@ -102,39 +114,59 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
         document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
 
-        // Data processing
-        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
-            .sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0));
+        // Data processing: Aggregate YTD (Year to Date)
+        const ytdMap = new Map();
 
-        const totalCases = currentData.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+        // Detect Current Year from Total Data (fallback to current date)
+        const currentYear = S.allDataHistory_total.length > 0
+            ? Math.max(...S.allDataHistory_total.map(r => r[C.ANIO] || 0))
+            : new Date().getFullYear();
+
+        S.allDataHistory.forEach(r => {
+            const delito = r[C.DELITO];
+            // Skip invalid rows
+            if (!delito || delito === 'Total' || delito === 'TOTAL') return;
+
+            // Filter STRICTLY by Current Year (YTD)
+            // If C.ANIO is missing, we assume data is current, otherwise filter
+            if (r[C.ANIO] && r[C.ANIO] !== currentYear) return;
+
+            const casos = r[C.CASOS_ACTUAL] || 0;
+            if (!ytdMap.has(delito)) {
+                ytdMap.set(delito, { delito, total: 0 });
+            }
+            ytdMap.get(delito).total += casos;
+        });
+
+        const paretoRaw = Array.from(ytdMap.values());
+        paretoRaw.sort((a, b) => b.total - a.total);
+
+        const totalCases = paretoRaw.reduce((sum, r) => sum + r.total, 0);
 
         let cumulative = 0;
-        const paretoData = currentData.map(r => {
-            const val = r[C.CASOS_ACTUAL] || 0;
-            cumulative += val;
+        const paretoData = paretoRaw.map(r => {
+            cumulative += r.total;
             return {
-                delito: r[C.DELITO],
-                casos: val,
-                casosAnt: r[C.CASOS_ANT] || 0,
+                delito: r.delito,
+                casos: r.total,
                 accumPct: (cumulative / totalCases * 100)
             };
         });
 
         // Top 3 Concentration
-        const top3Pct = paretoData.length >= 3 ? paretoData[2].accumPct : 100;
+        const top3Pct = paretoData.length >= 3 ? paretoData[2].accumPct : (paretoData.length > 0 ? 100 : 0);
         const vConcVal = document.getElementById('v5_concentration_val');
         vConcVal.textContent = `${top3Pct.toFixed(1)}%`;
 
         if (top3Pct > 70) {
             document.getElementById('v5_concentration_alert').style.display = 'block';
-            document.getElementById('v5_alert_text').textContent = `Solo 3 delitos concentran el ${top3Pct.toFixed(1)}% de la criminalidad total. Se requiere una estrategia de saturación en focos específicos.`;
+            document.getElementById('v5_alert_text').textContent = `Solo 3 delitos concentran el ${top3Pct.toFixed(1)}% de la criminalidad anual. Se requiere una estrategia de saturación en focos específicos.`;
             vConcVal.style.color = '#ef4444';
         }
 
         // Table
         const tableContainer = document.getElementById('v5_top_table');
         tableContainer.innerHTML = paretoData.slice(0, 5).map((d, i) => {
-            const delta = d.casosAnt > 0 ? ((d.casos - d.casosAnt) / d.casosAnt * 100) : 0;
             return `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: ${i % 2 === 0 ? '#f8fafc' : '#fff'}; border-radius: 6px;">
                     <div style="flex: 1;">
@@ -143,8 +175,8 @@
                     </div>
                     <div style="text-align: right;">
                         <div style="font-weight: 800; color: #1e293b;">${ChartHelper.formatNumber(d.casos)}</div>
-                        <div style="font-size: 0.7rem; font-weight: 700; color: ${delta > 0 ? '#ef4444' : delta < 0 ? '#10b981' : '#64748b'};">
-                            ${delta >= 0 ? '▲' : '▼'} ${Math.abs(delta).toFixed(1)}%
+                        <div style="font-size: 0.7rem; font-weight: 700; color: #64748b;">
+                            CASOS YTD
                         </div>
                     </div>
                 </div>
@@ -153,23 +185,25 @@
 
         // --- Pareto Chart ---
         const ctx = document.getElementById('v5_chart_pareto').getContext('2d');
-        const labels = paretoData.slice(0, 12).map(d => d.delito.length > 20 ? d.delito.substring(0, 20) + '...' : d.delito);
+        // Use full crime names, no truncation
+        const labels = paretoData.slice(0, 12).map(d => d.delito);
 
         new Chart(ctx, {
+            type: 'bar', // Main type
             data: {
                 labels: labels,
                 datasets: [
                     {
                         type: 'line',
                         label: '% Acumulado',
-                        data: paretoData.slice(0, 12).map(d => d.accumPct),
+                        data: paretoData.slice(0, 12).map(d => d.accumPct.toFixed(1)), // Fix decimals
                         borderColor: '#fbbf24',
                         backgroundColor: '#fbbf24',
                         borderWidth: 3,
-                        pointRadius: 5,
+                        pointRadius: 4,
                         pointBackgroundColor: '#fff',
                         yAxisID: 'yAcum',
-                        zIndex: 10
+                        order: 1 // Ensure line is on top
                     },
                     {
                         type: 'bar',
@@ -177,20 +211,37 @@
                         data: paretoData.slice(0, 12).map(d => d.casos),
                         backgroundColor: 'rgba(59, 130, 246, 0.7)',
                         borderRadius: 4,
-                        yAxisID: 'yCasos'
+                        yAxisID: 'yCasos',
+                        order: 2
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
                 plugins: {
                     legend: { position: 'top', labels: { font: { family: 'Outfit', weight: '600' } } },
                     tooltip: {
-                        mode: 'index',
-                        intersect: false,
                         backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                        titleFont: { family: 'Outfit' }
+                        titleFont: { family: 'Outfit', size: 13 },
+                        bodyFont: { family: 'Outfit', size: 12 },
+                        padding: 12,
+                        callbacks: {
+                            label: function (context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + (context.dataset.type === 'line' ? '%' : '');
+                                }
+                                return label;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -198,7 +249,7 @@
                         type: 'linear',
                         position: 'left',
                         grid: { color: '#f1f5f9' },
-                        title: { display: true, text: 'Casos', font: { family: 'Outfit', weight: '700' } }
+                        title: { display: true, text: 'Casos (YTD)', font: { family: 'Outfit', weight: '700' } }
                     },
                     yAcum: {
                         type: 'linear',
@@ -211,11 +262,24 @@
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { font: { family: 'Outfit', size: 10 } }
+                        ticks: {
+                            font: { family: 'Outfit', size: 10 },
+                            autoSkip: false, // Force show all labels
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
                     }
                 }
             }
         });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista5').then(txt => {
+                const el = document.getElementById('v5_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

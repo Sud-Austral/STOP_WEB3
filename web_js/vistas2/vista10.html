@@ -20,9 +20,9 @@
             delictuales ajustadas por población contra el promedio regional y análisis de posición en ranking.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v10_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v10_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
         <!-- Relative Position Gauge -->
@@ -88,6 +88,16 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Análisis de posición relativa (Ranking) basado en la semana policial actual
+        versus la semana anterior. Las tasas están ajustadas por cada 100.000 habitantes. Un ranking más bajo (cercano a
+        1) indica mayor criticidad.
     </div>
 </div>
 
@@ -227,6 +237,15 @@
                 plugins: { legend: { display: false }, tooltip: { enabled: false } }
             }
         });
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista10').then(txt => {
+                const el = document.getElementById('v10_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

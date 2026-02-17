@@ -3,6 +3,9 @@
  * Extends capabilities of standard PDFModule with specific structure for Vistas 2.
  */
 
+const capitalize = (str) =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+
 window.PDFModuleV2 = {
     // Config inherited from standard module structure but specialized
     config: {
@@ -70,7 +73,7 @@ window.PDFModuleV2 = {
             // 4. Capture Views
             for (let i = 0; i < totalViews; i++) {
                 const viewName = this.config.views[i];
-                const viewTitle = this.viewTitles[i];
+                const viewTitle = this.viewTitles[i]; // Use original Title Case
                 const viewNum = i + 1;
 
                 // Update Progress
@@ -78,7 +81,11 @@ window.PDFModuleV2 = {
 
                 // Determine Section/Level for Header
                 const level = this.levels.find(l => viewNum >= l.range[0] && viewNum <= l.range[1]);
-                const sectionTitle = level ? level.name : viewTitle;
+
+                // Format: "NIVEL X (UPPER) - View Name (Title Case)"
+                const sectionTitle = level
+                    ? `${level.name.toUpperCase()} - ${viewTitle}`
+                    : viewTitle;
 
                 // Load View
                 await App.loadView(viewName);
@@ -216,7 +223,7 @@ window.PDFModuleV2 = {
             pdf.setFont("helvetica", "bold");
             pdf.setTextColor(37, 99, 235); // Blue
             pdf.text(level.name, 20, y);
-            y += 8;
+            y += 6; // Reduced from 8
 
             // Level Items
             for (let i = level.range[0]; i <= level.range[1]; i++) {
@@ -231,14 +238,14 @@ window.PDFModuleV2 = {
                 const pageNum = i + 3;
                 pdf.text(String(pageNum), 190, y, { align: "right" });
 
-                // Dotted line
+                // Dotted line - End earlier and use lighter pattern to avoid clutter
                 pdf.setDrawColor(200, 200, 200);
-                pdf.setLineDash([1, 2], 0);
-                pdf.line(30 + pdf.getTextWidth(title) + 2, y - 1, 188, y - 1);
+                pdf.setLineDash([0.5, 3], 0);
+                pdf.line(30 + pdf.getTextWidth(title) + 2, y - 1, 182, y - 1);
 
-                y += 6;
+                y += 5; // Reduced from 6
             }
-            y += 4;
+            y += 3; // Reduced from 4
         });
     },
 
@@ -248,11 +255,12 @@ window.PDFModuleV2 = {
 
         pdf.setFontSize(10);
         pdf.setTextColor(100, 116, 139);
-        pdf.text(title.toUpperCase(), 105, 10, { align: 'center' });
+        // Changed to use original provided title format without forced uppercase
+        pdf.text(title, 105, 10, { align: 'center' });
 
         pdf.setFontSize(8);
         pdf.setTextColor(148, 163, 184);
-        pdf.text("MONITOR ESTRATÉGICO V2", 15, 10);
+        //pdf.text("MONITOR ESTRATÉGICO V2", 15, 10);
     },
 
     addFooterV2(pdf, pageNum) {

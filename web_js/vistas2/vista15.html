@@ -17,38 +17,6 @@
         </h2>
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Relación entre casos
             reportados y detenciones realizadas. Un ratio alto indica mayor capacidad operativa y disuasión.</p>
-    </div>
-
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v15_ia_analysis">Cargando análisis...</span>
-</div>
-
-    <!-- Efficiency KPI -->
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-        <div class="card" style="padding: 1.5rem; text-align: center; border-bottom: 5px solid #10b981;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">RATIO DETENCIÓN/CASO
-            </div>
-            <div id="v15_ratio_val" style="font-size: 2.8rem; font-weight: 950; color: #065f46;">--%</div>
-            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Promedio del Período</div>
-        </div>
-        <div class="card" style="padding: 1.5rem; text-align: center; border-bottom: 5px solid #3b82f6;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">APREHENDIDOS TOTALES
-            </div>
-            <div id="v15_detenidos_val" style="font-size: 2.8rem; font-weight: 950; color: #1e3a8a;">--</div>
-            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Personas detenidas</div>
-        </div>
-        <div class="card" style="padding: 1.5rem; text-align: center; border-bottom: 5px solid #f59e0b;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">VAR. EFECTIVIDAD
-            </div>
-            <div id="v15_eff_delta" style="font-size: 2.2rem; font-weight: 950; color: #1e293b;">--%</div>
-            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">vs año anterior</div>
-        </div>
-    </div>
-
-    <!-- Dual Axis Chart -->
-    <div class="card chart-card" style="padding: 1.5rem;">
-        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
-            <i class="fa-solid fa-chart-line" style="color: #10b981;"></i> Evolución: Casos vs Detenciones vs Ratio
         </h3>
         <div class="chart-wrapper" style="height: 400px;">
             <canvas id="v15_chart_dual"></canvas>
@@ -60,6 +28,17 @@
         <i class="fa-solid fa-shield-halved"></i> <strong>Análisis Operativo:</strong> Si los casos suben pero el ratio
         de detención baja, existe un <strong>"Gap de Respuesta"</strong> que puede incentivar la reincidencia. La meta
         estratégica es mantener un ratio superior al promedio regional.
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Efectividad
+            Policial</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia.
     </div>
 </div>
 
@@ -97,8 +76,19 @@
         const current = data[data.length - 1];
         const prev = data[data.length - 2] || current;
 
+        // Averages
+        const avgCases = Math.round(data.reduce((a, b) => a + b.cases, 0) / data.length);
+        const avgArrests = Math.round(data.reduce((a, b) => a + b.arrests, 0) / data.length);
+        const avgRatio = (data.reduce((a, b) => a + b.ratio, 0) / data.length).toFixed(1);
+
         document.getElementById('v15_ratio_val').textContent = `${current.ratio.toFixed(1)}%`;
+        document.getElementById('v15_ratio_hist').textContent = `${avgRatio}%`;
+
         document.getElementById('v15_detenidos_val').textContent = ChartHelper.formatNumber(current.arrests);
+        document.getElementById('v15_detenidos_avg').textContent = ChartHelper.formatNumber(avgArrests);
+
+        document.getElementById('v15_casos_val').textContent = ChartHelper.formatNumber(current.cases);
+        document.getElementById('v15_casos_avg').textContent = ChartHelper.formatNumber(avgCases);
 
         const effDelta = ((current.ratio - prev.ratio) / prev.ratio * 100);
         const deltaEl = document.getElementById('v15_eff_delta');
@@ -159,6 +149,15 @@
                 }
             }
         });
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista15').then(txt => {
+                const el = document.getElementById('v15_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

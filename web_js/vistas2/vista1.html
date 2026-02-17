@@ -48,28 +48,41 @@
     </div>
 </div>
 
-<div class="cards-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-    <div class="card chart-card">
-        <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-ranking-star" style="color: var(--color-primary);"></i> Top 5 Delitos con Mayor
-            Volumen
-        </h3>
-        <div class="chart-wrapper" style="height: 320px;">
-            <canvas id="v1_chart_bar"></canvas>
-        </div>
+
+<!-- Row 1: Top 5 Delitos -->
+<div class="card chart-card" style="margin-bottom: 1.5rem;">
+    <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-ranking-star" style="color: var(--color-primary);"></i> Top 5 Delitos con Mayor Volumen
+    </h3>
+    <div class="chart-wrapper" style="height: 320px;">
+        <canvas id="v1_chart_bar"></canvas>
     </div>
-    <div class="card chart-card">
-        <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-chart-line" style="color: var(--color-primary);"></i> Línea de Tendencia (Últimas 8
-            Semanas)
-        </h3>
-        <div class="chart-wrapper" style="height: 320px;">
-            <canvas id="v1_chart_trend"></canvas>
-        </div>
+</div>
+
+<!-- Row 2: Tendencia -->
+<div class="card chart-card">
+    <h3 class="section-title mb-lg" style="font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-chart-line" style="color: var(--color-primary);"></i> Línea de Tendencia (Últimas 8
+        Semanas)
+    </h3>
+    <div class="chart-wrapper" style="height: 280px;"> <!-- Reduced height ~15% -->
+        <canvas id="v1_chart_trend"></canvas>
     </div>
 </div>
 
 
+
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un resumen ejecutivo de la situación delictual,
+        destacando los 5 delitos con mayor frecuencia y la tendencia general de las últimas 8 semanas. Los indicadores
+        clave de desempeño (KPI) comparan la semana actual con la anterior y el mismo periodo del año pasado.
+    </div>
+</div>
 
 <script>
     (async function initVista1_V2() {
@@ -93,15 +106,26 @@
         const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
         const casos = totalRow[C.CASOS_ACTUAL] || 0;
         const casosAnt = totalRow[C.CASOS_ANT] || 0;
+        // Correct key for Year Prev
         const casosYearAnt = totalRow[C.CASOS_YEAR_ANT] || 0;
         const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
 
         // KPIs
         const deltaSem = casosAnt > 0 ? ((casos - casosAnt) / casosAnt * 100) : 0;
+        // deltaAnual uses 'casos' vs 'casosYearAnt'
         const deltaAnual = casosYearAnt > 0 ? ((casos - casosYearAnt) / casosYearAnt * 100) : 0;
 
-        UIHelper.renderKpi('v1_casos', 'v1_casos_delta', casos, deltaSem, true, 'vs sem. ant.');
+        // Enhanced Labels with previous values
+        const labelSem = `vs sem. ant. (${casosAnt})`;
+        const labelAnual = `vs año ant. (${casosYearAnt})`;
+
+        UIHelper.renderKpi('v1_casos', 'v1_casos_delta', casos, deltaSem, true, labelSem);
+
+        // Var Anual Card
         UIHelper.renderColoredPercent('v1_var_anual', deltaAnual, true);
+        const lblAnualEl = document.getElementById('v1_var_anual_label');
+        if (lblAnualEl) lblAnualEl.textContent = labelAnual;
+
         UIHelper.setText('v1_tasa', (casos / factorPob).toFixed(1));
 
         // Z-Score y Riesgo
@@ -138,7 +162,7 @@
         new Chart(document.getElementById('v1_chart_bar'), {
             type: 'bar',
             data: {
-                labels: top5Data.map(d => d[C.DELITO].length > 15 ? d[C.DELITO].substring(0, 15) + '...' : d[C.DELITO]),
+                labels: top5Data.map(d => d[C.DELITO]), // Nombres Completos (sin truncar)
                 datasets: [{
                     label: 'Casos',
                     data: top5Data.map(d => d[C.CASOS_ACTUAL]),
@@ -150,12 +174,31 @@
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                layout: { padding: { right: 40 } }, // Space for labels
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#334155',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: (value) => {
+                            if (!casos || casos === 0) return value;
+                            const pct = ((value / casos) * 100).toFixed(1);
+                            return `${value} (${pct}%)`;
+                        }
+                    }
+                },
                 scales: {
-                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Outfit' } },
+                        title: { display: true, text: 'Total de Casos (Semana Actual)', font: { weight: 'bold' } }
+                    },
                     y: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '600' } } }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // --- Gráfico de Tendencia: 8 Semanas ---
@@ -164,31 +207,105 @@
         // Use central date formatter (YYYY/MM)
         const trendLabels = last8_IDs.map(id => S.getDateLabel(id));
 
+        // --- 1. Calcular Pendiente (Regresión Lineal Simple) ---
+        const n = trendData.length;
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        trendData.forEach((y, x) => {
+            sumX += x;
+            sumY += y;
+            sumXY += x * y;
+            sumXX += x * x;
+        });
+
+        // Slope computation
+        const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const intercept = (sumY - slope * sumX) / n;
+
+        // Linear Regression Data (y = mx + b)
+        const linearData = trendData.map((_, x) => slope * x + intercept);
+
+        // Colors
+        const trendColor = slope >= 0 ? '#ef4444' : '#10b981'; // Red / Green
+
+        // --- 2. Promedio ---
+        const avgVal = trendData.reduce((a, b) => a + b, 0) / n;
+        const avgData = Array(n).fill(avgVal);
+
         new Chart(document.getElementById('v1_chart_trend'), {
             type: 'line',
             data: {
                 labels: trendLabels,
-                datasets: [{
-                    label: 'Total Delitos',
-                    data: trendData,
-                    borderColor: 'var(--color-primary)',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#fff',
-                    pointBorderWidth: 2
-                }]
+                datasets: [
+                    {
+                        label: 'Datos Reales', // Raw Data
+                        data: trendData,
+                        borderColor: 'rgba(59, 130, 246, 0.5)', // Blue-500 dimmed
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        fill: true,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex % 2 === 0, // Show label every 2 points
+                            align: 'top',
+                            color: '#64748b',
+                            font: { size: 10 },
+                            offset: 4
+                        }
+                    },
+                    {
+                        label: 'Tendencia Lineal', // Regression Line
+                        data: linearData,
+                        borderColor: trendColor, // Dynamic Color
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        fill: false,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex === n - 1, // Show only on last point
+                            align: 'right',
+                            anchor: 'end',
+                            color: trendColor,
+                            font: { weight: 'bold' },
+                            formatter: () => `m = ${slope.toFixed(2)}`
+                        }
+                    },
+                    {
+                        label: `Promedio (${avgVal.toFixed(1)})`,
+                        data: avgData,
+                        borderColor: '#94a3b8', // Slate-400
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false,
+                        datalabels: { display: false }
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                layout: {
+                    padding: { top: 20, right: 60, left: 10, bottom: 0 }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        align: 'center',
+                        labels: { font: { family: 'Outfit', size: 11 }, usePointStyle: true, boxWidth: 6, padding: 15 }
+                    },
+                    datalabels: { clip: false }
+                },
                 scales: {
-                    y: { grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } },
-                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } }
+                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit', size: 10 } } },
+                    y: {
+                        beginAtZero: true,
+                        grace: '20%',
+                        title: { display: true, text: 'Total de Casos Semanales', font: { weight: 'bold' } }
+                    }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // IA Integration

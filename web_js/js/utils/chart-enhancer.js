@@ -206,9 +206,16 @@ const ChartEnhancer = {
      */
     getSourceForView(viewId) {
         const viewNum = parseInt(viewId.replace('vista', ''));
-        if (viewNum >= 1 && viewNum <= 20) return 'STOP';
-        if (viewNum >= 21 && viewNum <= 40) return 'CEAD';
-        if (viewNum >= 41 && viewNum <= 45) return 'MIXED';
+        const ceadViews = [4, 7, 10, 11, 12, 15, 16, 19, 20, 21, 25];
+        const ineViews = [1, 9, 10, 12, 13, 17];
+        const hybridViews = [41, 42, 43, 44, 45];
+
+        if (hybridViews.includes(viewNum)) return 'MIXED';
+        if (ceadViews.includes(viewNum)) {
+            return ineViews.includes(viewNum) ? 'MIXED' : 'CEAD';
+        }
+        if (ineViews.includes(viewNum)) return 'MIXED';
+
         return 'STOP';
     }
 };

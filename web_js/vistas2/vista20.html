@@ -19,79 +19,169 @@
             tipologías en fase de disipación: delitos con disminución sostenida y valores significativamente bajo su
             media histórica.</p>
     </div>
+    <!-- Vista 20: Diagnóstico de Delitos en Disipación (Éxitos Operativos) -->
+    <div class="card mb-lg">
+        <div class="location-source-row"
+            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div style="font-size: 0.8rem; color: #10b981; font-weight: 600; letter-spacing: 0.5px;">
+                <i class="fa-solid fa-cloud-sun"></i> <span class="comuna-fill">CARGANDO...</span>
+                <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+                <span>GESTIÓN DE ÉXITO (CEAD)</span>
+            </div>
+            <div id="sourceBadgeContainer"></div>
+        </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v20_ia_analysis">Cargando análisis...</span>
-</div>
+        <div class="question-section" style="background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #10b981; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+            <h2
+                style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+                ¿Qué delitos estamos logrando reducir con éxito?
+            </h2>
+            <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Identificación de
+                tipologías en fase de disipación: delitos con disminución sostenida y valores significativamente bajo su
+                media histórica.</p>
+        </div>
 
-    <!-- Success Grid -->
-    <div id="v20_success_grid"
-        style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
-        <!-- Filled by JS -->
-    </div>
+        <div class="alert alert--info" style="margin-top: 1.5rem;">
+            <strong>🤖 Análisis de Situación:</strong> <span id="v20_ia_analysis">Cargando análisis...</span>
+        </div>
 
-    <div class="card"
-        style="padding: 1.5rem; background: #f0fdf4; border: 1px solid #dcfce7; display: flex; align-items: center; gap: 20px;">
-        <div style="font-size: 3rem; color: #10b981; opacity: 0.4;"><i class="fa-solid fa-trophy"></i></div>
-        <div>
-            <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #166534;">Validación de Estrategia</h4>
-            <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #15803d; line-height: 1.5;">Los delitos en
-                disipación validan las tácticas de prevención e intervención implementadas. Se recomienda documentar
-                estas "Buenas Prácticas" para replicar en otras tipologías críticas.</p>
+        <!-- Success Grid -->
+        <!-- Tabs or Split View -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+            <!-- Short Term (STOP) -->
+            <div class="card" style="padding: 1.5rem; border-left: 8px solid #10b981;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                    <h3 class="section-title mb-lg" style="font-size: 1rem; color: #065f46; margin:0;"><i
+                            class="fa-solid fa-arrow-trend-down"></i> Corto Plazo (STOP)</h3>
+                    <span
+                        style="font-size: 0.7rem; background: #ecfdf5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-weight: 700;">Últimas
+                        Semanas</span>
+                </div>
+                <div id="v20_list_stop" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <!-- Long Term (CEAD) -->
+            <div class="card" style="padding: 1.5rem; border-left: 8px solid #3b82f6;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                    <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e40af; margin:0;"><i
+                            class="fa-solid fa-medal"></i> Largo Plazo (CEAD)</h3>
+                    <span
+                        style="font-size: 0.7rem; background: #eff6ff; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-weight: 700;">Tendencia
+                        Anual</span>
+                </div>
+                <div id="v20_list_cead" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Validation Note -->
+        <div class="card"
+            style="margin-top: 1.5rem; padding: 1.5rem; background: #f0fdf4; border: 1px solid #dcfce7; display: flex; align-items: center; gap: 20px;">
+            <div style="font-size: 2rem; color: #10b981; opacity: 0.4;"><i class="fa-solid fa-clipboard-check"></i>
+            </div>
+            <div>
+                <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #166534;">Consolidación de Resultados
+                </h4>
+                <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #15803d; line-height: 1.5;">
+                    Las reducciones sostenidas en ambos plazos (corto y largo) son indicadoras de éxito estructural de
+                    las políticas implementadas.
+                </p>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    (async function initVista20_V2() {
-        const waitForData = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
-                    else setTimeout(check, 100);
-                };
-                check();
-            });
-        };
 
-        await waitForData();
-        const S = window.STATE_DATA_CEAD;
-        const C = window.COLS_CEAD;
+    <!-- Nota Metodológica -->
+    <div class="row" style="margin-top: 2rem;">
+        <div
+            style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+            <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Tendencia 20
+                Años</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+            basadas en evidencia.
+        </div>
+    </div>
 
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+    <script>
+        (async function initVista20_V2() {
+            const waitForData = () => {
+                return new Promise((resolve) => {
+                    const check = () => {
+                        if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                        else setTimeout(check, 100);
+                    };
+                    check();
+                });
+            };
 
-        // Filter: Detect Dissipating (Very Negative Z-Score)
-        const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
+            await waitForData();
+            if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
+                const S_STOP = window.STATE_DATA;
+                const C_STOP = window.COLS;
 
-        const success = currentData
-            .filter(r => (r[C.Z_SCORE] || 0) < -1.0 && (r[C.CASOS_ACTUAL] || 0) > 0)
-            .sort((a, b) => (a[C.Z_SCORE] || 0) - (b[C.Z_SCORE] || 0))
-            .slice(0, 4);
+                // Short Term: Dropping in last week
+                const stopSuccess = S_STOP.allDataHistory.filter(r => r[C_STOP.ID_SEMANA] === S_STOP.currentSemana)
+                    .map(r => {
+                        const act = r[C_STOP.CASOS_ACTUAL] || 0;
+                        const ant = r[C_STOP.CASOS_ANT] || 0;
+                        const delta = ant > 0 ? ((act - ant) / ant * 100) : 0;
+                        return { ...r, delta, act, ant };
+                    })
+                    .filter(r => r.delta < -5 && r.ant > 0) // Significant drop (>5%)
+                    .sort((a, b) => a.delta - b.delta) // Most negative first
+                    .slice(0, 4);
 
-        const grid = document.getElementById('v20_success_grid');
-        if (success.length > 0) {
-            grid.innerHTML = success.map(r => `
-                <div class="card" style="padding: 1.5rem; border-left: 6px solid #10b981; display: flex; flex-direction: column; gap: 10px; background: white;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase;">DISIPACIÓN ACTIVA</span>
-                        <span style="font-size: 0.85rem; font-weight: 900; color: #10b981;">Z = ${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
+                const listStop = document.getElementById('v20_list_stop');
+                if (stopSuccess.length > 0) {
+                    listStop.innerHTML = stopSuccess.map(r => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0fdf4; padding-bottom: 8px;">
+                        <span style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">${r[C_STOP.DELITO]}</span>
+                        <span style="font-weight: 800; color: #10b981; font-size: 0.85rem;">${r.delta.toFixed(0)}%</span>
                     </div>
-                    <div style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">${r[C.DELITO]}</div>
-                    <div style="display: flex; gap: 15px; margin-top: 5px;">
-                        <div>
-                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">ACTUAL</div>
-                            <div style="font-size: 1.2rem; font-weight: 900; color: #1e293b;">${r[C.CASOS_ACTUAL]} <span style="font-size:0.75rem; color:#10b981;">▼</span></div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">MEDIA HIST.</div>
-                            <div style="font-size: 1.2rem; font-weight: 900; color: #64748b;">${(r[C.PROMEDIO_HIST] || 0).toFixed(1)}</div>
-                        </div>
-                    </div>
+                `).join('');
+                } else {
+                    listStop.innerHTML = '<div style="color: #94a3b8; font-size: 0.8rem; font-style: italic; text-align: center; padding: 1rem;">No se registran disminuciones significativas esta semana.</div>';
+                }
+            }
+
+            const S = window.STATE_DATA_CEAD;
+            const C = window.COLS_CEAD;
+
+            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+            // Long Term: Dissipating (Very Negative Z-Score)
+            const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
+
+            const success = currentData
+                .filter(r => (r[C.Z_SCORE] || 0) < -0.5 && (r[C.CASOS_ACTUAL] || 0) > 0)
+                .sort((a, b) => (a[C.Z_SCORE] || 0) - (b[C.Z_SCORE] || 0))
+                .slice(0, 4);
+
+            const listCead = document.getElementById('v20_list_cead');
+            if (success.length > 0) {
+                listCead.innerHTML = success.map(r => `
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eff6ff; padding-bottom: 8px;">
+                     <span style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">${r[C.DELITO]}</span>
+                     <span style="font-weight: 800; color: #3b82f6; font-size: 0.85rem;">Z = ${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
                 </div>
             `).join('');
-        } else {
-            grid.innerHTML = '<div class="text-muted" style="grid-column: 1/-1; padding: 2rem; border: 2px dashed #f1f5f9; border-radius: 12px; text-align: center;">No se registran tipologías con disminución atípica significativa (Z < -1.0) esta semana.</div>';
-        }
+            } else {
+                listCead.innerHTML = '<div style="color: #94a3b8; font-size: 0.8rem; font-style: italic; text-align: center; padding: 1rem;">No se registran tipologías con disipación estructural (Z < -0.5).</div>';
+            }
 
-    })();
-</script>
+
+            // IA Integration
+            if (typeof IAModule !== 'undefined') {
+                IAModule.getInterpretation('vista20').then(txt => {
+                    const el = document.getElementById('v20_ia_analysis');
+                    if (el) el.innerHTML = txt;
+                });
+            }
+
+        })();
+    </script>

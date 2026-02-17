@@ -67,13 +67,13 @@ def ejecutar_proceso():
                 try:
                     model = SARIMAX(
                         serie_train,
-                        order=(1, 1, 0), 
-                        seasonal_order=(0, 1, 0, 12),
+                        order=(1, 1, 1), # Se agrega MA(1) para manejar mejor el ruido
+                        seasonal_order=(1, 1, 0, 12),
                         enforce_stationarity=False,
                         enforce_invertibility=False,
                         simple_differencing=True
                     )
-                    result = model.fit(disp=False, maxiter=15, cov_type='none', method='powell')
+                    result = model.fit(disp=False, maxiter=30, cov_type='none')
                     forecast = result.get_forecast(steps=len(FILL_PERIODS))
                     vals_pred = [max(0, round(v)) for v in forecast.predicted_mean]
                     
@@ -116,7 +116,8 @@ def ejecutar_proceso():
                     'codcom': com, 'tipoValCod': tipo, 'delito': delit,
                     'año': date_f.year, 'mes': date_f.month,
                     'id_periodo': date_to_id(date_f), 'fecha': date_f,
-                    'frecuencia': vals_pred[i], 'tipoVal': tipo_val_nombre
+                    'frecuencia': vals_pred[i], 'tipoVal': tipo_val_nombre,
+                    'is_forecast': True
                 })
             return res
 
@@ -170,8 +171,9 @@ def ejecutar_proceso():
     df_raw = df_raw[df_raw["tipoValCod"] == "1,2"]
     df_raw = df_raw[df_raw["CODIGO"] > 10000].copy()
     df_raw['nivel_original'] = df_raw['Nivel']
+    df_raw['is_forecast'] = False
 
-    df = df_raw.melt(id_vars=['Codcom', 'Año', 'tipoValCod', 'tipoVal', 'CODIGO', 'Descripcion', 'Nivel', 'nivel_original'], 
+    df = df_raw.melt(id_vars=['Codcom', 'Año', 'tipoValCod', 'tipoVal', 'CODIGO', 'Descripcion', 'Nivel', 'nivel_original', 'is_forecast'], 
                     value_vars=MESES, var_name='mes_nombre', value_name='frecuencia')
     df['mes'] = df['mes_nombre'].map(MES_NUM)
     df['frecuencia'] = pd.to_numeric(df['frecuencia'], errors='coerce').fillna(0).astype(int)
@@ -205,8 +207,27 @@ def ejecutar_proceso():
     
     for (com, tipo, delit), group in progress_wrapper(grupos, desc="Prediciendo"):
         serie = group.groupby('fecha')['frecuencia'].sum().sort_index().asfreq('MS').fillna(0)
-        serie_train = serie.replace(0, np.nan).dropna()
-        if serie_train.empty: serie_train = serie
+        
+        # --- NUEVO: TRATAMIENTO DE HUECOS (INTERPOLACIÓN) ---
+        # Si hay ceros entre datos (huecos de carga), interpolamos para no arruinar el modelo ni el gráfico
+        mask = serie > 0
+        if mask.any():
+            first_date = serie[mask].index[0]
+            last_date = serie[mask].index[-1]
+            
+            # Solo actuamos sobre el rango donde ya existen datos "antes y después"
+            subset = serie.loc[first_date:last_date]
+            if (subset == 0).any():
+                # print(f"   ! Corrigiendo huecos en {delit} ({com})")
+                full_range_fixed = subset.replace(0, np.nan).interpolate(method='linear').fillna(0).round().astype(int)
+                serie.loc[first_date:last_date] = full_range_fixed
+                
+                # Actualizamos los datos originales para que el gráfico real no muestre la caída a cero
+                df.loc[(df['codcom']==com) & (df['tipoValCod']==tipo) & (df['delito']==delit) & 
+                       (df['fecha'] >= first_date) & (df['fecha'] <= last_date), 'frecuencia'] = serie.loc[first_date:last_date].values
+        
+        serie_train = serie
+        if serie_train.empty: continue
         
         # Ejecución directa sin pool
         res = predecir_sarima_secuencial((com, tipo, delit, group['tipoVal'].iloc[0], serie_train))
@@ -294,14 +315,20 @@ def ejecutar_proceso():
                 union_data = json.load(f)
             
             map_cead_weight = {}
+            map_stop_name = {}
             for item in union_data:
                 stop_name = item.get(' Delitos_stop', '').strip()
                 weight = weights_stop.get(stop_name, 0)
                 if weight > 0:
                     map_cead_weight[item['id_subgrupo']] = weight
+                
+                # Mapping for stop_delito
+                if 'id_subgrupo' in item:
+                    map_stop_name[item['id_subgrupo']] = stop_name
             
             # 3. Aplicar mapeo (df['CODIGO'] es el id_subgrupo CEAD)
             df['idi_peso'] = df['CODIGO'].map(map_cead_weight).fillna(0)
+            df['stop_delito'] = df['CODIGO'].map(map_stop_name).fillna("OTRO")
             
             # 4. Calcular Métricas IDI
             # IDI Mensual Ponderado por Población (Puntos)
@@ -310,15 +337,17 @@ def ejecutar_proceso():
             # IDI Acumulado Anual
             df['idi_acumulado_anual'] = df.groupby(['codcom', 'delito', 'año'])['idi_mensual'].cumsum()
             
-            print(f"   - Pesos asignados exitosamente usando union.json")
+            print(f"   - Pesos y nombres STOP asignados exitosamente usando union.json")
         else:
             print(f"⚠️ Archivo union.json no encontrado en {union_path}")
             df['idi_peso'] = 0
             df['idi_mensual'] = 0
+            df['stop_delito'] = "OTRO"
             
     except Exception as e:
         print(f"⚠️ Error calculando IDI CEAD: {e}")
         df['idi_peso'] = 0
+        df['stop_delito'] = "OTRO"
 
     df3 = df.copy()
 

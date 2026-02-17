@@ -69,6 +69,14 @@
     </div>
 </div>
 
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Gravedad por Delito</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas basadas en evidencia.
+    </div>
+</div>
+
 <script>
     (async function initVista18_V2() {
         const waitForData = () => {
@@ -158,6 +166,15 @@
                 scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
             }
         });
+
+    
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista18').then(txt => {
+                const el = document.getElementById('v18_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

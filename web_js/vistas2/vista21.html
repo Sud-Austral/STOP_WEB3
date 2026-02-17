@@ -21,21 +21,45 @@
         </p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v21_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v21_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <!-- Rachas Alert Section (New) -->
-    <div id="v21_rachas_container" class="card mb-lg"
-        style="padding: 1.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #f59e0b; display: none;">
-        <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: #9a3412; display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Alertas de Racha Detectadas (Últimos 3 meses
-            confirmados)
-        </h3>
-        <div id="v21_rachas_list"
-            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
-            <!-- JS filled -->
+    <!-- Rachas Alert Section (Streaks) -->
+    <div id="v21_rachas_container"
+        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+
+        <!-- 1 Week -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #f59e0b;">
+            <h4
+                style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 800; color: #92400e; text-transform: uppercase;">
+                Racha: 1 Semana</h4>
+            <div id="v21_streak_1" style="display: flex; flex-direction: column; gap: 5px;">
+                <!-- Filled -->
+            </div>
         </div>
+
+        <!-- 2 Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #ea580c;">
+            <h4
+                style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 800; color: #9a3412; text-transform: uppercase;">
+                Racha: 2 Semanas</h4>
+            <div id="v21_streak_2" style="display: flex; flex-direction: column; gap: 5px;">
+                <!-- Filled -->
+            </div>
+        </div>
+
+        <!-- 3+ Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #dc2626; background: #fef2f2;">
+            <h4
+                style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 800; color: #991b1b; text-transform: uppercase;">
+                Racha: 3+ Semanas</h4>
+            <div id="v21_streak_3" style="display: flex; flex-direction: column; gap: 5px;">
+                <!-- Filled -->
+            </div>
+        </div>
+
     </div>
 
     <div class="cards-grid" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
@@ -85,6 +109,17 @@
     </div>
 </div>
 
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Proyecciones y
+            Rachas</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia.
+    </div>
+</div>
+
 <script>
     (async function initVista21_V2() {
         try {
@@ -100,65 +135,68 @@
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // 1. RACHAS DETECTION LOGIC
-        // Racha: 3 consecutive periods of increase or decrease
-        const uniqueDelitos = [...new Set(S.allDataHistory.map(r => r[C.DELITO]))];
-        const rachas = [];
-        const limitDate = 202512; // Dec 2025
+        if (window.STATE_DATA && window.STATE_DATA.isLoaded) {
+            const S_STOP = window.STATE_DATA;
+            const C_STOP = window.COLS;
 
-        uniqueDelitos.forEach(delito => {
-            // Get rows for this crime, sorted by date
-            const rows = S.allDataHistory
-                .filter(r => r[C.DELITO] === delito && r[C.ID_PERIODO] <= limitDate)
-                .sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
+            // Streak Logic using STOP Data (Weekly)
+            const crimes = [...new Set(S_STOP.allDataHistory.map(r => r[C_STOP.DELITO]))];
+            const streaks = { 1: [], 2: [], 3: [] };
 
-            if (rows.length >= 3) {
-                const last3 = rows.slice(-3);
-                const v1 = last3[0][C.CASOS_ACTUAL] || 0; // t-2
-                const v2 = last3[1][C.CASOS_ACTUAL] || 0; // t-1
-                const v3 = last3[2][C.CASOS_ACTUAL] || 0; // t (current)
+            crimes.forEach(delito => {
+                // Get weekly data for this crime sorted by week ID ascending
+                const records = S_STOP.allDataHistory
+                    .filter(r => r[C_STOP.DELITO] === delito)
+                    .sort((a, b) => a[C_STOP.ID_SEMANA] - b[C_STOP.ID_SEMANA]);
 
-                // Threshold to avoid noise (e.g. at least 5 cases)
-                if (v3 > 5 || v1 > 5) {
-                    if (v3 > v2 && v2 > v1) {
-                        rachas.push({ delito, tipo: 'ALZA', v1, v2, v3, pct: ((v3 - v1) / v1 * 100) });
-                    } else if (v3 < v2 && v2 < v1) {
-                        rachas.push({ delito, tipo: 'BAJA', v1, v2, v3, pct: ((v3 - v1) / v1 * 100) });
-                    }
+                // Check last weeks for consecutive increases
+                if (records.length < 4) return;
+                const last = records[records.length - 1]; // Current
+                const prev1 = records[records.length - 2];
+                const prev2 = records[records.length - 3];
+                const prev3 = records[records.length - 4];
+
+                const c0 = last[C_STOP.CASOS_ACTUAL] || 0;
+                const c1 = prev1[C_STOP.CASOS_ACTUAL] || 0;
+                const c2 = prev2[C_STOP.CASOS_ACTUAL] || 0;
+                const c3 = prev3[C_STOP.CASOS_ACTUAL] || 0;
+
+                // Only count if significant volume (>0 to avoid noise)
+                if (c0 > c1 && c1 > c2 && c2 > c3) {
+                    streaks[3].push({ delito, val: c0 });
+                } else if (c0 > c1 && c1 > c2) {
+                    streaks[2].push({ delito, val: c0 });
+                } else if (c0 > c1) {
+                    streaks[1].push({ delito, val: c0 });
                 }
-            }
-        });
+            });
 
-        // Render Rachas
-        const rList = document.getElementById('v21_rachas_list');
-        const rContainer = document.getElementById('v21_rachas_container');
+            // Render
+            const renderStreak = (id, list, color) => {
+                const el = document.getElementById(id);
+                if (list.length > 0) {
+                    el.innerHTML = list.map(item => `
+                        <div style="font-size: 0.8rem; font-weight: 600; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding: 4px 0;">
+                            ${item.delito} <span style="font-size: 0.7rem; color: ${color}; font-weight: 800;">(${item.val})</span>
+                        </div>
+                    `).join('');
+                } else {
+                    el.innerHTML = '<span style="font-size: 0.75rem; color: #94a3b8; font-style: italic;">Sin rachas detectadas.</span>';
+                }
+            };
 
-        if (rachas.length > 0) {
-            rContainer.style.display = 'block';
-            // Show top 6
-            rList.innerHTML = rachas.sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct)).slice(0, 6).map(r => `
-                <div style="padding: 10px; border-radius: 8px; background: ${r.tipo === 'ALZA' ? '#fef2f2' : '#f0fdf4'}; border: 1px solid ${r.tipo === 'ALZA' ? '#fee2e2' : '#dcfce7'};">
-                    <div style="font-size: 0.75rem; font-weight: 800; color: ${r.tipo === 'ALZA' ? '#ef4444' : '#10b981'}; margin-bottom: 4px;">
-                        ${r.tipo === 'ALZA' ? '▲ EN ALZA' : '▼ A LA BAJA'} (${Math.abs(r.pct).toFixed(0)}%)
-                    </div>
-                    <div style="font-size: 0.9rem; font-weight: 700; color: #1e293b; line-height: 1.2;">${r.delito}</div>
-                    <div style="font-size: 0.7rem; color: #64748b; margin-top: 4px;">
-                        ${r.v1} → ${r.v2} → <strong>${r.v3}</strong>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            rContainer.style.display = 'block';
-            rList.innerHTML = '<div style="grid-column: 1/-1; color: #64748b; font-size: 0.9rem; font-style: italic;">No se detectan rachas consecutivas de 3 meses en los delitos principales.</div>';
+            renderStreak('v21_streak_1', streaks[1], '#f59e0b');
+            renderStreak('v21_streak_2', streaks[2], '#ea580c');
+            renderStreak('v21_streak_3', streaks[3], '#dc2626');
         }
 
-
-        // 2. FORECAST LOGIC (Updated to use data until 202512 as history)
+        // 2. FORECAST LOGIC (Dynamic detection of last real point)
         const allHistory = S.allDataHistory_total.sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
-        // History: up to Dec 2025
-        const last6 = allHistory.filter(r => r[C.ID_PERIODO] <= 202512).slice(-6);
-        // Forecast: Jan 2026 onwards
-        const forecast = allHistory.filter(r => r[C.ID_PERIODO] > 202512).slice(0, 3);
+        // History: up to last non-forecast point
+        const realData = allHistory.filter(r => !r[C.IS_FORECAST]);
+        const last6 = realData.slice(-6);
+        // Forecast: predicted points
+        const forecast = allHistory.filter(r => r[C.IS_FORECAST]).slice(0, 3);
 
         const labels = [...last6, ...forecast].map(r => r[C.PERIODO_DETALLE] ? r[C.PERIODO_DETALLE].split(' ')[0] : r[C.ID_PERIODO]);
         const historyValues = last6.map(r => r[C.CASOS_ACTUAL]);
@@ -230,6 +268,14 @@
                 }
             }
         });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista21').then(txt => {
+                const el = document.getElementById('v21_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

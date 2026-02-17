@@ -21,9 +21,9 @@
             cambio.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v6_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v6_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <!-- Alert Panel for High Increases -->
     <div id="v6_alerts_container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.5rem;">
@@ -68,6 +68,17 @@
     </div>
 </div>
 
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista jerarquiza las variaciones porcentuales semanales para
+        identificar tendencias emergentes, priorizando aquellos delitos con mayor impacto en el cambio neto y filtrando
+        variaciones poco significativas (ruido estadístico).
+    </div>
+</div>
+
 <script>
     (async function initVista6_V2() {
         const waitForData = () => {
@@ -87,7 +98,7 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
         document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
 
-        // Calculate deltas for all crimes with at least 1 case in any week
+        // Calculate deltas for all crimes with at least 1 case in any week (Current or Prev)
         const allCrimes = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
             .map(r => {
                 const act = r[C.CASOS_ACTUAL] || 0;
@@ -99,7 +110,7 @@
                     absDiff: act - ant
                 };
             })
-            .filter(d => d.act > 0 || d.ant > 0)
+            .filter(d => (d.act > 0 || d.ant > 0) && d.delito !== 'Total' && d.delito !== 'TOTAL') // Exclude totals and zero-rows
             .sort((a, b) => b.delta - a.delta);
 
         // --- Alerts Panel ---
@@ -113,59 +124,103 @@
                     <span style="font-size: 0.75rem; font-weight: 700; color: #991b1b;">${d.delito}: +${d.delta.toFixed(0)}%</span>
                 </div>
             `).join('');
+        } else {
+            alertsContainer.innerHTML = '';
         }
 
         // --- Worst (Top Increases) ---
         const vWorst = document.getElementById('v6_list_worst');
-        vWorst.innerHTML = allCrimes.slice(0, 6).map(d => `
-            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #fdf2f2;">
+        // Fix to Top 5 as requested
+        const top5Worst = allCrimes.slice(0, 5);
+
+        vWorst.innerHTML = top5Worst.length > 0 ? top5Worst.map(d => `
+            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 16px; background: #fff; border-bottom: 1px solid #fdf2f2; margin-bottom: 8px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                 <div>
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #334155;">${d.delito}</div>
-                    <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">${d.ant} → ${d.act} casos</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 4px;">${d.delito}</div>
+                    <div style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${d.ant}</span>
+                        <i class="fa-solid fa-arrow-right" style="font-size: 0.7rem; color: #94a3b8;"></i> 
+                        <span style="background: #fee2e2; color: #ef4444; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${d.act} casos</span>
+                    </div>
                 </div>
-                <div style="font-weight: 900; color: #ef4444; font-size: 1.1rem;">+${d.delta.toFixed(1)}%</div>
+                <div style="font-size: 1.4rem; font-weight: 900; color: #ef4444; letter-spacing: -0.5px;">+${d.delta.toFixed(0)}%</div>
             </div>
-        `).join('');
+        `).join('') : '<div style="padding:10px; color:#94a3b8;">Sin aumentos significativos.</div>';
 
         // --- Best (Top Decreases) ---
         const vBest = document.getElementById('v6_list_best');
-        const bestSorted = [...allCrimes].sort((a, b) => a.delta - b.delta);
-        vBest.innerHTML = bestSorted.slice(0, 6).map(d => `
-            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 10px; background: #fff; border-bottom: 1px solid #f0fdf4;">
+        const bestSorted = [...allCrimes].reverse(); // Already sorted max->min delta, so reverse gives min->max
+        // Filter only negative or zero deltas for "Descensos"
+        const decreases = bestSorted.filter(d => d.delta <= 0).slice(0, 5);
+
+        vBest.innerHTML = decreases.length > 0 ? decreases.map(d => `
+            <div style="display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 16px; background: #fff; border-bottom: 1px solid #f0fdf4; margin-bottom: 8px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                 <div>
-                    <div style="font-size: 0.85rem; font-weight: 700; color: #334155;">${d.delito}</div>
-                    <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">${d.ant} → ${d.act} casos</div>
+                    <div style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-bottom: 4px;">${d.delito}</div>
+                    <div style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <span style="background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${d.ant}</span>
+                        <i class="fa-solid fa-arrow-right" style="font-size: 0.7rem; color: #94a3b8;"></i> 
+                        <span style="background: #dcfce7; color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: 800;">${d.act} casos</span>
+                    </div>
                 </div>
-                <div style="font-weight: 900; color: #10b981; font-size: 1.1rem;">${d.delta.toFixed(1)}%</div>
+                <div style="font-size: 1.4rem; font-weight: 900; color: #10b981; letter-spacing: -0.5px;">${d.delta.toFixed(0)}%</div>
             </div>
-        `).join('');
+        `).join('') : '<div style="padding:10px; color:#94a3b8;">Sin disminuciones registradas.</div>';
 
         // --- Spectrum Chart ---
         const ctx = document.getElementById('v6_chart_spectrum').getContext('2d');
-        const chartData = allCrimes.filter(d => Math.abs(d.delta) > 0).slice(0, 15);
+        // Show Top 5 Increases vs Top 5 Decreases
+        const significant = [...top5Worst, ...decreases];
+
+        // Use window.ChartDataLabels to avoid reference error if not imported as module
+        const DataLabelsPlugin = window.ChartDataLabels || {};
 
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: chartData.map(d => d.delito.length > 25 ? d.delito.substring(0, 25) + '...' : d.delito),
+                labels: significant.map(d => d.delito),
                 datasets: [{
                     label: 'Variación %',
-                    data: chartData.map(d => d.delta),
-                    backgroundColor: chartData.map(d => d.delta > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)'),
-                    borderRadius: 4
+                    data: significant.map(d => d.delta),
+                    backgroundColor: significant.map(d => d.delta > 0 ? '#ef4444' : '#10b981'),
+                    borderRadius: 6,
+                    barPercentage: 0.6,
                 }]
             },
+            plugins: [DataLabelsPlugin],
             options: {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: { right: 50, left: 10 }
+                },
                 plugins: {
                     legend: { display: false },
+                    datalabels: {
+                        color: (ctx) => {
+                            const val = ctx.dataset.data[ctx.dataIndex];
+                            return val > 0 ? '#ef4444' : '#10b981';
+                        },
+                        anchor: (ctx) => {
+                            const val = ctx.dataset.data[ctx.dataIndex];
+                            return val > 0 ? 'end' : 'start';
+                        },
+                        align: (ctx) => {
+                            const val = ctx.dataset.data[ctx.dataIndex];
+                            return val > 0 ? 'end' : 'start';
+                        },
+                        font: { weight: 'bold', size: 12, family: 'Outfit' },
+                        formatter: (val) => (val > 0 ? '+' : '') + val.toFixed(0) + '%'
+                    },
                     tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        titleFont: { family: 'Outfit', size: 13 },
                         callbacks: {
                             label: function (c) {
-                                const d = chartData[c.dataIndex];
-                                return ` Var: ${d.delta.toFixed(1)}% (${d.ant} → ${d.act} casos)`;
+                                const d = significant[c.dataIndex];
+                                return ` Var: ${d.delta.toFixed(1)} % (${d.ant} → ${d.act} casos)`;
                             }
                         }
                     }
@@ -177,11 +232,23 @@
                     },
                     y: {
                         grid: { display: false },
-                        ticks: { font: { family: 'Outfit', size: 10, weight: '600' } }
+                        ticks: {
+                            font: { family: 'Outfit', size: 11, weight: '600' },
+                            color: '#334155',
+                            autoSkip: false
+                        }
                     }
                 }
             }
         });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista6').then(txt => {
+                const el = document.getElementById('v6_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

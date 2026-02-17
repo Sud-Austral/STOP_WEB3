@@ -19,153 +19,168 @@
             vs aceleración de la tendencia. Los delitos en el cuadrante superior derecho son la prioridad máxima (Alto
             Volumen + Alza Crítica).</p>
     </div>
+    <!-- Vista 22: Priorización Estratégica (Matriz de Focalización) -->
+    <div class="card mb-lg">
+        <div class="location-source-row"
+            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+                <i class="fa-solid fa-bullseye"></i> <span class="comuna-fill">CARGANDO...</span>
+                <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+                <span>INTELIGENCIA ESTRATÉGICA (STOP)</span>
+            </div>
+            <div id="sourceBadgeContainer"></div>
+        </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v22_ia_analysis">Cargando análisis...</span>
-</div>
+        <div class="question-section" style="background: linear-gradient(90deg, rgba(31, 41, 55, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #1f2937; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+            <h2
+                style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+                ¿Dónde debemos concentrar los recursos hoy?
+            </h2>
+            <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Cruze de volumen de
+                casos
+                vs aceleración de la tendencia. Los delitos en el cuadrante superior derecho son la prioridad máxima
+                (Alto
+                Volumen + Alza Crítica).</p>
+        </div>
 
-    <!-- Main Quadrant Chart -->
-    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b;">
-            <i class="fa-solid fa-layer-group" style="color: #4f46e5;"></i> Matriz de Priorización (Casos vs Variación
-            %)
+        <div class="alert alert--info" style="margin-top: 1.5rem;">
+            <strong>🤖 Análisis de Situación:</strong> <span id="v22_ia_analysis">Cargando análisis...</span>
+        </div>
+
+        <!-- Focus Grid (11 Crimes Breakdown) -->
+        <h3 class="section-title mb-lg" style="font-size: 1rem; color: #1e293b; margin-bottom: 1rem;">
+            <i class="fa-solid fa-layer-group" style="color: #4f46e5;"></i> Focalización Táctica (11 Delitos STOP)
         </h3>
-        <div class="chart-wrapper" style="height: 450px;">
-            <canvas id="v22_chart_quadrant"></canvas>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+
+            <!-- Column 1: Critical (High Volume + High Rise) -->
+            <div class="card" style="padding: 1rem; border-top: 4px solid #ef4444; background: #fff1f2;">
+                <h4
+                    style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 900; color: #991b1b; text-transform: uppercase;">
+                    1. ALARMA / FOCO</h4>
+                <div id="v22_col_1" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Filled -->
+                </div>
+            </div>
+
+            <!-- Column 2: Warning (Rise) -->
+            <div class="card" style="padding: 1rem; border-top: 4px solid #f97316; background: #fff7ed;">
+                <h4
+                    style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 900; color: #9a3412; text-transform: uppercase;">
+                    2. ALERTA</h4>
+                <div id="v22_col_2" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Filled -->
+                </div>
+            </div>
+
+            <!-- Column 3: Stable -->
+            <div class="card" style="padding: 1rem; border-top: 4px solid #3b82f6; background: #eff6ff;">
+                <h4
+                    style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 900; color: #1e3a8a; text-transform: uppercase;">
+                    3. MONITOREO</h4>
+                <div id="v22_col_3" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Filled -->
+                </div>
+            </div>
+
+            <!-- Column 4: Success/Low -->
+            <div class="card" style="padding: 1rem; border-top: 4px solid #10b981; background: #f0fdf4;">
+                <h4
+                    style="margin: 0 0 10px 0; font-size: 0.8rem; font-weight: 900; color: #064e3b; text-transform: uppercase;">
+                    4. CONTROL</h4>
+                <div id="v22_col_4" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Filled -->
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem;">
-        <!-- Top 3 Priority -->
-        <div class="card" style="padding: 1.5rem; border-top: 6px solid #ef4444;">
-            <h4 style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #991b1b;"><i
-                    class="fa-solid fa-list-check"></i> PRIORIDAD CRÍTICA</h4>
-            <div id="v22_priority_list" style="display: flex; flex-direction: column; gap: 10px;">
-                <!-- Filled by JS -->
-            </div>
-        </div>
 
-        <!-- Strategy definitions -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div style="background: #fdf2f2; border: 1px solid #fee2e2; border-radius: 12px; padding: 1rem;">
-                <div style="font-size: 0.7rem; font-weight: 800; color: #ef4444; margin-bottom: 5px;">CUADRANTE I (FOCO)
-                </div>
-                <div style="font-size: 0.8rem; color: #991b1b; line-height: 1.4;">Alta frecuencia y alza. Requiere
-                    <strong>acción inmediata</strong> de saturación.</div>
-            </div>
-            <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 1rem;">
-                <div style="font-size: 0.7rem; font-weight: 800; color: #f59e0b; margin-bottom: 5px;">CUADRANTE II
-                    (GESTIÓN)</div>
-                <div style="font-size: 0.8rem; color: #92400e; line-height: 1.4;">Baja frecuencia pero alza repentina.
-                    Requiere <strong>investigación</strong> de causa raíz.</div>
-            </div>
-            <div style="background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 1rem;">
-                <div style="font-size: 0.7rem; font-weight: 800; color: #3b82f6; margin-bottom: 5px;">CUADRANTE III
-                    (MANTENCIÓN)</div>
-                <div style="font-size: 0.8rem; color: #1e40af; line-height: 1.4;">Alta frecuencia pero a la baja. Seguir
-                    monitoreando para evitar rebotes.</div>
-            </div>
-            <div style="background: #f0fdf4; border: 1px solid #dcfce7; border-radius: 12px; padding: 1rem;">
-                <div style="font-size: 0.7rem; font-weight: 800; color: #10b981; margin-bottom: 5px;">CUADRANTE IV
-                    (ESTABLE)</div>
-                <div style="font-size: 0.8rem; color: #15803d; line-height: 1.4;">Baja frecuencia y a la baja. Solo
-                    vigilancia pasiva.</div>
-            </div>
+    <!-- Nota Metodológica -->
+    <div class="row" style="margin-top: 2rem;">
+        <div
+            style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+            <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Priorización
+                Estratégica</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
+            estratégicas basadas en evidencia.
         </div>
     </div>
-</div>
 
-<script>
-    (async function initVista22_V2() {
-        const waitForData = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-                    else setTimeout(check, 100);
-                };
-                check();
-            });
-        };
+    <script>
+        (async function initVista22_V2() {
+            const waitForData = () => {
+                return new Promise((resolve) => {
+                    const check = () => {
+                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                        else setTimeout(check, 100);
+                    };
+                    check();
+                });
+            };
 
-        await waitForData();
-        const S = window.STATE_DATA;
-        const C = window.COLS;
+            await waitForData();
+            const S = window.STATE_DATA;
+            const C = window.COLS;
 
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // --- Data Processing for Quadrant ---
-        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
-            .map(r => {
-                const act = r[C.CASOS_ACTUAL] || 0;
-                const ant = r[C.CASOS_ANT] || 0;
-                const delta = ant > 0 ? ((act - ant) / ant * 100) : (act > 0 ? 50 : 0);
-                return { x: act, y: delta, label: r[C.DELITO] };
-            });
+            // --- Data Processing for 4-Column Grid ---
+            const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana)
+                .map(r => {
+                    const act = r[C.CASOS_ACTUAL] || 0;
+                    const ant = r[C.CASOS_ANT] || 0;
+                    const delta = ant > 0 ? ((act - ant) / ant * 100) : (act > 0 ? 100 : 0);
+                    return { x: act, y: delta, label: r[C.DELITO] };
+                })
+                // Filter to ensure we have the main crimes (assuming allDataHistory has them)
+                .sort((a, b) => b.x - a.x); // Sort by volume
 
-        const medianX = currentData.reduce((s, r) => s + r.x, 0) / currentData.length;
-        const medianY = 0; // Baseline is 0% change
+            // Categories
+            const cols = { 1: [], 2: [], 3: [], 4: [] };
 
-        // Top 3 Priority (High X, High Y)
-        const priority = [...currentData]
-            .filter(d => d.x >= medianX && d.y > 0)
-            .sort((a, b) => (b.x * b.y) - (a.x * a.y))
-            .slice(0, 3);
-
-        const vList = document.getElementById('v22_priority_list');
-        vList.innerHTML = priority.map(p => `
-            <div style="display: flex; gap: 12px; align-items: center; padding: 10px; background: white; border: 1px solid #fee2e2; border-radius: 8px;">
-                <div style="width: 32px; height: 32px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.8rem; flex-shrink: 0;">!</div>
-                <div style="flex: 1;">
-                    <div style="font-size: 0.85rem; font-weight: 800; color: #1e293b; line-height: 1.2;">${p.label}</div>
-                    <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">${p.x} casos | +${p.y.toFixed(1)}% alza</div>
-                </div>
-            </div>
-        `).join('') || '<div class="text-muted" style="font-size:0.8rem; padding:10px;">No se detectan delitos en zona de criticidad máxima.</div>';
-
-        // --- Scatter (Quadrant) Chart ---
-        const ctx = document.getElementById('v22_chart_quadrant').getContext('2d');
-        new Chart(ctx, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Tipologías',
-                    data: currentData,
-                    backgroundColor: currentData.map(d => {
-                        if (d.x >= medianX && d.y >= 0) return '#ef4444';
-                        if (d.x < medianX && d.y >= 0) return '#f59e0b';
-                        if (d.x >= medianX && d.y < 0) return '#3b82f6';
-                        return '#10b981';
-                    }),
-                    pointRadius: currentData.map(d => 6 + (d.x / 10)),
-                    borderColor: 'white',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (c) => ` ${c.raw.label}: ${c.raw.x} casos | Var: ${c.raw.y.toFixed(1)}%`
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: { display: true, text: 'Volumen de Casos (Frecuencia)', font: { weight: '800' } },
-                        grid: { color: (c) => c.tick.value === Math.round(medianX) ? '#94a3b8' : '#f1f5f9' },
-                        min: 0
-                    },
-                    y: {
-                        title: { display: true, text: 'Aceleración (Variación %)', font: { weight: '800' } },
-                        grid: { color: (c) => c.tick.value === 0 ? '#1e293b' : '#f1f5f9' },
-                        ticks: { callback: v => v + '%' }
-                    }
+            currentData.forEach(d => {
+                if (d.y > 10 && d.x > 5) {
+                    cols[1].push(d); // High Rise + High Volume
+                } else if (d.y > 0) {
+                    cols[2].push(d); // Rise
+                } else if (d.x > 10) {
+                    cols[3].push(d); // High Volume but stable/dropping
+                } else {
+                    cols[4].push(d); // Low/Stable
                 }
-            }
-        });
+            });
 
-    })();
-</script>
+            const renderCol = (id, list) => {
+                const el = document.getElementById(id);
+                if (list.length > 0) {
+                    el.innerHTML = list.map(d => `
+                    <div style="padding: 8px; background: rgba(255,255,255,0.6); border-radius: 4px; font-size: 0.75rem;">
+                        <div style="font-weight: 700; color: #1e293b;">${d.label}</div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+                            <span style="color: #64748b;">${d.x} casos</span>
+                            <span style="font-weight: 700; color: ${d.y > 0 ? '#ef4444' : '#10b981'};">${d.y > 0 ? '+' : ''}${d.y.toFixed(0)}%</span>
+                        </div>
+                    </div>
+                 `).join('');
+                } else {
+                    el.innerHTML = '<span style="font-size:0.7rem; color:#94a3b8;">--</span>';
+                }
+            };
+
+            renderCol('v22_col_1', cols[1]);
+            renderCol('v22_col_2', cols[2]);
+            renderCol('v22_col_3', cols[3]);
+            renderCol('v22_col_4', cols[4]);
+
+            // IA Integration
+            if (typeof IAModule !== 'undefined') {
+                IAModule.getInterpretation('vista22').then(txt => {
+                    const el = document.getElementById('v22_ia_analysis');
+                    if (el) el.innerHTML = txt;
+                });
+            }
+
+        })();
+    </script>

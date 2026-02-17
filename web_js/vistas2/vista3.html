@@ -21,47 +21,50 @@
             estructural).</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v3_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v3_ia_analysis">Cargando análisis...</span>
+    </div>
 
-    <!-- Triple Comparison Cards -->
+    <!-- Max/Min/Avg Cards -->
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-        <div class="kpi-card" id="v3_card_prev" style="text-align: center; padding: 1.5rem;">
+        <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #ef4444;">
             <div
                 style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
-                Vs Semana Anterior</div>
-            <div id="v3_prev_delta" style="font-size: 2.2rem; font-weight: 900;">--%</div>
-            <div id="v3_prev_abs" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">-- casos ant.</div>
+                MÁXIMO HISTÓRICO
+            </div>
+            <div id="v3_max_val" style="font-size: 2.2rem; font-weight: 900; color: #ef4444;">--</div>
+            <div id="v3_max_date" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">--</div>
         </div>
-        <div class="kpi-card" id="v3_card_year" style="text-align: center; padding: 1.5rem;">
+        <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #10b981;">
             <div
                 style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
-                Vs Año Anterior</div>
-            <div id="v3_year_delta" style="font-size: 2.2rem; font-weight: 900;">--%</div>
-            <div id="v3_year_abs" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">-- casos ant.</div>
+                MÍNIMO HISTÓRICO
+            </div>
+            <div id="v3_min_val" style="font-size: 2.2rem; font-weight: 900; color: #10b981;">--</div>
+            <div id="v3_min_date" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">--</div>
         </div>
-        <div class="kpi-card" id="v3_card_m" style="text-align: center; padding: 1.5rem;">
+        <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #f59e0b;">
             <div
                 style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase;">
-                Vs Promedio Histórico</div>
-            <div id="v3_m_delta" style="font-size: 2.2rem; font-weight: 900;">--%</div>
-            <div id="v3_m_abs" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">μ = -- casos</div>
+                PROMEDIO
+            </div>
+            <div id="v3_avg_val" style="font-size: 2.2rem; font-weight: 900; color: #f59e0b;">--</div>
+            <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Últimas 52 Semanas</div>
         </div>
     </div>
 
-    <!-- Absolute Values Table -->
+    <!-- Comparative Table -->
     <div style="margin-bottom: 2rem;">
         <h4
             style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
-            Resumen de Valores Absolutos</h4>
+            Detalle Comparativo
+        </h4>
         <table style="width: 100%; border-collapse: collapse; font-family: 'Outfit';">
             <thead>
                 <tr style="text-align: left; font-size: 0.75rem; color: #64748b; border-bottom: 2px solid #f1f5f9;">
-                    <th style="padding: 0.5rem;">Periodo de Comparación</th>
+                    <th style="padding: 0.5rem;">Indicador</th>
+                    <th style="padding: 0.5rem;">Referencia Temporal</th>
                     <th style="padding: 0.5rem; text-align: right;">Casos</th>
-                    <th style="padding: 0.5rem; text-align: right;">Diferencia Neta</th>
-                    <th style="padding: 0.5rem; text-align: right;">Estado</th>
                 </tr>
             </thead>
             <tbody id="v3_table_body" style="font-size: 0.85rem;">
@@ -85,6 +88,16 @@
     </div>
 </div>
 
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista compara la semana actual con puntos críticos históricos (máximos,
+        mínimos y promedios) para contextualizar el nivel de actividad delictual.
+    </div>
+</div>
+
 <script>
     (async function initVista3_V2() {
         const waitForData = () => {
@@ -105,89 +118,125 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
         document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
 
-        // Total data
-        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-        const casos = totalRow[C.CASOS_ACTUAL] || 0;
-        const casosAnt = totalRow[C.CASOS_ANT] || 0;
-        const casosYearAnt = totalRow[C.CASOS_YEAR_ANT] || 0;
-        const promHist = totalRow[C.PROMEDIO_HIST] || 0;
+        // Get History (Last 52 weeks for context)
+        const historyCols = S.allDataHistory_total.filter(r => r[C.CASOS_ACTUAL] !== undefined); // Ensure validity
 
-        // Helper calculations
-        const getDelta = (act, ant) => ant > 0 ? ((act - ant) / ant * 100) : 0;
-        const d_prev = getDelta(casos, casosAnt);
-        const d_year = getDelta(casos, casosYearAnt);
-        const d_hist = getDelta(casos, promHist);
+        // Sort by ID_SEMANA descending to identify current, prev, etc.
+        historyCols.sort((a, b) => b[C.ID_SEMANA] - a[C.ID_SEMANA]);
 
-        const updateCard = (idPrefix, delta, absVal, absPrefix = '') => {
-            const vDelta = document.getElementById(`v3_${idPrefix}_delta`);
-            const vAbs = document.getElementById(`v3_${idPrefix}_abs`);
-            const vCard = document.getElementById(`v3_card_${idPrefix.split('_')[0]}`);
+        // Current Week
+        const currentRow = historyCols.find(r => r[C.ID_SEMANA] === S.currentSemana) || historyCols[0];
+        const casosActual = currentRow?.[C.CASOS_ACTUAL] || 0;
+        const fechaActual = S.semanaDetalle;
 
-            if (!vDelta || !vAbs) return; // Safety check
+        // Previous Week
+        const prevRow = historyCols.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1)) || historyCols[1];
+        const casosAnt = prevRow?.[C.CASOS_ACTUAL] || 0; // Fixed: Use CASOS_ACTUAL of previous row
+        const fechaAnt = prevRow ? (S.getDateLabel ? S.getDateLabel(prevRow[C.ID_SEMANA]) : 'Semana Ant.') : '--';
 
-            vDelta.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%`;
-            vAbs.textContent = `${absPrefix}${absVal} casos`;
+        // Calculate Stats (Max, Min, Avg) over last 52 weeks
+        const weeks52 = historyCols.slice(0, 52); // Ensure we only look at last year window
+        if (weeks52.length === 0) return;
 
-            if (delta > 5) {
-                vDelta.style.color = '#ef4444';
-                vCard.style.borderTop = '4px solid #ef4444';
-            } else if (delta < -5) {
-                vDelta.style.color = '#10b981';
-                vCard.style.borderTop = '4px solid #10b981';
-            } else {
-                vDelta.style.color = '#64748b';
-                vCard.style.borderTop = '4px solid #cbd5e1';
-            }
-        };
+        let maxVal = -1, minVal = 999999, sumVal = 0;
+        let maxRow = null, minRow = null;
 
-        updateCard('prev', d_prev, ChartHelper.formatNumber(casosAnt));
-        updateCard('year', d_year, ChartHelper.formatNumber(casosYearAnt));
-        updateCard('m', d_hist, ChartHelper.formatNumber(promHist.toFixed(1)), 'μ = ');
+        weeks52.forEach(r => {
+            const val = r[C.CASOS_ACTUAL] || 0;
+            sumVal += val;
 
-        // Table
+            if (val > maxVal) { maxVal = val; maxRow = r; }
+            if (val < minVal) { minVal = val; minRow = r; }
+        });
+
+        const avgVal = sumVal / weeks52.length;
+        const maxDate = maxRow ? (S.getDateLabel ? S.getDateLabel(maxRow[C.ID_SEMANA]) : `S${maxRow[C.ID_SEMANA]}`) : '--';
+        const minDate = minRow ? (S.getDateLabel ? S.getDateLabel(minRow[C.ID_SEMANA]) : `S${minRow[C.ID_SEMANA]}`) : '--';
+
+        // Update Cards
+        document.getElementById('v3_max_val').textContent = ChartHelper.formatNumber(maxVal);
+        document.getElementById('v3_max_date').textContent = maxDate;
+
+        document.getElementById('v3_min_val').textContent = ChartHelper.formatNumber(minVal);
+        document.getElementById('v3_min_date').textContent = minDate;
+
+        document.getElementById('v3_avg_val').textContent = ChartHelper.formatNumber(avgVal.toFixed(1));
+
+        // Update Table
         const tbody = document.getElementById('v3_table_body');
-        const rows = [
-            { label: 'Semana Actual', val: casos, ref: null, color: '#1e293b' },
-            { label: 'Semana Anterior', val: casosAnt, ref: casos, diff: casos - casosAnt },
-            { label: 'Misma Semana Año Ant.', val: casosYearAnt, ref: casos, diff: casos - casosYearAnt },
-            { label: 'Promedio Histórico', val: promHist, ref: casos, diff: casos - promHist }
+
+        // Define rows with colors
+        const tableData = [
+            { label: 'Semana Actual', date: fechaActual, val: casosActual, color: '#3b82f6', bg: '#eff6ff' }, // Blue
+            { label: 'Semana Anterior', date: fechaAnt, val: casosAnt, color: '#ef4444', bg: '#fef2f2' }, // Red (Requested)
+            { label: 'Mínimo Histórico', date: minDate, val: minVal, color: '#10b981', bg: '#ecfdf5' }, // Green
+            { label: 'Promedio (52 Sem)', date: 'Último Año', val: avgVal.toFixed(1), color: '#f59e0b', bg: '#fffbeb' } // Yellow
         ];
 
-        tbody.innerHTML = rows.map(r => `
-            <tr style="border-bottom: 1px solid #f8fafc; height: 35px;">
-                <td style="font-weight:600; color: ${r.color || '#475569'};">${r.label}</td>
-                <td style="text-align: right; font-weight: 700;">${ChartHelper.formatNumber(Math.round(r.val))}</td>
-                <td style="text-align: right; color: ${r.diff > 0 ? '#ef4444' : r.diff < 0 ? '#10b981' : '#64748b'}; font-weight: 700;">
-                    ${r.diff !== undefined ? (r.diff > 0 ? '+' : '') + Math.round(r.diff) : '—'}
+        tbody.innerHTML = tableData.map(r => `
+            <tr style="border-bottom: 1px solid #f1f5f9; background-color: ${r.bg || 'transparent'};">
+                <td style="padding: 12px 8px; font-weight: 700; color: ${r.color};">
+                    ${r.label}
                 </td>
-                <td style="text-align: right;">
-                    ${r.diff === undefined ? '<span class="pill-sm pill-sm-neutral">BASE</span>' :
-                r.diff > 0 ? '<span class="pill-sm pill-sm-danger">AUMENTE</span>' : '<span class="pill-sm pill-sm-success">MEJORA</span>'}
+                <td style="padding: 12px 8px; color: #64748b; font-size: 0.8rem;">
+                    ${r.date}
+                </td>
+                <td style="padding: 12px 8px; text-align: right; font-weight: 800; color: #1e293b; font-size: 1rem;">
+                    ${ChartHelper.formatNumber(r.val)}
                 </td>
             </tr>
         `).join('');
 
-        // Sparkline 52 weeks
-        const weeks52 = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 52).reverse();
-        const sparkData = weeks52.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id)?.[C.CASOS_ACTUAL] || 0);
-
-        // Uses getDateLabel if available, otherwise fallback
-        const sparkLabels = weeks52.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id % 100}`);
+        // Sparkline Data Preparation (Reverse for Chronological Order)
+        const sparkRows = [...weeks52].reverse(); // Oldest -> Newest
+        const sparkLabels = sparkRows.map(r => S.getDateLabel ? S.getDateLabel(r[C.ID_SEMANA]) : `S${r[C.ID_SEMANA]}`);
+        const sparkData = sparkRows.map(r => r[C.CASOS_ACTUAL] || 0);
 
         const sparkCtx = document.getElementById('v3_sparkline').getContext('2d');
+
+        // Determine point styles (Max=Red, Min=Green, Current=Blue)
+        const pointColors = sparkData.map((v, i) => {
+            if (v === maxVal) return '#ef4444'; // Red
+            if (v === minVal) return '#10b981'; // Green
+            if (i === sparkData.length - 1) return '#3b82f6'; // Blue
+            return 'transparent';
+        });
+
+        const pointRadii = sparkData.map((v, i) => {
+            if (v === maxVal || v === minVal || i === sparkData.length - 1) return 5;
+            return 0;
+        });
+
         new Chart(sparkCtx, {
             type: 'line',
             data: {
                 labels: sparkLabels,
-                datasets: [{
-                    data: sparkData,
-                    borderColor: '#94a3b8',
-                    borderWidth: 1.5,
-                    pointRadius: sparkData.map((v, i) => i === sparkData.length - 1 ? 5 : 0),
-                    pointBackgroundColor: '#3b82f6',
-                    fill: false,
-                    tension: 0.3
-                }]
+                datasets: [
+                    // Average Line (Background)
+                    {
+                        label: 'Promedio',
+                        data: Array(sparkData.length).fill(avgVal),
+                        borderColor: '#f59e0b', // Yellow
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false,
+                        order: 1
+                    },
+                    // Main Series
+                    {
+                        data: sparkData,
+                        borderColor: '#94a3b8',
+                        borderWidth: 1.5,
+                        pointRadius: pointRadii,
+                        pointBackgroundColor: pointColors,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 1,
+                        fill: false,
+                        tension: 0.3,
+                        order: 0
+                    }
+                ]
             },
             options: {
                 responsive: true,
@@ -199,6 +248,14 @@
                 }
             }
         });
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista3').then(txt => {
+                const el = document.getElementById('v3_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

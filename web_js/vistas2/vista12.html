@@ -19,9 +19,9 @@
             proyección anual frente al total de <span id="v12_total_comunas_txt">345</span> comunas del país.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v12_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v12_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: center;">
 
@@ -67,126 +67,315 @@
                 </div>
                 <div id="v12_percentile_val"
                     style="margin-top: 1rem; font-size: 1.1rem; font-weight: 700; color: #475569;">
-                    Percentil -- (P--)
-                </div>
-                <div style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; color: rgba(0,0,0,0.03); transform: rotate(-15deg); font-weight: 900;"
-                    id="v12_bg_num">--</div>
-            </div>
+                    <!-- Vista 12: Comparativo Nacional (STOP) -->
+                    <div class="card mb-lg">
+                        <div class="location-source-row"
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div
+                                style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
+                                <i class="fa-solid fa-flag"></i> <span class="comuna-fill">CARGANDO...</span>
+                                <span style="margin: 0 8px; color: #cbd5e1;">/</span>
+                                <span>CONTEXTO NACIONAL</span>
+                            </div>
+                            <div id="sourceBadgeContainer"></div>
+                        </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="card" style="padding: 1.25rem; text-align: center;">
-                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TASA COMUNAL
+                        <div class="question-section" style="background: linear-gradient(90deg, rgba(31, 41, 55, 0.1) 0%, transparent 100%); 
+            border-left: 4px solid #1f2937; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
+                            <h2
+                                style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
+                                ¿Cuál es nuestra posición en el contexto nacional?
+                            </h2>
+                            <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">
+                                Ranking nacional semanal y
+                                proyección anual frente al total de <span id="v12_total_comunas_txt">345</span> comunas
+                                del país.</p>
+                        </div>
+
+                        <div class="alert alert--info" style="margin-top: 1.5rem;">
+                            <strong>🤖 Análisis de Situación:</strong> <span id="v12_ia_analysis">Cargando
+                                análisis...</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: center;">
+
+                            <!-- National Ranking Pyramid -->
+                            <div
+                                style="position: relative; height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <svg viewBox="0 0 400 350"
+                                    style="width: 100%; height: 100%; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));">
+                                    <!-- Level 3: Bajo (Base) -->
+                                    <path d="M 50 330 L 350 330 L 300 220 L 100 220 Z" fill="#f1f5f9" stroke="#e2e8f0"
+                                        stroke-width="2" id="pyr_low" />
+                                    <!-- Level 2: Medio -->
+                                    <path d="M 100 220 L 300 220 L 250 110 L 150 110 Z" fill="#f1f5f9" stroke="#e2e8f0"
+                                        stroke-width="2" id="pyr_med" />
+                                    <!-- Level 1: Alto -->
+                                    <path d="M 150 110 L 250 110 L 200 10 Z" fill="#f1f5f9" stroke="#e2e8f0"
+                                        stroke-width="2" id="pyr_high" />
+
+                                    <text x="200" y="310" text-anchor="middle" font-family="Outfit" font-size="12"
+                                        fill="#94a3b8" font-weight="700">TERCIO INFERIOR</text>
+                                    <text x="200" y="180" text-anchor="middle" font-family="Outfit" font-size="12"
+                                        fill="#94a3b8" font-weight="700">TERCIO MEDIO</text>
+                                    <text x="200" y="80" text-anchor="middle" font-family="Outfit" font-size="12"
+                                        fill="#94a3b8" font-weight="700">TOP CRÍTICO</text>
+                                </svg>
+                                <div id="v12_indicator"
+                                    style="position: absolute; width: 20px; height: 20px; background: #ef4444; border-radius: 50%; border: 4px solid white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); transition: all 1s ease-in-out;">
+                                </div>
+                            </div>
+
+                            <!-- National Metrics Card -->
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                <div class="card"
+                                    style="padding: 2rem; border-left: 8px solid #334155; position: relative; overflow: hidden;">
+                                    <div
+                                        style="font-size: 0.8rem; font-weight: 800; color: #64748b; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                                        Ranking Semanal Nacional</div>
+                                    <div style="display: flex; align-items: flex-end; gap: 10px;">
+                                        <span id="v12_rank_val"
+                                            style="font-size: 4.5rem; font-weight: 950; color: #1e293b; line-height: 1;">--</span>
+                                        <span
+                                            style="font-size: 1.5rem; font-weight: 800; color: #94a3b8; margin-bottom: 12px;">de
+                                            346</span>
+                                    </div>
+                                    <div id="v12_percentile_val"
+                                        style="margin-top: 1rem; font-size: 1.1rem; font-weight: 700; color: #475569;">
+                                        Percentil -- (P--)
+                                    </div>
+                                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 10rem; color: rgba(0,0,0,0.03); transform: rotate(-15deg); font-weight: 900;"
+                                        id="v12_bg_num">--</div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                    <div class="card" style="padding: 1.25rem; text-align: center;">
+                                        <div
+                                            style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">
+                                            TASA COMUNAL
+                                        </div>
+                                        <div id="v12_tasa_com"
+                                            style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+                                    </div>
+                                    <div class="card" style="padding: 1.25rem; text-align: center;">
+                                        <div
+                                            style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">
+                                            TASA PAÍS
+                                        </div>
+                                        <div id="v12_tasa_nac"
+                                            style="font-size: 1.8rem; font-weight: 900; color: #94a3b8;">--</div>
+                                    </div>
+                                </div>
+
+                                <!-- Temporal Comparisons -->
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: 1rem;">
+                                    <div
+                                        style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                                        <div
+                                            style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                                            Sem. Anterior</div>
+                                        <div id="v12_rank_prev"
+                                            style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
+                                    </div>
+                                    <div
+                                        style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                                        <div
+                                            style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                                            Año Pasado</div>
+                                        <div id="v12_rank_lastyear"
+                                            style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
+                                    </div>
+                                    <div
+                                        style="background: #f8fafc; padding: 0.75rem; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0;">
+                                        <div
+                                            style="font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase;">
+                                            Acum. Año</div>
+                                        <div id="v12_rank_acum"
+                                            style="font-size: 1.1rem; font-weight: 800; color: #1e293b;">--</div>
+                                    </div>
+                                </div>
+
+                                <div id="v12_status_box"
+                                    style="padding: 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">
+                                    <!-- Filled by JS -->
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- National Historical Matrix -->
+                        <div class="card" style="padding: 1.5rem; margin-top: 2rem;">
+                            <h4
+                                style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
+                                <span>Matriz de Riesgo Histórica por Posición Nacional</span>
+                                <span style="font-size: 0.7rem; font-weight: 600; color: #64748b;">COLOR = POSICIÓN EN
+                                    RANKING (1=ROJO)</span>
+                            </h4>
+                            <div id="v12_heatmap_years"
+                                style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+                                <!-- Filled by JS -->
+                            </div>
+                        </div>
                     </div>
-                    <div id="v12_tasa_com" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
-                </div>
-                <div class="card" style="padding: 1.25rem; text-align: center;">
-                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TASA PAÍS
+
+
+                    <!-- Nota Metodológica -->
+                    <div class="row" style="margin-top: 2rem;">
+                        <div
+                            style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+                            <strong>Nota Metodológica:</strong> Comparativa basada en ranking nacional (345 comunas).
+                            Posición 1 indica mayor tasa de delitos. 'Año Pasado' refiere a la misma semana
+                            epidemiológica del año anterior.
+                        </div>
                     </div>
-                    <div id="v12_tasa_nac" style="font-size: 1.8rem; font-weight: 900; color: #94a3b8;">--</div>
+
+                    <script>
+                        (async function initVista12_V2() {
+                            const waitForData = () => {
+                                return new Promise((resolve) => {
+                                    const check = () => {
+                                        if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                                        else setTimeout(check, 100);
+                                    };
+                                    check();
+                                });
+                            };
+
+                            await waitForData();
+                            const S = window.STATE_DATA;
+                            const C = window.COLS;
+
+                            document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+
+                            const currentSemanaVar = S.currentSemana;
+                            const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === currentSemanaVar) || {};
+
+                            // Direct access to ensure correct column usage
+                            const rank = totalRow['ranking_nacional_semanal'] || 50;
+                            const rankTasa = totalRow['ranking_nacional_tasa_sem'] || '--';
+                            const totalNac = 345;
+
+                            // --- Temporal Logic ---
+                            // 1. Prev Week
+                            const prevRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (currentSemanaVar - 1));
+                            const rankPrev = prevRow ? prevRow['ranking_nacional_semanal'] : '--';
+
+                            // 2. Same Week Last Year (Approximate: subtract 52 or 100 depending on ID schema)
+                            // Assuming ID_SEMANA is continuous YYYYWW format or similar index. 
+                            // If simple index: look for ANIO = Current - 1 AND SEMANA = CurrentSemanaNum
+                            // Fallback: Using raw offset from dataset if available or logic.
+                            // Let's try finding same week number in previous year.
+                            const currentYear = totalRow[C.ANIO];
+                            const currentWeekNum = totalRow[C.SEMANA_ANO]; // Assuming this column exists or we parse ID
+
+                            const lastYearRow = S.allDataHistory_total.find(r => r[C.ANIO] == (currentYear - 1) && r[C.SEMANA_ANO] == currentWeekNum);
+                            const rankLastYear = lastYearRow ? lastYearRow['ranking_nacional_semanal'] : '--';
+
+                            // 3. Acumulado
+                            const rankAcum = totalRow['ranking_nacional_acum'] || '--';
+
+                            // Update DOM
+                            document.getElementById('v12_rank_prev').textContent = rankPrev;
+                            document.getElementById('v12_rank_lastyear').textContent = rankLastYear;
+                            document.getElementById('v12_rank_acum').textContent = rankAcum;
+
+                            // ... (Rest of existing logic for Percentile, Tasa, Pyramid, etc.)
+                            // Percentil de Criminalidad (100% = Rank 1 = Peor)
+                            const ptil = totalNac > 1
+                                ? ((totalNac - rank) / (totalNac - 1) * 100)
+                                : 50;
+
+                            document.getElementById('v12_rank_val').textContent = rank;
+                            document.getElementById('v12_bg_num').textContent = rank;
+                            const nextSpan = document.getElementById('v12_rank_val').nextElementSibling;
+                            if (nextSpan) nextSpan.textContent = `de ${totalNac}`;
+                            document.getElementById('v12_percentile_val').textContent = `Posición ${rank} de ${totalNac} (Percentil de Riesgo ${ptil.toFixed(1)}%)`;
+
+                            if (rankTasa !== '--') {
+                                const pVal = document.getElementById('v12_percentile_val');
+                                // Clear previous injected if any (simple check)
+                                if (!pVal.parentNode.querySelector('.rank-tasa-extra')) {
+                                    pVal.insertAdjacentHTML('afterend', `
+                    <div class="rank-tasa-extra" style="margin-top: 12px; font-size: 0.75rem; color: #64748b; border-top: 1px dashed #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <span title="Ranking calculado con Tasa Semanal por 100k hab. (STOP)"><i class="fa-solid fa-scale-balanced" style="color:#3b82f6; margin-right:4px;"></i> Rank Nacional (Tasa Sem):</span>
+                        <div><strong style="color: #1e293b; font-size: 1rem;">${rankTasa}</strong><span style="font-size:0.7rem; color:#94a3b8;">/ ${totalNac}</span></div>
+                    </div>
+                 `);
+                                }
+                            }
+
+                            const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
+                            const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob).toFixed(1);
+                            const tasaNac = (S.tasaNacionalAvg || 42.5);
+
+                            document.getElementById('v12_tasa_com').textContent = tasaCom;
+                            document.getElementById('v12_tasa_nac').textContent = tasaNac;
+
+                            // Pyramid and Indicator Logic
+                            const indicator = document.getElementById('v12_indicator');
+                            const statusBox = document.getElementById('v12_status_box');
+
+                            if (rank <= 50) {
+                                indicator.style.top = '60px';
+                                indicator.style.left = '200px';
+                                document.getElementById('pyr_high').setAttribute('fill', 'rgba(239, 68, 68, 0.2)');
+                                document.getElementById('pyr_high').setAttribute('stroke', '#ef4444');
+                                statusBox.style.background = '#fef2f2';
+                                statusBox.style.color = '#991b1b';
+                                statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ALERTA NACIONAL: La comuna se encuentra en el estrato de mayor riesgo delitual del país.';
+                            } else if (rank <= 150) {
+                                indicator.style.top = '165px';
+                                indicator.style.left = '200px';
+                                document.getElementById('pyr_med').setAttribute('fill', 'rgba(245, 158, 11, 0.2)');
+                                document.getElementById('pyr_med').setAttribute('stroke', '#f59e0b');
+                                statusBox.style.background = '#fffbeb';
+                                statusBox.style.color = '#92400e';
+                                statusBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> CONTEXTO MEDIO: La comuna mantiene una posición intermedia en el ranking nacional.';
+                            } else {
+                                indicator.style.top = '275px';
+                                indicator.style.left = '200px';
+                                document.getElementById('pyr_low').setAttribute('fill', 'rgba(16, 185, 129, 0.2)');
+                                document.getElementById('pyr_low').setAttribute('stroke', '#10b981');
+                                statusBox.style.background = '#f0fdf4';
+                                statusBox.style.color = '#065f46';
+                                statusBox.innerHTML = '<i class="fa-solid fa-check-circle"></i> SITUACIÓN FAVORABLE: La comuna se posiciona en el tercio de mejor desempeño nacional.';
+                            }
+
+                            // --- Historical Matrix (National) ---
+                            // Use CEAD data or STOP data history if available. Using allDataHistory_total ANIO.
+                            const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
+                            const heatmap = document.getElementById('v12_heatmap_years');
+
+                            heatmap.innerHTML = years.map(yr => {
+                                // Find representative rank for the year (e.g., average or last avail)
+                                // Ideally we'd have an annual national rank. Using median of weekly ranks or manual metric if exists.
+                                const rows = S.allDataHistory_total.filter(r => r[C.ANIO] === yr);
+                                if (rows.length === 0) return '';
+
+                                // Calc avg rank for the year
+                                const avgRank = Math.round(rows.reduce((a, b) => a + (b['ranking_nacional_semanal'] || 150), 0) / rows.length);
+
+                                const color = avgRank <= 50 ? '#ef4444' : avgRank <= 150 ? '#f59e0b' : '#10b981';
+
+                                return `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                    <div style="width: 38px; height: 38px; background: ${color}; color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.2);">
+                        ${avgRank}
+                    </div>
+                    <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
                 </div>
-            </div>
+            `;
+                            }).join('');
 
-            <div id="v12_status_box" style="padding: 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
-                <!-- Filled by JS -->
-            </div>
-        </div>
 
-    </div>
-</div>
+                            // IA Integration
+                            if (typeof IAModule !== 'undefined') {
+                                IAModule.getInterpretation('vista12').then(txt => {
+                                    const el = document.getElementById('v12_ia_analysis');
+                                    if (el) el.innerHTML = txt;
+                                });
+                            }
 
-<script>
-    (async function initVista12_V2() {
-        const waitForData = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-                    else setTimeout(check, 100);
-                };
-                check();
-            });
-        };
-
-        await waitForData();
-        const S = window.STATE_DATA;
-        const C = window.COLS;
-
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
-
-        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-        const rank = totalRow[C.RANK_NAC_SEM] || 50;
-        const totalNac = 345;
-
-        // Percentil de Criminalidad (100% = Rank 1 = Peor)
-        const ptil = totalNac > 1
-            ? ((totalNac - rank) / (totalNac - 1) * 100)
-            : 50;
-
-        // CEAD Ranking Integration (National)
-        const CeadS = window.STATE_DATA_CEAD;
-        let ceadRankNac = null;
-        if (CeadS && CeadS.isLoaded && CeadS.allDataHistory_total.length > 0) {
-            const sorted = [...CeadS.allDataHistory_total].sort((a, b) => b[window.COLS_CEAD.ID_PERIODO] - a[window.COLS_CEAD.ID_PERIODO]);
-            ceadRankNac = sorted[0][window.COLS_CEAD.RANK_NAC_MES];
-        }
-
-        document.getElementById('v12_rank_val').textContent = rank;
-        document.getElementById('v12_bg_num').textContent = rank;
-        // Text update: "de 345"
-        const nextSpan = document.getElementById('v12_rank_val').nextElementSibling;
-        if (nextSpan) nextSpan.textContent = `de ${totalNac}`;
-
-        document.getElementById('v12_percentile_val').textContent = `Posición ${rank} de ${totalNac} (Percentil de Riesgo ${ptil.toFixed(1)}%)`;
-
-        if (ceadRankNac) {
-            const pVal = document.getElementById('v12_percentile_val');
-            pVal.insertAdjacentHTML('afterend', `
-                <div style="margin-top: 12px; font-size: 0.75rem; color: #64748b; border-top: 1px dashed #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span title="Ranking calculado con Tasa Mensual por 100k hab. (CEAD)"><i class="fa-solid fa-flag" style="color:#f59e0b; margin-right:4px;"></i> Rank Nacional (Tasa Mes):</span>
-                    <div><strong style="color: #1e293b; font-size: 1rem;">${ceadRankNac}</strong><span style="font-size:0.7rem; color:#94a3b8;">/ 346</span></div>
-                </div>
-             `);
-        }
-
-        // Tasa comparison
-        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
-        const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob).toFixed(1);
-        const tasaNac = (S.tasaNacionalAvg || 42.5); // Fallback
-
-        document.getElementById('v12_tasa_com').textContent = tasaCom;
-        document.getElementById('v12_tasa_nac').textContent = tasaNac;
-
-        // Pyramid and Indicator Logic
-        const indicator = document.getElementById('v12_indicator');
-        const statusBox = document.getElementById('v12_status_box');
-
-        if (rank <= 50) {
-            // High Risk
-            indicator.style.top = '60px';
-            indicator.style.left = '200px';
-            document.getElementById('pyr_high').setAttribute('fill', 'rgba(239, 68, 68, 0.2)');
-            document.getElementById('pyr_high').setAttribute('stroke', '#ef4444');
-            statusBox.style.background = '#fef2f2';
-            statusBox.style.color = '#991b1b';
-            statusBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ALERTA NACIONAL: La comuna se encuentra en el estrato de mayor riesgo delitual del país.';
-        } else if (rank <= 150) {
-            // Medium Risk
-            indicator.style.top = '165px';
-            indicator.style.left = '200px';
-            document.getElementById('pyr_med').setAttribute('fill', 'rgba(245, 158, 11, 0.2)');
-            document.getElementById('pyr_med').setAttribute('stroke', '#f59e0b');
-            statusBox.style.background = '#fffbeb';
-            statusBox.style.color = '#92400e';
-            statusBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> CONTEXTO MEDIO: La comuna mantiene una posición intermedia en el ranking nacional.';
-        } else {
-            // Low Risk
-            indicator.style.top = '275px';
-            indicator.style.left = '200px';
-            document.getElementById('pyr_low').setAttribute('fill', 'rgba(16, 185, 129, 0.2)');
-            document.getElementById('pyr_low').setAttribute('stroke', '#10b981');
-            statusBox.style.background = '#f0fdf4';
-            statusBox.style.color = '#065f46';
-            statusBox.innerHTML = '<i class="fa-solid fa-check-circle"></i> SITUACIÓN FAVORABLE: La comuna se posiciona en el tercio de mejor desempeño nacional.';
-        }
-
-    })();
-</script>
+                        })();
+                    </script>

@@ -106,6 +106,17 @@
 
 </div>
 
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Reporte
+            Ejecutivo</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia.
+    </div>
+</div>
+
 <script>
     (async function initVista24_V2() {
         const waitForData = () => {
@@ -130,23 +141,39 @@
         const cases = totalRow[C.CASOS_ACTUAL] || 0;
         const prev = totalRow[C.CASOS_ANT] || 0;
         const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
-        const rank = totalRow[C.RANK_REG_PROY] || 15;
+        const rank = totalRow[C.RANK_REG] || 15; // Mock/Default
 
         // Populate KPIs
-        document.getElementById('v24_kpi_total').textContent = ChartHelper.formatNumber(cases);
+        document.getElementById('v24_kpi_total').textContent = cases; // Removed ChartHelper dependency for safety if not loaded
         const dEl = document.getElementById('v24_kpi_delta');
         dEl.textContent = `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}% vs ant.`;
         dEl.style.color = delta > 0 ? '#ef4444' : '#10b981';
         document.getElementById('v24_kpi_rank').textContent = rank;
 
-        // Status Badge
+        // Status Badge Logic
         const status = document.getElementById('v24_status_badge');
-        if (delta > 10) {
-            status.textContent = 'STATUS: CRÍTICO'; status.style.background = '#fef2f2'; status.style.color = '#ef4444'; status.style.border = '2px solid #ef4444';
+
+        if (delta > 15) {
+            status.textContent = 'STATUS: CRÍTICO';
+            status.style.background = '#fef2f2';
+            status.style.color = '#ef4444';
+            status.style.border = '2px solid #ef4444';
+            document.getElementById('v24_kpi_risk').textContent = "ALTO";
+            document.getElementById('v24_kpi_risk').style.color = "#ef4444";
         } else if (delta < -5) {
-            status.textContent = 'STATUS: FAVORABLE'; status.style.background = '#f0fdf4'; status.style.color = '#10b981'; status.style.border = '2px solid #10b981';
+            status.textContent = 'STATUS: FAVORABLE';
+            status.style.background = '#f0fdf4';
+            status.style.color = '#10b981';
+            status.style.border = '2px solid #10b981';
+            document.getElementById('v24_kpi_risk').textContent = "BAJO";
+            document.getElementById('v24_kpi_risk').style.color = "#10b981";
         } else {
-            status.textContent = 'STATUS: ESTABLE'; status.style.background = '#f8fafc'; status.style.color = '#64748b'; status.style.border = '2px solid #cbd5e1';
+            status.textContent = 'STATUS: ESTABLE';
+            status.style.background = '#f8fafc';
+            status.style.color = '#64748b';
+            status.style.border = '2px solid #cbd5e1';
+            document.getElementById('v24_kpi_risk').textContent = "MODERADO";
+            document.getElementById('v24_kpi_risk').style.color = "#f59e0b";
         }
 
         // Findings

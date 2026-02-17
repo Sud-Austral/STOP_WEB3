@@ -75,12 +75,13 @@ const App = {
         this.bindEvents();
         this.loadView(this.config.defaultView);
 
-        // Pre-load AI interpretations in background (delay 30s to avoid rate-limiting)
+        // Pre-load AI interpretations in background (delay 3s to avoid rate-limiting)
         setTimeout(() => {
-            if (typeof IAModule !== 'undefined' && window.STATE_DATA?.isLoaded) {
+            const dataReady = (window.STATE_DATA?.isLoaded) || (window.STATE_DATA_CEAD?.isLoaded);
+            if (typeof IAModule !== 'undefined' && dataReady) {
                 IAModule.generateAllInterpretations();
             }
-        }, 30000);
+        }, 3000);
     },
 
     /**
@@ -203,7 +204,7 @@ const App = {
                 if (typeof ChartEnhancer !== 'undefined') {
                     const source = ChartEnhancer.getSourceForView(viewName);
                     ChartEnhancer.applyTableStyling();
-                    ChartEnhancer.addSourceFooters(source);
+                    // ChartEnhancer.addSourceFooters(source); // Desactivado por solicitud
                     ChartEnhancer.formatViewNumbers();
                     ChartEnhancer.applyVariationColors();
                 }
@@ -232,11 +233,14 @@ const App = {
         let title = 'Reporte de Inteligencia Delictual';
         let icon = 'fa-shield-halved';
 
-        // CEAD views (21-40) have a different title
-        if (viewNum >= 21 && viewNum <= 40) {
-            title = 'Reporte CEAD';
+        // Classification based on confirmed data source
+        const ceadViews = [4, 7, 10, 11, 12, 15, 16, 19, 20, 21, 25];
+        const hybridViews = [41, 42, 43, 44, 45]; // Future expansion
+
+        if (ceadViews.includes(viewNum)) {
+            title = 'Reporte CEAD (Estadísticas Delictuales)';
             icon = 'fa-chart-line';
-        } else if (viewNum >= 41 && viewNum <= 45) {
+        } else if (hybridViews.includes(viewNum)) {
             title = 'Reporte Integrado STOP-CEAD';
             icon = 'fa-layer-group';
         }
@@ -261,18 +265,20 @@ const App = {
         const viewNum = parseInt(match[1]);
         const sources = [];
 
-        // Determine sources based on view number
-        if (viewNum >= 1 && viewNum <= 20) {
+        // Determine sources based on view number (STOP vs CEAD)
+        const ceadViews = [4, 7, 10, 11, 12, 15, 16, 19, 20, 21, 25];
+        const stopViews = [0, 1, 2, 3, 5, 6, 8, 9, 13, 14, 17, 18, 22, 23, 24];
+        const hybridViews = [41, 42, 43, 44, 45];
+
+        if (stopViews.includes(viewNum) || hybridViews.includes(viewNum)) {
             sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });
-        } else if (viewNum >= 21 && viewNum <= 40) {
-            sources.push({ name: 'CEAD (Centro de Análisis del Delito)', class: 'cead' });
-        } else if (viewNum >= 41 && viewNum <= 45) {
-            sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });
+        }
+        if (ceadViews.includes(viewNum) || hybridViews.includes(viewNum)) {
             sources.push({ name: 'CEAD (Centro de Análisis del Delito)', class: 'cead' });
         }
 
-        // Add INE for views that use population data
-        const ineViews = [1, 16, 17, 21, 26, 34, 41];
+        // Add INE for views that use population/rate data (Confirmed via content analysis)
+        const ineViews = [1, 9, 10, 12, 13, 17];
         if (ineViews.includes(viewNum)) {
             sources.push({ name: 'INE (Instituto Nacional de Estadísticas)', class: 'ine' });
         }

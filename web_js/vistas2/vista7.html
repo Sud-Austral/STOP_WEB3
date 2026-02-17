@@ -19,9 +19,9 @@
             portafolio delictual: delitos que han emergido o cambiado de peso relativo en las últimas dos décadas.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v7_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v7_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <!-- Main Streamgraph (Simulated with Stacked Area) -->
     <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
@@ -64,8 +64,9 @@
             <div
                 style="padding: 1rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; font-size: 0.8rem; color: #92400e;">
                 <i class="fa-solid fa-triangle-exclamation"></i> <strong>Nota Metodológica:</strong> El gráfico muestra
-                el peso porcentual de cada delito sobre el total anual. Esto permite distinguir si un delito sube porque
-                hay "más inseguridad general" o porque está ganando protagonismo frente a otros.
+                el peso porcentual de cada delito sobre el total anual. Estas cifras se mantendrán fijas entre periodos
+                de
+                entrega de información del CEAD (Desfase de 6 meses aprox).
             </div>
         </div>
     </div>
@@ -99,16 +100,22 @@
             .sort((a, b) => b.total - a.total)
             .slice(0, 8); // Top 8 structural crimes
 
+        // Create Datasets with Raw Counts for Tooltips
         const datasets = topDelitos.map((d, i) => {
-            const dataPct = years.map(yr => {
+            const counts = [];
+            const percentages = years.map(yr => {
                 const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
                 const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
                 const dRow = yrRows.filter(r => r[C.DELITO] === d.delito).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+
+                counts.push(dRow); // Store raw count
                 return yrTotal > 0 ? (dRow / yrTotal * 100) : 0;
             });
+
             return {
                 label: d.delito,
-                data: dataPct,
+                data: percentages,
+                rawCounts: counts, // Custom property
                 backgroundColor: ChartHelper.colors.categorical[i % ChartHelper.colors.categorical.length],
                 borderColor: 'white',
                 borderWidth: 0.5,
@@ -118,16 +125,21 @@
         });
 
         // Add "Others"
+        const othersCounts = [];
         const othersData = years.map(yr => {
             const yrRows = S.allDataHistory.filter(r => r[C.ANIO] === yr);
             const yrTotal = yrRows.reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
             const topNames = topDelitos.map(t => t.delito);
-            const othersTotal = yrRows.filter(r => !topNames.includes(r[C.DELITO])).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
-            return yrTotal > 0 ? (othersTotal / yrTotal * 100) : 0;
+            const othersRow = yrRows.filter(r => !topNames.includes(r[C.DELITO])).reduce((sum, r) => sum + (r[C.CASOS_ACTUAL] || 0), 0);
+
+            othersCounts.push(othersRow);
+            return yrTotal > 0 ? (othersRow / yrTotal * 100) : 0;
         });
+
         datasets.push({
             label: 'Otros Delitos',
             data: othersData,
+            rawCounts: othersCounts,
             backgroundColor: '#cbd5e1',
             borderColor: 'white',
             borderWidth: 0.5,
@@ -178,16 +190,31 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
                 plugins: {
                     legend: { position: 'right', labels: { font: { family: 'Outfit', size: 10 } } },
-                    tooltip: { mode: 'index', intersect: false }
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                const label = context.dataset.label || '';
+                                const val = context.parsed.y;
+                                const count = context.dataset.rawCounts[context.dataIndex];
+                                return `${label}: ${val.toFixed(1)}% (${ChartHelper.formatNumber(count)} casos)`;
+                            }
+                        }
+                    }
                 },
                 scales: {
                     y: {
                         stacked: true,
                         max: 100,
                         ticks: { callback: v => v + '%' },
-                        grid: { color: '#f1f5f9' }
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: '% Participación' }
                     },
                     x: {
                         grid: { display: false }
@@ -196,5 +223,12 @@
             }
         });
 
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista7').then(txt => {
+                const el = document.getElementById('v7_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
     })();
 </script>

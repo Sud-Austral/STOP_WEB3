@@ -14,15 +14,39 @@
         style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
             border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
         <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-            ¿Cómo ha evolucionado la delincuencia en las últimas semanas?
+            ¿Cómo ha evolucionado la delincuencia en los últimos meses?
         </h2>
-        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Tendencia de corto plazo
+        <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Tendencia de mediano plazo
+            (24 semanas)
             con suavizado mediante media móvil de 4 semanas para eliminar ruido operacional.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v2_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v2_ia_analysis">Cargando análisis...</span>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom: 2rem;">
+        <div class="kpi-card">
+            <div class="kpi-label">Total Periodo (24S)</div>
+            <div class="kpi-value" id="v2_total_24s">--</div>
+            <div class="kpi-change">Acumulado semestre</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Promedio Semanal</div>
+            <div class="kpi-value" id="v2_avg_24s">--</div>
+            <div class="kpi-change">Semanas monitoreadas</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Pico Máximo</div>
+            <div class="kpi-value" id="v2_max_24s">--</div>
+            <div class="kpi-change" id="v2_max_week">--</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-label">Brecha Histórica</div>
+            <div class="kpi-value" id="v2_delta_hist">--</div>
+            <div class="kpi-change" id="v2_delta_hist_label">vs Promedio Global</div>
+        </div>
+    </div>
 
     <!-- Trend Arrow Indicator -->
     <div
@@ -50,10 +74,17 @@
     </div>
 </div>
 
-<div class="alert alert--info">
-    <i class="fa-solid fa-circle-info"></i>
-    <span>La <strong>Zona Sombreada</strong> representa el rango de normalidad histórica (Media ± 1 Desviación
-        Estándar). Los puntos fuera de esta zona indican eventos estadísticamente significativos.</span>
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista sintetiza la dinámica delictual de los últimos 6 meses. Los
+        indicadores superiores resumen el volumen acumulado, promedios y máximos del periodo, destacando la
+        <strong>Brecha Histórica</strong> respecto al comportamiento estructural de la comuna. El gráfico contrasta la
+        operación semanal con rangos de normalidad (Zona Sombreada), utilizando promedios de periodo (ámbar), base
+        histórica (índigo) y media móvil para deslindar variaciones cíclicas de tendencias estructurales emergentes.
+    </div>
 </div>
 
 <script>
@@ -78,13 +109,21 @@
 
         // Get last 8 weeks
         const allWeeksSorted = [...new Set(S.allDataHistory_total.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a);
-        const last8_IDs = allWeeksSorted.slice(0, 8).reverse();
+        const last8_IDs = allWeeksSorted.slice(0, 24).reverse();
 
         const weeklyData = last8_IDs.map(id => S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id) || {});
 
         const cases = weeklyData.map(r => r[C.CASOS_ACTUAL] || 0);
         const movingAvg = weeklyData.map(r => r[C.MEDIA_MOVIL_4S] || 0);
         const labels = last8_IDs.map(id => S.getDateLabel ? S.getDateLabel(id) : `Sem ${id % 100}`);
+
+        // --- Promedio 24 Semanas ---
+        const avg24 = cases.reduce((a, b) => a + b, 0) / cases.length;
+        const avgData = Array(cases.length).fill(avg24);
+
+        // --- Promedio Histórico Global (Toda la Base) ---
+        const globalAvg = S.allDataHistory_total.reduce((acc, r) => acc + (r[C.CASOS_ACTUAL] || 0), 0) / S.allDataHistory_total.length;
+        const globalAvgData = Array(cases.length).fill(globalAvg);
 
         // Ranges (±1 Sigma)
         const rangeUpper = weeklyData.map(r => (r[C.PROMEDIO_HIST] || 0) + (r[C.STD_HIST] || 0));
@@ -94,6 +133,21 @@
         const lastMA = movingAvg[movingAvg.length - 1];
         const prevMA = movingAvg[movingAvg.length - 2] || lastMA;
         const maVar = prevMA > 0 ? ((lastMA - prevMA) / prevMA * 100) : 0;
+
+        // KPI Calculations (24 weeks)
+        const total24 = cases.reduce((a, b) => a + b, 0);
+        const max24 = Math.max(...cases);
+        const maxIndex = cases.indexOf(max24);
+        const maxWeekLabel = labels[maxIndex] || '--';
+        const deltaGlobal = globalAvg > 0 ? ((avg24 - globalAvg) / globalAvg * 100) : 0;
+
+        document.getElementById('v2_total_24s').textContent = total24;
+        document.getElementById('v2_avg_24s').textContent = avg24.toFixed(1);
+        document.getElementById('v2_max_24s').textContent = max24;
+        document.getElementById('v2_max_week').textContent = `Semana: ${maxWeekLabel}`;
+        const deltaEl = document.getElementById('v2_delta_hist');
+        deltaEl.textContent = `${deltaGlobal >= 0 ? '+' : ''}${deltaGlobal.toFixed(1)}%`;
+        deltaEl.style.color = deltaGlobal > 5 ? '#ef4444' : deltaGlobal < -5 ? '#10b981' : '#64748b';
 
         const trendIcon = document.getElementById('v2_trend_icon');
         const trendText = document.getElementById('v2_trend_text');
@@ -134,12 +188,22 @@
                         label: 'Casos Semanales',
                         data: cases,
                         borderColor: '#1e293b',
-                        borderWidth: 3,
-                        pointRadius: 6,
+                        borderWidth: 2,
+                        pointRadius: 4,
                         pointBackgroundColor: '#fff',
                         pointBorderWidth: 3,
                         zIndex: 10,
-                        tension: 0
+                        tension: 0,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex % 2 === 0,
+                            align: 'top',
+                            offset: 5,
+                            color: '#1e293b',
+                            font: { weight: 'bold', size: 10 },
+                            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                            borderRadius: 4,
+                            padding: 2
+                        }
                     },
                     {
                         label: 'Media Móvil',
@@ -167,9 +231,28 @@
                         fill: false,
                         pointRadius: 0,
                         tension: 0.4
+                    },
+                    {
+                        label: `Promedio 24 Semanas (${avg24.toFixed(1)})`,
+                        data: avgData,
+                        borderColor: '#fbbf24', // Amber for 24-week avg
+                        borderWidth: 1.5,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    },
+                    {
+                        label: `Línea Base Histórica (${globalAvg.toFixed(1)})`,
+                        data: globalAvgData,
+                        borderColor: '#6366f1', // Indigo for Global Baseline
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        fill: false
                     }
                 ]
             },
+            plugins: [ChartDataLabels],
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -186,6 +269,9 @@
                         intersect: false,
                         backgroundColor: 'rgba(15, 23, 42, 0.9)',
                         titleFont: { family: 'Outfit', size: 14 }
+                    },
+                    datalabels: {
+                        display: false // Por defecto desactivado para todos
                     }
                 },
                 scales: {
@@ -200,6 +286,15 @@
                 }
             }
         });
+
+    
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista2').then(txt => {
+                const el = document.getElementById('v2_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>

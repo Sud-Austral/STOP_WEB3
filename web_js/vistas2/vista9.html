@@ -20,9 +20,9 @@
             casos.</p>
     </div>
 
-<div class="alert alert--info" style="margin-top: 1.5rem;">
-    <strong>🤖 Análisis de Situación:</strong> <span id="v9_ia_analysis">Cargando análisis...</span>
-</div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v9_ia_analysis">Cargando análisis...</span>
+    </div>
 
     <!-- Bottom 3 (Critical Rankings) -->
     <div id="v9_critical_container"
@@ -48,6 +48,17 @@
             una tipología aparece con un ranking regional menor a 5, se considera un <strong>punto débil
                 estructural</strong> que requiere coordinación con delegaciones provinciales o ministeriales.
         </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Puntos
+            Débiles</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones estratégicas
+        basadas en evidencia.
     </div>
 </div>
 
@@ -90,7 +101,46 @@
                         <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">RANK NACIONAL</span>
                     </div>
                     <div style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Posición regional: <strong>${d[C.RANK_REG_PROY] || '--'}</strong></div>
-                </div>
+<script>
+    (async function initVista9_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
+
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
+
+        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
+        const factorPob = currentData[0]?.[C.FACTOR_POBLACION] || 1;
+
+        // Get Top 3 Critical by Ranking (Regional or National)
+        const critical = currentData
+            .filter(r => (r[C.RANK_NAC_SEM] || 346) < 30 || (r[C.RANK_REG_PROY] || S.totalComunasReg) < 5)
+            .sort((a, b) => (a[C.RANK_NAC_SEM] || 346) - (b[C.RANK_NAC_SEM] || 346))
+            .slice(0, 3);
+
+        const container = document.getElementById('v9_critical_container');
+        if (critical.length > 0) {
+            container.innerHTML = critical.map(d => `
+                < div style = "background: white; border: 1px solid #fee2e2; border-radius: 12px; padding: 1.25rem; border-top: 6px solid #ef4444; position: relative;" >
+                    <div style="font-size: 0.7rem; font-weight: 800; color: #ef4444; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.05em;">PUNTO CRÍTICO</div>
+                    <div style="font-size: 1rem; font-weight: 800; color: #1e293b; margin-bottom: 10px; min-height: 2.4rem; line-height: 1.2;">${d[C.DELITO]}</div>
+                    <div style="display: flex; align-items: flex-end; gap: 5px;">
+                        <span style="font-size: 1.8rem; font-weight: 950; color: #1e293b; line-height: 1;">${d[C.RANK_NAC_SEM] || '--'}${d[C.RANK_NAC_SEM] ? '/346' : ''}</span>
+                        <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 4px;">RANK NACIONAL</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Posición regional: <strong>${d[C.RANK_REG_PROY] || '--'}${d[C.RANK_REG_PROY] ? '/' + S.totalComunasReg : ''}</strong></div>
+                </div >
             `).join('');
         } else {
             container.innerHTML = '<div class="text-muted" style="grid-column: 1/-1; padding: 2rem; border: 2px dashed #f1f5f9; border-radius: 12px; text-align: center;">No se registran tipologías en rangos críticos regionales o nacionales esta semana.</div>';
@@ -98,11 +148,12 @@
 
         // --- Histogram Chart ---
         const top3ForChart = currentData.sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0)).slice(0, 3);
-        const labels = top3ForChart.map(d => d[C.DELITO].length > 15 ? d[C.DELITO].substring(0, 15) + '...' : d[C.DELITO]);
+        const labels = top3ForChart.map(d => d[C.DELITO]); // Full names, no truncation
 
         const ctx = document.getElementById('v9_chart_comparative').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
+            plugins: [ChartDataLabels],
             data: {
                 labels: labels,
                 datasets: [
@@ -110,31 +161,65 @@
                         label: 'Comuna (Tasa)',
                         data: top3ForChart.map(d => ((d[C.CASOS_ACTUAL] || 0) / factorPob).toFixed(1)),
                         backgroundColor: '#ef4444',
-                        borderRadius: 4
+                        borderRadius: 4,
+                        datalabels: {
+                            color: 'white',
+                            font: { weight: 'bold' },
+                            anchor: 'end',
+                            align: 'start',
+                            offset: -20
+                        }
                     },
                     {
                         label: 'Referencia Región',
                         data: top3ForChart.map(d => ((d[C.CASOS_SEM_REG] || 0) / (S.totalPobReg || 1000000) * 100000).toFixed(1)),
                         backgroundColor: '#fca5a5',
-                        borderRadius: 4
+                        borderRadius: 4,
+                        datalabels: {
+                            color: '#9f1239',
+                            font: { weight: 'bold' },
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 0
+                        }
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: { padding: { top: 20 } },
                 plugins: {
-                    legend: { position: 'top', labels: { font: { family: 'Outfit', weight: '600' } } }
+                    legend: { position: 'top', labels: { font: { family: 'Outfit', weight: '600' } } },
+                    datalabels: {
+                        formatter: (val) => val > 0 ? val : ''
+                    }
                 },
                 scales: {
                     y: {
                         grid: { color: '#f1f5f9' },
                         title: { display: true, text: 'Casos x 100k hab.', font: { family: 'Outfit' } }
                     },
-                    x: { grid: { display: false }, ticks: { font: { family: 'Outfit', weight: '700', size: 11 } } }
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: { family: 'Outfit', weight: '700', size: 10 },
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    }
                 }
             }
         });
+
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista9').then(txt => {
+                const el = document.getElementById('v9_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
     })();
 </script>
