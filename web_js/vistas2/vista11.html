@@ -17,211 +17,189 @@
         </h2>
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evolución del ranking
             regional año a año para distinguir mejoras de gestión real frente a variaciones sistémicas del entorno.</p>
-        <!-- Vista 11: Benchmark Histórico Multianual (2005-2025) -->
-        <div class="card mb-lg">
-            <div class="location-source-row"
-                style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <div style="font-size: 0.8rem; color: #f59e0b; font-weight: 600; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-ranking-star"></i> <span class="comuna-fill">CARGANDO...</span>
-                    <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-                    <span>EVOLUCIÓN ESTRATÉGICA 20 AÑOS</span>
-                </div>
-                <div id="sourceBadgeContainer"></div>
-            </div>
+    </div>
 
-            <div class="question-section" style="background: linear-gradient(90deg, rgba(245, 158, 11, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #f59e0b; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
-                <h2
-                    style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-                    ¿Nuestra posición relativa ha mejorado o empeorado en la década?
-                </h2>
-                <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evolución del
-                    ranking
-                    regional año a año para distinguir mejoras de gestión real frente a variaciones sistémicas del
-                    entorno.</p>
-            </div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v11_ia_analysis">Cargando análisis...</span>
+    </div>
 
-            <div class="alert alert--info" style="margin-top: 1.5rem;">
-                <strong>🤖 Análisis de Situación:</strong> <span id="v11_ia_analysis">Cargando análisis...</span>
-            </div>
-
-            <!-- Stats Cards -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-                <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #3b82f6;">
-                    <div
-                        style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
-                        Promedio Posición</div>
-                    <div id="v11_stat_avg" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
-                </div>
-                <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #10b981;">
-                    <div
-                        style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
-                        Mejor Posición</div>
-                    <div id="v11_stat_best" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
-                </div>
-                <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #ef4444;">
-                    <div
-                        style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
-                        Peor Posición</div>
-                    <div id="v11_stat_worst" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
-                </div>
-            </div>
-
-            <!-- Main Chart -->
-            <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                <h3 class="section-title mb-lg"
-                    style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
-                    <span><i class="fa-solid fa-chart-line" style="color: #f59e0b;"></i> Trayectoria Histórica de
-                        Ranking
-                        (Anual)</span>
-                    <div id="v11_trajectory_badge"
-                        style="background: #1e293b; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
-                        CALCULANDO TRAYECTORIA...</div>
-                </h3>
-                <div class="chart-wrapper" style="height: 380px;">
-                    <canvas id="v11_chart_ranking"></canvas>
-                </div>
-            </div>
-
-            <!-- Annual Heatmap summary -->
-            <div class="card" style="padding: 1.5rem;">
-                <h4
-                    style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
-                    <span>Matriz de Variación Anual</span>
-                    <div style="display: flex; gap: 8px; font-size: 0.65rem; font-weight: 600;">
-                        <span style="color:#10b981;">● Mejora</span>
-                        <span style="color:#cbd5e1;">● Igual</span>
-                        <span style="color:#ef4444;">● Empeora</span>
-                    </div>
-                </h4>
-                <div id="v11_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-                    <!-- Filled by JS -->
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Nota Metodológica -->
-        <div class="row" style="margin-top: 2rem;">
+    <!-- Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #3b82f6;">
             <div
-                style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-                <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Ranking
-                    Histórico</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
-                estratégicas basadas en evidencia.
-            </div>
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Promedio Posición</div>
+            <div id="v11_stat_avg" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
         </div>
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #10b981;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Mejor Posición</div>
+            <div id="v11_stat_best" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+        </div>
+        <div class="card" style="padding: 1.25rem; text-align: center; border-bottom: 4px solid #ef4444;">
+            <div
+                style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">
+                Peor Posición</div>
+            <div id="v11_stat_worst" style="font-size: 1.8rem; font-weight: 900; color: #1e293b;">--</div>
+        </div>
+    </div>
 
-        <script>
-            (async function initVista11_V2() {
-                const waitForData = () => {
-                    return new Promise((resolve) => {
-                        const check = () => {
-                            if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
-                            else setTimeout(check, 100);
-                        };
-                        check();
-                    });
+    <!-- Main Chart -->
+    <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 class="section-title mb-lg"
+            style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-chart-line" style="color: #f59e0b;"></i> Trayectoria Histórica de
+                Ranking
+                (Anual)</span>
+            <div id="v11_trajectory_badge"
+                style="background: #1e293b; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;">
+                CALCULANDO TRAYECTORIA...</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 380px;">
+            <canvas id="v11_chart_ranking"></canvas>
+        </div>
+    </div>
+
+    <!-- Annual Heatmap summary -->
+    <div class="card" style="padding: 1.5rem;">
+        <h4
+            style="margin: 0 0 1.25rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; display:flex; justify-content: space-between;">
+            <span>Matriz de Variación Anual</span>
+            <div style="display: flex; gap: 8px; font-size: 0.65rem; font-weight: 600;">
+                <span style="color:#10b981;">● Mejora</span>
+                <span style="color:#cbd5e1;">● Igual</span>
+                <span style="color:#ef4444;">● Empeora</span>
+            </div>
+        </h4>
+        <div id="v11_heatmap_years" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Ranking
+            Histórico</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
+        estratégicas basadas en evidencia.
+    </div>
+</div>
+
+<script>
+    (async function initVista11_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
                 };
+                check();
+            });
+        };
 
-                await waitForData();
-                const S = window.STATE_DATA_CEAD;
-                const C = window.COLS_CEAD;
+        await waitForData();
+        const S = window.STATE_DATA_CEAD;
+        const C = window.COLS_CEAD;
 
-                document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-                // Process Ranking by Year
-                const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
-                const rankings = years.map(yr => {
-                    const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0];
-                    const rankVal = row ? (row[C.RANKING_REG_ANUAL] || row['ranking_regional_anual_metric'] || row[C.RANKING] || 25) : 25;
-                    return Math.round(rankVal);
-                });
+        // Process Ranking by Year
+        const years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort();
+        const rankings = years.map(yr => {
+            const row = S.allDataHistory_total.filter(r => r[C.ANIO] === yr).slice(-1)[0];
+            const rankVal = row ? (row[C.RANKING_REG_ANUAL] || row['ranking_regional_anual_metric'] || row[C.RANKING] || 25) : 25;
+            return Math.round(rankVal);
+        });
 
-                // --- Calculate Stats ---
-                const avg = Math.round(rankings.reduce((a, b) => a + b, 0) / rankings.length);
-                const best = Math.max(...rankings); // Max number = Better rank (further from #1)
-                const worst = Math.min(...rankings); // Min number = Worse rank (closer to #1)
+        // --- Calculate Stats ---
+        const avg = Math.round(rankings.reduce((a, b) => a + b, 0) / rankings.length);
+        const best = Math.max(...rankings); // Max number = Better rank (further from #1)
+        const worst = Math.min(...rankings); // Min number = Worse rank (closer to #1)
 
-                const bestYear = years[rankings.indexOf(best)];
-                const worstYear = years[rankings.indexOf(worst)];
+        const bestYear = years[rankings.indexOf(best)];
+        const worstYear = years[rankings.indexOf(worst)];
 
-                document.getElementById('v11_stat_avg').textContent = `${avg}°`;
-                document.getElementById('v11_stat_best').innerHTML = `${best}° <div style="font-size:0.75rem; color:#10b981; font-weight:600;">AÑO ${bestYear}</div>`;
-                document.getElementById('v11_stat_worst').innerHTML = `${worst}° <div style="font-size:0.75rem; color:#ef4444; font-weight:600;">AÑO ${worstYear}</div>`;
+        document.getElementById('v11_stat_avg').textContent = `${avg}°`;
+        document.getElementById('v11_stat_best').innerHTML = `${best}° <div style="font-size:0.75rem; color:#10b981; font-weight:600;">AÑO ${bestYear}</div>`;
+        document.getElementById('v11_stat_worst').innerHTML = `${worst}° <div style="font-size:0.75rem; color:#ef4444; font-weight:600;">AÑO ${worstYear}</div>`;
 
 
-                // Trajectory Logic
-                const badge = document.getElementById('v11_trajectory_badge');
-                const first = rankings[0], last = rankings[rankings.length - 1];
-                const diff = last - first; // Positive = Improvement (Higher rank number), Negative = Worsening
+        // Trajectory Logic
+        const badge = document.getElementById('v11_trajectory_badge');
+        const first = rankings[0], last = rankings[rankings.length - 1];
+        const diff = last - first; // Positive = Improvement (Higher rank number), Negative = Worsening
 
-                if (diff > 3) { badge.textContent = 'MEJORA SOSTENIDA'; badge.style.background = '#10b981'; } // High rank # is good
-                else if (diff < -3) { badge.textContent = 'DETERIORO RELATIVO'; badge.style.background = '#ef4444'; }
-                else { badge.textContent = 'ESTABILIDAD ESTRUCTURAL'; badge.style.background = '#64748b'; }
+        if (diff > 3) { badge.textContent = 'MEJORA SOSTENIDA'; badge.style.background = '#10b981'; } // High rank # is good
+        else if (diff < -3) { badge.textContent = 'DETERIORO RELATIVO'; badge.style.background = '#ef4444'; }
+        else { badge.textContent = 'ESTABILIDAD ESTRUCTURAL'; badge.style.background = '#64748b'; }
 
-                // --- Chart ---
-                const ctx = document.getElementById('v11_chart_ranking').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: years,
-                        datasets: [{
-                            label: 'Ranking Regional (Mayor es Mejor)',
-                            data: rankings,
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 6,
-                            pointBackgroundColor: '#fff',
-                            pointBorderWidth: 3,
-                            borderWidth: 4
-                        }]
+        // --- Chart ---
+        const ctx = document.getElementById('v11_chart_ranking').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Ranking Regional (Mayor es Mejor)',
+                    data: rankings,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#fff',
+                    pointBorderWidth: 3,
+                    borderWidth: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        reverse: true, // 1 at top
+                        min: 1,
+                        max: 52,
+                        ticks: { stepSize: 10, font: { family: 'Outfit' } },
+                        grid: { color: '#f1f5f9' },
+                        title: { display: true, text: 'Posición (1 = Más Delitos)', font: { weight: '800' } }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                reverse: true, // 1 at top
-                                min: 1,
-                                max: 52,
-                                ticks: { stepSize: 10, font: { family: 'Outfit' } },
-                                grid: { color: '#f1f5f9' },
-                                title: { display: true, text: 'Posición (1 = Más Delitos)', font: { weight: '800' } }
-                            },
-                            x: { grid: { display: false } }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                callbacks: {
-                                    label: (c) => ` Posición: ${c.raw} de 52 comunas`
-                                }
-                            }
+                    x: { grid: { display: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                        callbacks: {
+                            label: (c) => ` Posición: ${c.raw} de 52 comunas`
                         }
                     }
-                });
+                }
+            }
+        });
 
-                // --- Heatmap Years (Variation) ---
-                const heatmap = document.getElementById('v11_heatmap_years');
-                heatmap.innerHTML = years.map((yr, i) => {
-                    const rank = rankings[i];
-                    let color = '#94a3b8';
-                    let icon = ''; // Dot
+        // --- Heatmap Years (Variation) ---
+        const heatmap = document.getElementById('v11_heatmap_years');
+        heatmap.innerHTML = years.map((yr, i) => {
+            const rank = rankings[i];
+            let color = '#94a3b8';
+            let icon = ''; // Dot
 
-                    if (i > 0) {
-                        const prev = rankings[i - 1];
-                        if (rank > prev) { color = '#10b981'; icon = '<i class="fa-solid fa-arrow-up" style="font-size:0.6rem"></i>'; } // Improved
-                        else if (rank < prev) { color = '#ef4444'; icon = '<i class="fa-solid fa-arrow-down" style="font-size:0.6rem"></i>'; } // Worsened
-                        else { color = '#cbd5e1'; icon = '<i class="fa-solid fa-minus" style="font-size:0.6rem"></i>'; } // Same
-                    } else {
-                        // First year: Absolute
-                        color = rank <= 10 ? '#ef4444' : rank <= 25 ? '#f59e0b' : '#10b981';
-                    }
+            if (i > 0) {
+                const prev = rankings[i - 1];
+                if (rank > prev) { color = '#10b981'; icon = '<i class="fa-solid fa-arrow-up" style="font-size:0.6rem"></i>'; } // Improved
+                else if (rank < prev) { color = '#ef4444'; icon = '<i class="fa-solid fa-arrow-down" style="font-size:0.6rem"></i>'; } // Worsened
+                else { color = '#cbd5e1'; icon = '<i class="fa-solid fa-minus" style="font-size:0.6rem"></i>'; } // Same
+            } else {
+                // First year: Absolute
+                color = rank <= 10 ? '#ef4444' : rank <= 25 ? '#f59e0b' : '#10b981';
+            }
 
-                    return `
+            return `
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                     <div style="width: 38px; height: 38px; background: ${color}; color: ${color === '#cbd5e1' ? '#64748b' : 'white'}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid rgba(255,255,255,0.2);">
                         ${rank}
@@ -229,16 +207,16 @@
                     <span style="font-size: 0.65rem; font-weight: 700; color: #64748b;">'${yr.toString().slice(2)}</span>
                 </div>
             `;
-                }).join('');
+        }).join('');
 
 
-                // IA Integration
-                if (typeof IAModule !== 'undefined') {
-                    IAModule.getInterpretation('vista11').then(txt => {
-                        const el = document.getElementById('v11_ia_analysis');
-                        if (el) el.innerHTML = txt;
-                    });
-                }
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista11').then(txt => {
+                const el = document.getElementById('v11_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
-            })();
-        </script>
+    })();
+</script>

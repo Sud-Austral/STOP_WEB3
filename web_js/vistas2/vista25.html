@@ -18,41 +18,71 @@
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Evaluación de la
             integridad, consistencia y completitud de los datos históricos de CEAD para garantizar la validez de los
             modelos predictivos.</p>
-        <div style="font-size: 2rem; color: #3b82f6; margin-bottom: 10px;"><i class="fa-solid fa-list-check"></i>
+    </div>
+
+    <div class="alert alert--info" style="margin-top: 1.5rem; margin-bottom: 2rem;">
+        <strong>🤖 Estado del Dataset:</strong> <span id="v25_health_desc">Analizando integridad...</span>
+    </div>
+
+    <!-- 3 Pillars Grid -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+
+        <!-- Pillar 1: Completitud -->
+        <div class="card"
+            style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-size: 2rem; color: #3b82f6; margin-bottom: 10px;"><i
+                        class="fa-solid fa-list-check"></i></div>
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Completitud Mensual
+                </h4>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Registros / Esperados (20A)</p>
+            </div>
+            <div id="v25_kpi_completion" style="font-size: 1.5rem; font-weight: 900; color: #334155;">--/--</div>
         </div>
-        <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Completitud Mensual</h4>
-        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Presencia de datos en los últimos 20
-            años.</p>
-        <div id="v25_kpi_completion" style="font-size: 1.5rem; font-weight: 900; color: #334155;">--/--</div>
-    </div>
 
-    <!-- Pillar 2: Outliers -->
-    <div class="card" style="padding: 1.5rem;">
-        <div style="font-size: 2rem; color: #f59e0b; margin-bottom: 10px;"><i
-                class="fa-solid fa-magnifying-glass-chart"></i></div>
-        <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Detección de Outliers
-        </h4>
-        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Valores anómalos detectados (Ruido).</p>
-        <div id="v25_kpi_outliers" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- eventos</div>
-    </div>
-
-    <!-- Pillar 3: Latencia -->
-    <div class="card" style="padding: 1.5rem;">
-        <div style="font-size: 2rem; color: #10b981; margin-bottom: 10px;"><i class="fa-solid fa-clock-rotate-left"></i>
+        <!-- Pillar 2: Outliers -->
+        <div class="card"
+            style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-size: 2rem; color: #f59e0b; margin-bottom: 10px;"><i
+                        class="fa-solid fa-magnifying-glass-chart"></i></div>
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Detección de
+                    Outliers</h4>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Valores anómalos detectados</p>
+            </div>
+            <div id="v25_kpi_outliers" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- eventos</div>
         </div>
-        <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Latencia de Carga</h4>
-        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Actualización de la última data.</p>
-        <div id="v25_kpi_latency" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- días</div>
+
+        <!-- Pillar 3: Latency -->
+        <div class="card"
+            style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-size: 2rem; color: #10b981; margin-bottom: 10px;"><i
+                        class="fa-solid fa-clock-rotate-left"></i></div>
+                <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; font-weight: 800; color: #1e293b;">Latencia de Carga
+                </h4>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">Días desde última actualización</p>
+            </div>
+            <div id="v25_kpi_latency" style="font-size: 1.5rem; font-weight: 900; color: #334155;">-- días</div>
+        </div>
+
     </div>
 
-</div>
+    <!-- Health Score Main -->
+    <div
+        style="text-align: center; padding: 2rem; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+        <div
+            style="font-size: 0.9rem; font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase;">
+            Puntuación General de Salud de Datos</div>
+        <div id="v25_health_score" style="font-size: 4rem; font-weight: 900; color: #1e293b; line-height: 1;">--%</div>
+    </div>
 
-<!-- Technical disclaimer -->
-<div
-    style="margin-top: 2rem; padding: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
-    Esta auditoría verifica que el dataset cargado en memoria coincida con los parámetros del modelo SARIMA.
-    Puntuaciones menores al 70% invalidan las proyecciones de largo plazo.
-</div>
+    <!-- Technical disclaimer -->
+    <div
+        style="margin-top: 2rem; padding: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #94a3b8; font-style: italic;">
+        Esta auditoría verifica que el dataset cargado en memoria coincida con los parámetros del modelo SARIMA.
+        Puntuaciones menores al 70% invalidan las proyecciones de largo plazo.
+    </div>
 </div>
 
 
@@ -85,16 +115,22 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
         // --- Data Audit Logic ---
-        const allHistory = S.allDataHistory_total.sort((a, b) => a[C.ID_PERIODO] - b[C.ID_PERIODO]);
-        const expectedPeriods = (2025 - 2005 + 1) * 12;
-        const actualPeriods = allHistory.length;
-        const completionPct = (actualPeriods / expectedPeriods * 100);
+        // Ensure array exists
+        const allHistory = (S.allDataHistory_total || []).filter(x => x).sort((a, b) => (a[C.ID_PERIODO] || 0) - (b[C.ID_PERIODO] || 0));
 
-        // Simple Outlier detection (values > 3*sigma of the history)
-        const mean = allHistory.reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0) / actualPeriods;
-        const sqDiff = allHistory.reduce((s, r) => s + Math.pow((r[C.CASOS_ACTUAL] || 0) - mean, 2), 0);
-        const std = Math.sqrt(sqDiff / actualPeriods);
-        const outliers = allHistory.filter(r => (r[C.CASOS_ACTUAL] || 0) > (mean + 3 * std)).length;
+        const expectedPeriods = 240; // Approx 20 years
+        const actualPeriods = allHistory.length;
+        const completionPct = expectedPeriods > 0 ? Math.min(100, (actualPeriods / expectedPeriods * 100)) : 0;
+
+        // Simple Outlier detection
+        let outliers = 0;
+        if (actualPeriods > 5) {
+            const values = allHistory.map(r => r[C.CASOS_ACTUAL] || 0);
+            const mean = values.reduce((a, b) => a + b, 0) / actualPeriods;
+            const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / actualPeriods;
+            const std = Math.sqrt(variance);
+            outliers = values.filter(v => v > (mean + 3 * std)).length;
+        }
 
         // Health Score Formula
         let health = (completionPct * 0.7) + (Math.max(0, (100 - (outliers * 5))) * 0.3);
@@ -108,20 +144,33 @@
         document.getElementById('v25_kpi_completion').textContent = `${actualPeriods} / ${expectedPeriods}`;
         document.getElementById('v25_kpi_outliers').textContent = `${outliers} eventos`;
 
-        // Latency Calculation (Days since last data point 2025-12-01)
-        const lastDate = new Date(2025, 11, 1); // Dec 2025
-        const diffDays = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+        // Latency Calculation
+        // Look for the latest Year/Month in data
+        let diffDays = '--';
+        if (actualPeriods > 0) {
+            const lastRow = allHistory[actualPeriods - 1];
+            // ID_PERIODO is usually YYYYMM
+            const pId = lastRow[C.ID_PERIODO];
+            // Fallback to current date approximation if unknown
+            const yr = Math.floor(pId / 100);
+            const mo = pId % 100;
+            const lastDate = new Date(yr, mo - 1, 1);
+            diffDays = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+        }
+
         document.getElementById('v25_kpi_latency').textContent = `${diffDays} días`;
 
         const desc = document.getElementById('v25_health_desc');
         if (health > 90) {
             desc.textContent = "La base de datos presenta una integridad excepcional. Los modelos predictivos operan con máxima confianza estadística.";
+            desc.parentElement.className = "alert alert--success"; // Greenish
         } else if (health > 70) {
             desc.textContent = "Integridad aceptable. Se detectan algunos periodos vacíos o valores atípicos que podrían reducir la precisión marginal del pronóstico.";
+            desc.parentElement.className = "alert alert--warning"; // Yellowish
         } else {
             desc.textContent = "Integridad comprometida. Los vacíos de información o el ruido excesivo sugieren cautela en la interpretación de los modelos de tendencia.";
+            desc.parentElement.className = "alert alert--danger"; // Reddish
         }
-
 
         // IA Integration
         if (typeof IAModule !== 'undefined') {

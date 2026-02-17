@@ -133,89 +133,38 @@
         // --- Render Heatmap ---
         const head = document.getElementById('v8_head');
         const body = document.getElementById('v8_body');
-        <script>
-            (async function initVista8_V2() {
-        const waitForData = () => {
-            return new Promise((resolve) => {
-                const check = () => {
-                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-            else setTimeout(check, 100);
-                };
-            check();
-            });
-        };
-
-            await waitForData();
-            const S = window.STATE_DATA;
-            const C = window.COLS;
-
-        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
-        document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
-
-        // --- Correlation Logic ---
-        const last12Weeks = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
-        const topDelitos = Array.from(new Set(S.allDataHistory.map(r => r[C.DELITO])))
-            .map(d => ({name: d, total: S.allDataHistory.filter(r => r[C.DELITO] === d && r[C.ID_SEMANA] === S.currentSemana).reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0) }))
-            .sort((a, b) => b.total - a.total).slice(0, 8).map(d => d.name);
-
-        const series = topDelitos.map(delito => {
-            return last12Weeks.map(id => {
-                const row = S.allDataHistory.find(r => r[C.DELITO] === delito && r[C.ID_SEMANA] === id);
-            return row ? (row[C.CASOS_ACTUAL] || 0) : 0;
-            });
-        });
-
-        const pearson = (x, y) => {
-            const n = x.length;
-            const mx = x.reduce((a, b) => a + b, 0) / n, my = y.reduce((a, b) => a + b, 0) / n;
-            const num = x.reduce((s, _, i) => s + (x[i] - mx) * (y[i] - my), 0);
-            const den = Math.sqrt(x.reduce((s, v) => s + Math.pow(v - mx, 2), 0)) * Math.sqrt(y.reduce((s, v) => s + Math.pow(v - my, 2), 0));
-            return den === 0 ? 0 : num / den;
-        };
-
-        const matrix = series.map((s1, i) => series.map((s2, j) => i === j ? 1 : pearson(s1, s2)));
-
-            // --- Render Heatmap ---
-            const head = document.getElementById('v8_head');
-            const body = document.getElementById('v8_body');
-
-            // Render full names, horizontal with wrapping
-
-            // Render full names, horizontal with wrapping
-            const displayNames = topDelitos;
-
-            head.innerHTML = '<th></th>' + displayNames.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 2px; border: 1px solid #f1f5f9; background: #f8fafc; vertical-align: bottom; height: auto;"><div style="white-space: normal; text-align: center; width: 100%; min-width: 60px; line-height: 1.1;">${n}</div></th>`).join('');
+        head.innerHTML = '<th></th>' + displayNames.map(n => `<th style="font-size: 0.65rem; color: #64748b; padding: 8px 2px; border: 1px solid #f1f5f9; background: #f8fafc; vertical-align: bottom; height: auto;"><div style="white-space: normal; text-align: center; width: 100%; min-width: 60px; line-height: 1.1;">${n}</div></th>`).join('');
 
         const getColor = (v) => {
             const val = Math.abs(v);
-            if (val >= 0.8) return {bg: '#ef4444', text: 'white' }; // Red
-            if (val >= 0.6) return {bg: '#f97316', text: 'white' }; // Orange
-            if (val >= 0.4) return {bg: '#fcd34d', text: '#78350f' }; // Yellow
-            if (val >= 0.2) return {bg: '#fef3c7', text: '#92400e' }; // Amber
-            return {bg: '#f8fafc', text: '#94a3b8' };
+            if (val >= 0.8) return { bg: '#ef4444', text: 'white' }; // Red
+            if (val >= 0.6) return { bg: '#f97316', text: 'white' }; // Orange
+            if (val >= 0.4) return { bg: '#fcd34d', text: '#78350f' }; // Yellow
+            if (val >= 0.2) return { bg: '#fef3c7', text: '#92400e' }; // Amber
+            return { bg: '#f8fafc', text: '#94a3b8' };
         };
 
         body.innerHTML = matrix.map((row, i) => `
             <tr>
                 <td style="font-size: 0.65rem; font-weight: 700; color: #1e293b; border: 1px solid #f1f5f9; padding: 8px 4px; background: #f8fafc; white-space: normal; max-width: 150px;">${displayNames[i]}</td>
                 ${row.map((v, j) => {
-                    if (i === j) return `<td style="background: #cbd5e1; color: #64748b; font-size: 0.7rem; font-weight: 600; text-align: center; border: 1px solid #fff;">-</td>`;
-                    const c = getColor(v);
-                    return `<td style="background: ${c.bg}; color: ${c.text}; font-size: 0.7rem; font-weight: 800; text-align: center; border: 1px solid #fff; cursor: help;" title="Correlación: ${v.toFixed(3)}">${v.toFixed(1)}</td>`
-                }).join('')}
+            if (i === j) return `<td style="background: #cbd5e1; color: #64748b; font-size: 0.7rem; font-weight: 600; text-align: center; border: 1px solid #fff;">-</td>`;
+            const c = getColor(v);
+            return `<td style="background: ${c.bg}; color: ${c.text}; font-size: 0.7rem; font-weight: 800; text-align: center; border: 1px solid #fff; cursor: help;" title="Correlación: ${v.toFixed(3)}">${v.toFixed(1)}</td>`
+        }).join('')}
             </tr>
             `).join('');
 
-            // --- Top Associations List ---
-            const associations = [];
-            for (let i = 0; i < matrix.length; i++) {
+        // --- Top Associations List ---
+        const associations = [];
+        for (let i = 0; i < matrix.length; i++) {
             for (let j = i + 1; j < matrix.length; j++) {
-                if (matrix[i][j] > 0.5) associations.push({d1: topDelitos[i], d2: topDelitos[j], val: matrix[i][j] });
+                if (matrix[i][j] > 0.5) associations.push({ d1: topDelitos[i], d2: topDelitos[j], val: matrix[i][j] });
             }
         }
         associations.sort((a, b) => b.val - a.val);
 
-            const list = document.getElementById('v8_associations_list');
+        const list = document.getElementById('v8_associations_list');
         list.innerHTML = associations.slice(0, 4).map(a => `
             <div style="display: flex; gap: 10px; align-items: center; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #ef4444;">
                 <div style="flex: 1; display: flex; flex-direction: column;">

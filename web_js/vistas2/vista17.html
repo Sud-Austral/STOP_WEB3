@@ -29,259 +29,221 @@
     <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
         <h3 class="section-title mb-lg"
             style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
-            <span><i class="fa-solid fa-circle-nodes" style="color: var(--color-primary);"></i> Matriz de Eficiencia
+            <span><i class="fa-solid fa-circle-nodes" style="color: var(--color-primary);"></i> Matriz de
+                Eficiencia
                 (Carga vs Población)</span>
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tamaño de burbuja = Tasa por 100k</div>
-            <!-- Vista 17: Gestión de Casos vs Población (Análisis de Eficiencia) -->
-            <div class="card mb-lg">
-                <div class="location-source-row"
-                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                    <div
-                        style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-                        <i class="fa-solid fa-chart-line"></i> <span class="comuna-fill">CARGANDO...</span>
-                        <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-                        <span>EFICIENCIA OPERATIVA</span>
-                    </div>
-                    <div id="sourceBadgeContainer"></div>
-                </div>
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tamaño de burbuja = Tasa por
+                100k</div>
+        </h3>
+        <div class="chart-wrapper" style="height: 450px;">
+            <canvas id="v17_chart_bubble"></canvas>
+        </div>
+    </div>
 
-                <div class="question-section"
-                    style="background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid var(--color-primary); padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
-                    <h2
-                        style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-                        ¿Nuestra carga delictual es proporcional a nuestra población?
-                    </h2>
-                    <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Análisis de
-                        cuadrantes:
-                        frecuencia absoluta vs tamaño poblacional. Permite distinguir comunas con "sobredosis" de delito
-                        respecto a
-                        su capacidad estructural.</p>
-                </div>
+    <!-- Risk Classifications -->
+    <h3 class="section-title mb-lg"
+        style="font-size: 1rem; color: #1e293b; margin-top: 2rem; display:flex; align-items:center; gap:8px;">
+        <i class="fa-solid fa-tags" style="color: #64748b;"></i> Etiquetas de Riesgo (Clasificación Semanal)
+    </h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
 
-                <div class="alert alert--info" style="margin-top: 1.5rem;">
-                    <strong>🤖 Análisis de Situación:</strong> <span id="v17_ia_analysis">Cargando análisis...</span>
-                </div>
-
-                <!-- Main Bubble Chart -->
-                <div class="card chart-card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                    <h3 class="section-title mb-lg"
-                        style="font-size: 1rem; color: #1e293b; display: flex; justify-content: space-between;">
-                        <span><i class="fa-solid fa-circle-nodes" style="color: var(--color-primary);"></i> Matriz de
-                            Eficiencia
-                            (Carga vs Población)</span>
-                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Tamaño de burbuja = Tasa por
-                            100k</div>
-                    </h3>
-                    <div class="chart-wrapper" style="height: 450px;">
-                        <canvas id="v17_chart_bubble"></canvas>
-                    </div>
-                </div>
-
-                <!-- Risk Classifications -->
-                <h3 class="section-title mb-lg"
-                    style="font-size: 1rem; color: #1e293b; margin-top: 2rem; display:flex; align-items:center; gap:8px;">
-                    <i class="fa-solid fa-tags" style="color: #64748b;"></i> Etiquetas de Riesgo (Clasificación Semanal)
-                </h3>
-                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-
-                    <!-- Row Item -->
-                    <div class="risk-row" id="rr_violentos"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div
-                                style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                                <i class="fa-solid fa-hand-fist"></i>
-                            </div>
-                            <div style="font-weight: 700; color: #334155;">DELITOS VIOLENTOS</div>
-                        </div>
-                        <div class="status-badge"
-                            style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
-                            SIN CLASIFICACIÓN</div>
-                    </div>
-
-                    <div class="risk-row" id="rr_propiedad"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div
-                                style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                                <i class="fa-solid fa-house-chimney-crack"></i>
-                            </div>
-                            <div style="font-weight: 700; color: #334155;">CONTRA LA PROPIEDAD</div>
-                        </div>
-                        <div class="status-badge"
-                            style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
-                            SIN CLASIFICACIÓN</div>
-                    </div>
-
-                    <div class="risk-row" id="rr_armas"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div
-                                style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                                <i class="fa-solid fa-gun"></i>
-                            </div>
-                            <div style="font-weight: 700; color: #334155;">FACTOR ARMAS</div>
-                        </div>
-                        <div class="status-badge"
-                            style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
-                            SIN CLASIFICACIÓN</div>
-                    </div>
-
-                    <div class="risk-row" id="rr_homicidio"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div
-                                style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                                <i class="fa-solid fa-skull"></i>
-                            </div>
-                            <div style="font-weight: 700; color: #334155;">RIESGO HOMICIDIO</div>
-                        </div>
-                        <div class="status-badge"
-                            style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
-                            SIN CLASIFICACIÓN</div>
-                    </div>
-
-                    <div class="risk-row" id="rr_genero"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
-                            <div
-                                style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
-                                <i class="fa-solid fa-person-dress-burst"></i>
-                            </div>
-                            <div style="font-weight: 700; color: #334155;">VIOLENCIA DE GÉNERO</div>
-                        </div>
-                        <div class="status-badge"
-                            style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
-                            SIN CLASIFICACIÓN</div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Nota Metodológica -->
-            <div class="row" style="margin-top: 2rem;">
+        <!-- Row Item -->
+        <div class="risk-row" id="rr_violentos"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
                 <div
-                    style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-                    <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Proyección
-                        Gravedad</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
-                    estratégicas basadas en evidencia.
+                    style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                    <i class="fa-solid fa-hand-fist"></i>
                 </div>
+                <div style="font-weight: 700; color: #334155;">DELITOS VIOLENTOS</div>
             </div>
+            <div class="status-badge"
+                style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
+                SIN CLASIFICACIÓN</div>
+        </div>
 
-            <script>
-                (async function initVista17_V2() {
-                    const waitForData = () => {
-                        return new Promise((resolve) => {
-                            const check = () => {
-                                if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-                                else setTimeout(check, 100);
-                            };
-                            check();
-                        });
-                    };
+        <div class="risk-row" id="rr_propiedad"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div
+                    style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                    <i class="fa-solid fa-house-chimney-crack"></i>
+                </div>
+                <div style="font-weight: 700; color: #334155;">CONTRA LA PROPIEDAD</div>
+            </div>
+            <div class="status-badge"
+                style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
+                SIN CLASIFICACIÓN</div>
+        </div>
 
-                    await waitForData();
-                    const S = window.STATE_DATA;
-                    const C = window.COLS;
+        <div class="risk-row" id="rr_armas"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div
+                    style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                    <i class="fa-solid fa-gun"></i>
+                </div>
+                <div style="font-weight: 700; color: #334155;">FACTOR ARMAS</div>
+            </div>
+            <div class="status-badge"
+                style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
+                SIN CLASIFICACIÓN</div>
+        </div>
 
-                    document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        <div class="risk-row" id="rr_homicidio"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div
+                    style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                    <i class="fa-solid fa-skull"></i>
+                </div>
+                <div style="font-weight: 700; color: #334155;">RIESGO HOMICIDIO</div>
+            </div>
+            <div class="status-badge"
+                style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
+                SIN CLASIFICACIÓN</div>
+        </div>
 
-                    // --- Data Generation ---
-                    const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-                    const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 2.5;
-                    const myCases = totalRow[C.CASOS_ACTUAL] || 150;
-                    const myPob = Math.round(factorPob * 100000);
-                    const myTasa = (myCases / factorPob);
+        <div class="risk-row" id="rr_genero"
+            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: white; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #cbd5e1;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div
+                    style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #64748b;">
+                    <i class="fa-solid fa-person-dress-burst"></i>
+                </div>
+                <div style="font-weight: 700; color: #334155;">VIOLENCIA DE GÉNERO</div>
+            </div>
+            <div class="status-badge"
+                style="font-size: 0.8rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #94a3b8;">
+                SIN CLASIFICACIÓN</div>
+        </div>
+    </div>
+</div>
 
-                    // Simulated Neighbors
-                    const neighbors = Array.from({ length: 15 }, () => {
-                        const p = 50000 + Math.random() * 400000;
-                        const t = 20 + Math.random() * 60;
-                        return { x: p, y: Math.round(p / 100000 * t), r: t / 3 };
-                    });
 
-                    // --- Bubble Chart ---
-                    const ctx = document.getElementById('v17_chart_bubble').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'bubble',
-                        data: {
-                            datasets: [
-                                {
-                                    label: 'Otras Comunas',
-                                    data: neighbors,
-                                    backgroundColor: 'rgba(148, 163, 184, 0.4)',
-                                    borderColor: '#94a3b8'
-                                },
-                                {
-                                    label: S.comunaName,
-                                    data: [{ x: myPob, y: myCases, r: myTasa / 3 }],
-                                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                                    borderColor: '#1e40af',
-                                    borderWidth: 2
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (c) => ` ${S.comunaName}: ${c.raw.y} casos | Tasa: ${(c.raw.r * 3).toFixed(1)}`
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    title: { display: true, text: 'Población Total', font: { weight: '800' } },
-                                    grid: { color: '#f1f5f9' }
-                                },
-                                y: {
-                                    title: { display: true, text: 'N° Casos Semanales', font: { weight: '800' } },
-                                    grid: { color: '#f1f5f9' }
-                                }
-                            }
-                        }
-                    });
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Proyección
+            Gravedad</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
+        estratégicas basadas en evidencia.
+    </div>
+</div>
 
-                    // --- Risk Labels Logic (Mock Logic based on proportions or keywords) ---
-                    const setLabel = (id, status, colorBg, colorText, border) => {
-                        const el = document.getElementById(id);
-                        if (!el) return;
-                        const badge = el.querySelector('.status-badge');
-                        el.style.borderLeftColor = border;
-                        badge.style.background = colorBg;
-                        badge.style.color = colorText;
-                        badge.textContent = status;
-                    };
+<script>
+    (async function initVista17_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
 
-                    // Simulated checks based on case mix
-                    // Real implementation would aggregated grouped crimes and check thresholds.
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
 
-                    // Violentos (High)
-                    setLabel('rr_violentos', 'ALTA PREVALENCIA', '#fee2e2', '#991b1b', '#ef4444');
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-                    // Propiedad (Med)
-                    setLabel('rr_propiedad', 'PREVALENCIA MEDIA', '#fffbeb', '#92400e', '#f59e0b');
+        // --- Data Generation ---
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 2.5;
+        const myCases = totalRow[C.CASOS_ACTUAL] || 150;
+        const myPob = Math.round(factorPob * 100000);
+        const myTasa = (myCases / factorPob);
 
-                    // Armas (Low)
-                    setLabel('rr_armas', 'BAJA INCIDENCIA', '#f0fdf4', '#166534', '#10b981');
+        // Simulated Neighbors
+        const neighbors = Array.from({ length: 15 }, () => {
+            const p = 50000 + Math.random() * 400000;
+            const t = 20 + Math.random() * 60;
+            return { x: p, y: Math.round(p / 100000 * t), r: t / 3 };
+        });
 
-                    // Homicidio (Low)
-                    setLabel('rr_homicidio', 'SIN RIESGO DETECTADO', '#f0fdf4', '#166534', '#10b981');
-
-                    // Genero (Med)
-                    setLabel('rr_genero', 'MONITOREO ACTIVO', '#eff6ff', '#1e40af', '#3b82f6');
-
-                    // IA Integration
-                    if (typeof IAModule !== 'undefined') {
-                        IAModule.getInterpretation('vista17').then(txt => {
-                            const el = document.getElementById('v17_ia_analysis');
-                            if (el) el.innerHTML = txt;
-                        });
+        // --- Bubble Chart ---
+        const ctx = document.getElementById('v17_chart_bubble').getContext('2d');
+        new Chart(ctx, {
+            type: 'bubble',
+            data: {
+                datasets: [
+                    {
+                        label: 'Otras Comunas',
+                        data: neighbors,
+                        backgroundColor: 'rgba(148, 163, 184, 0.4)',
+                        borderColor: '#94a3b8'
+                    },
+                    {
+                        label: S.comunaName,
+                        data: [{ x: myPob, y: myCases, r: myTasa / 3 }],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: '#1e40af',
+                        borderWidth: 2
                     }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'Outfit' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (c) => ` ${S.comunaName}: ${c.raw.y} casos | Tasa: ${(c.raw.r * 3).toFixed(1)}`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Población Total', font: { weight: '800' } },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    y: {
+                        title: { display: true, text: 'N° Casos Semanales', font: { weight: '800' } },
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
 
-                })();
-            </script>
+        // --- Risk Labels Logic (Mock Logic based on proportions or keywords) ---
+        const setLabel = (id, status, colorBg, colorText, border) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const badge = el.querySelector('.status-badge');
+            el.style.borderLeftColor = border;
+            badge.style.background = colorBg;
+            badge.style.color = colorText;
+            badge.textContent = status;
+        };
+
+        // Simulated checks based on case mix
+        // Real implementation would aggregated grouped crimes and check thresholds.
+
+        // Violentos (High)
+        setLabel('rr_violentos', 'ALTA PREVALENCIA', '#fee2e2', '#991b1b', '#ef4444');
+
+        // Propiedad (Med)
+        setLabel('rr_propiedad', 'PREVALENCIA MEDIA', '#fffbeb', '#92400e', '#f59e0b');
+
+        // Armas (Low)
+        setLabel('rr_armas', 'BAJA INCIDENCIA', '#f0fdf4', '#166534', '#10b981');
+
+        // Homicidio (Low)
+        setLabel('rr_homicidio', 'SIN RIESGO DETECTADO', '#f0fdf4', '#166534', '#10b981');
+
+        // Genero (Med)
+        setLabel('rr_genero', 'MONITOREO ACTIVO', '#eff6ff', '#1e40af', '#3b82f6');
+
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista17').then(txt => {
+                const el = document.getElementById('v17_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
+
+    })();
+</script>

@@ -122,8 +122,18 @@
 
 <script>
     (async function initVista21_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA_CEAD && window.STATE_DATA_CEAD.isLoaded) resolve();
+                    else setTimeout(check, 100);
+                };
+                check();
+            });
+        };
+
         try {
-            await window.waitForData();
+            await waitForData();
         } catch (e) {
             console.error("Vista 21 Data Load Error:", e);
             document.getElementById('viewContainer').innerHTML = '<div class="alert alert--danger">Error cargando datos. Por favor recargue.</div>';

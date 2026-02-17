@@ -17,171 +17,150 @@
         </h2>
         <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Traducción de hallazgos
             estadísticos en recomendaciones tácticas para la mesa de seguridad comunal.</p>
-        <!-- Vista 23: Matriz de Decisiones Operativas (Toma de Acciones) -->
-        <div class="card mb-lg">
-            <div class="location-source-row"
-                style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <div style="font-size: 0.8rem; color: var(--color-primary); font-weight: 600; letter-spacing: 0.5px;">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> <span class="comuna-fill">CARGANDO...</span>
-                    <span style="margin: 0 8px; color: #cbd5e1;">/</span>
-                    <span>GESTIÓN TÁCTICA OPERATIVA</span>
-                </div>
-                <div id="sourceBadgeContainer"></div>
-            </div>
+    </div>
 
-            <div class="question-section" style="background: linear-gradient(90deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%); 
-            border-left: 4px solid #10b981; padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 0 8px 8px 0;">
-                <h2
-                    style="font-size: 1.6rem; font-weight: 800; color: var(--color-text); margin: 0; letter-spacing: -0.02em;">
-                    ¿Qué acciones debemos tomar ante estos datos?
-                </h2>
-                <p style="color: var(--color-text-muted); margin: 0.25rem 0 0 0; font-size: 0.95rem;">Traducción de
-                    hallazgos
-                    estadísticos en recomendaciones tácticas para la mesa de seguridad comunal.</p>
-            </div>
+    <div class="alert alert--info" style="margin-top: 1.5rem;">
+        <strong>🤖 Análisis de Situación:</strong> <span id="v23_ia_analysis">Cargando análisis...</span>
+    </div>
 
-            <div class="alert alert--info" style="margin-top: 1.5rem;">
-                <strong>🤖 Análisis de Situación:</strong> <span id="v23_ia_analysis">Cargando análisis...</span>
+    <!-- Context Summary -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.5rem; text-align: center; background: #f8fafc;">
+            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TOTAL ACTUAL
             </div>
-
-            <!-- Context Summary -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-                <div class="card" style="padding: 1.5rem; text-align: center; background: #f8fafc;">
-                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TOTAL ACTUAL
-                    </div>
-                    <div id="v23_total_act" style="font-size: 2.2rem; font-weight: 950; color: #1e293b;">--</div>
-                </div>
-                <div class="card" style="padding: 1.5rem; text-align: center; background: #f8fafc;">
-                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TOTAL ANTERIOR
-                    </div>
-                    <div id="v23_total_ant" style="font-size: 2.2rem; font-weight: 950; color: #64748b;">--</div>
-                </div>
-                <div class="card" style="padding: 1.5rem; text-align: center; border: 2px solid #e2e8f0;">
-                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">VARIACIÓN
-                    </div>
-                    <div id="v23_total_var" style="font-size: 2.2rem; font-weight: 950; color: #3b82f6;">--%</div>
-                </div>
-            </div>
-
-            <!-- Action Plan -->
-            <div class="card" style="padding: 2rem; border-left: 6px solid #4f46e5;">
-                <h3 style="margin: 0 0 1.5rem 0; font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-list-check"
-                        style="color:#4f46e5;"></i> Acciones Tácticas Recomendadas</h3>
-                <div id="v23_action_list" style="display: flex; flex-direction: column; gap: 1rem;">
-                    <!-- Filled by JS -->
-                </div>
-            </div>
+            <div id="v23_total_act" style="font-size: 2.2rem; font-weight: 950; color: #1e293b;">--</div>
         </div>
-
-
-        <!-- Nota Metodológica -->
-        <div class="row" style="margin-top: 2rem;">
-            <div
-                style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-                <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Decisiones
-                    Tácticas</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
-                estratégicas basadas en evidencia.
+        <div class="card" style="padding: 1.5rem; text-align: center; background: #f8fafc;">
+            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TOTAL ANTERIOR
             </div>
+            <div id="v23_total_ant" style="font-size: 2.2rem; font-weight: 950; color: #64748b;">--</div>
         </div>
+        <div class="card" style="padding: 1.5rem; text-align: center; border: 2px solid #e2e8f0;">
+            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">VARIACIÓN
+            </div>
+            <div id="v23_total_var" style="font-size: 2.2rem; font-weight: 950; color: #3b82f6;">--%</div>
+        </div>
+    </div>
 
-        <script>
-            (async function initVista23_V2() {
-                const waitForData = () => {
-                    return new Promise((resolve) => {
-                        const check = () => {
-                            if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
-                            else setTimeout(check, 100);
-                        };
-                        check();
-                    });
+    <!-- Action Plan -->
+    <div class="card" style="padding: 2rem; border-left: 6px solid #4f46e5;">
+        <h3 style="margin: 0 0 1.5rem 0; font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-list-check"
+                style="color:#4f46e5;"></i> Acciones Tácticas Recomendadas</h3>
+        <div id="v23_action_list" style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Filled by JS -->
+        </div>
+    </div>
+</div>
+
+
+<!-- Nota Metodológica -->
+<div class="row" style="margin-top: 2rem;">
+    <div
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        <strong>Nota Metodológica:</strong> Esta vista presenta un análisis detallado de <strong>Decisiones
+            Tácticas</strong>, permitiendo evaluar patrones y tendencias clave para la toma de decisiones
+        estratégicas basadas en evidencia.
+    </div>
+</div>
+
+<script>
+    (async function initVista23_V2() {
+        const waitForData = () => {
+            return new Promise((resolve) => {
+                const check = () => {
+                    if (window.STATE_DATA && window.STATE_DATA.isLoaded) resolve();
+                    else setTimeout(check, 100);
                 };
+                check();
+            });
+        };
 
-                await waitForData();
-                const S = window.STATE_DATA;
-                const C = window.COLS;
+        await waitForData();
+        const S = window.STATE_DATA;
+        const C = window.COLS;
 
-                document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
+        document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-                // Simple Global Logic for Command Advice
-                const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-                const cases = totalRow[C.CASOS_ACTUAL] || 0;
-                const prev = totalRow[C.CASOS_ANT] || 0;
-                const delta = prev > 0 ? ((cases - prev) / prev * 100) : (cases > 0 ? 100 : 0);
+        // Simple Global Logic for Command Advice
+        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
+        const cases = totalRow[C.CASOS_ACTUAL] || 0;
+        const prev = totalRow[C.CASOS_ANT] || 0;
+        const delta = prev > 0 ? ((cases - prev) / prev * 100) : (cases > 0 ? 100 : 0);
 
-                // Populate Context
-                document.getElementById('v23_total_act').textContent = cases;
-                document.getElementById('v23_total_ant').textContent = prev;
-                const dEl = document.getElementById('v23_total_var');
-                dEl.textContent = `${delta > 0 ? '+' : ''}${delta.toFixed(1)}%`;
-                dEl.style.color = delta > 0 ? '#ef4444' : '#10b981';
+        // Populate Context
+        document.getElementById('v23_total_act').textContent = cases;
+        document.getElementById('v23_total_ant').textContent = prev;
+        const dEl = document.getElementById('v23_total_var');
+        dEl.textContent = `${delta > 0 ? '+' : ''}${delta.toFixed(1)}%`;
+        dEl.style.color = delta > 0 ? '#ef4444' : '#10b981';
 
-                // Generate Actions
-                let actions = [];
+        // Generate Actions
+        let actions = [];
 
-                if (delta > 10) {
-                    actions.push({
-                        icon: 'fa-solid fa-triangle-exclamation',
-                        color: '#ef4444',
-                        title: 'CONVOCAR MESA JURÍDICO-POLICIAL',
-                        desc: `El alza del ${delta.toFixed(1)}% sugiere un desborde operativo. Se requiere coordinar acciones extraordinarias con fiscalía.`
-                    });
-                    actions.push({
-                        icon: 'fa-solid fa-person-military-pointing',
-                        color: '#ef4444',
-                        title: 'RE-FOCALIZACIÓN INMEDIATA',
-                        desc: 'Aumentar dotación en cuadrantes críticos (ver Vista 22).'
-                    });
-                } else if (delta < -5) {
-                    actions.push({
-                        icon: 'fa-regular fa-thumbs-up',
-                        color: '#10b981',
-                        title: 'REFORZAR COMUNICACIÓN ESTRATÉGICA',
-                        desc: 'Comunicar a la comunidad la baja de delitos para mejorar la percepción de seguridad.'
-                    });
-                    actions.push({
-                        icon: 'fa-solid fa-clipboard-check',
-                        color: '#3b82f6',
-                        title: 'MANTENCIÓN DE SERVICIOS',
-                        desc: 'No relajar la vigilancia; mantener el esquema actual que ha demostrado éxito.'
-                    });
-                } else {
-                    actions.push({
-                        icon: 'fa-solid fa-eye',
-                        color: '#f59e0b',
-                        title: 'MONITOREO ACTIVO',
-                        desc: 'La situación es estable. Realizar controles de identidad aleatorios en zonas de afluencia.'
-                    });
-                }
+        if (delta > 10) {
+            actions.push({
+                icon: 'fa-solid fa-triangle-exclamation',
+                color: '#ef4444',
+                title: 'CONVOCAR MESA JURÍDICO-POLICIAL',
+                desc: `El alza del ${delta.toFixed(1)}% sugiere un desborde operativo. Se requiere coordinar acciones extraordinarias con fiscalía.`
+            });
+            actions.push({
+                icon: 'fa-solid fa-person-military-pointing',
+                color: '#ef4444',
+                title: 'RE-FOCALIZACIÓN INMEDIATA',
+                desc: 'Aumentar dotación en cuadrantes críticos (ver Vista 22).'
+            });
+        } else if (delta < -5) {
+            actions.push({
+                icon: 'fa-regular fa-thumbs-up',
+                color: '#10b981',
+                title: 'REFORZAR COMUNICACIÓN ESTRATÉGICA',
+                desc: 'Comunicar a la comunidad la baja de delitos para mejorar la percepción de seguridad.'
+            });
+            actions.push({
+                icon: 'fa-solid fa-clipboard-check',
+                color: '#3b82f6',
+                title: 'MANTENCIÓN DE SERVICIOS',
+                desc: 'No relajar la vigilancia; mantener el esquema actual que ha demostrado éxito.'
+            });
+        } else {
+            actions.push({
+                icon: 'fa-solid fa-eye',
+                color: '#f59e0b',
+                title: 'MONITOREO ACTIVO',
+                desc: 'La situación es estable. Realizar controles de identidad aleatorios en zonas de afluencia.'
+            });
+        }
 
-                // Generic
-                actions.push({
-                    icon: 'fa-solid fa-users-gear',
-                    color: '#64748b',
-                    title: 'VERIFICACIÓN DE FACTORES DE RIESGO',
-                    desc: 'Chequear luminarias y sitios eriazos reportados esta semana.'
-                });
+        // Generic
+        actions.push({
+            icon: 'fa-solid fa-users-gear',
+            color: '#64748b',
+            title: 'VERIFICACIÓN DE FACTORES DE RIESGO',
+            desc: 'Chequear luminarias y sitios eriazos reportados esta semana.'
+        });
 
-                // Render Actions
-                document.getElementById('v23_action_list').innerHTML = actions.map(a => `
-            <div style="display: flex; gap: 15px; align-items: flex-start; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9;">
-                <div style="width: 40px; height: 40px; background: ${a.color}15; color: ${a.color}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
-                    <i class="${a.icon}"></i>
-                </div>
-                <div>
-                    <div style="font-weight: 800; color: #1e293b; margin-bottom: 4px;">${a.title}</div>
-                    <div style="font-size: 0.9rem; color: #64748b; line-height: 1.4;">${a.desc}</div>
-                </div>
-            </div>
-        `).join('');
+        // Render Actions
+        document.getElementById('v23_action_list').innerHTML = actions.map(a => `
+    <div style="display: flex; gap: 15px; align-items: flex-start; padding-bottom: 1rem; border-bottom: 1px solid #f1f5f9;">
+        <div style="width: 40px; height: 40px; background: ${a.color}15; color: ${a.color}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+            <i class="${a.icon}"></i>
+        </div>
+        <div>
+            <div style="font-weight: 800; color: #1e293b; margin-bottom: 4px;">${a.title}</div>
+            <div style="font-size: 0.9rem; color: #64748b; line-height: 1.4;">${a.desc}</div>
+        </div>
+    </div>
+`).join('');
 
 
-                // IA Integration
-                if (typeof IAModule !== 'undefined') {
-                    IAModule.getInterpretation('vista23').then(txt => {
-                        const el = document.getElementById('v23_ia_analysis');
-                        if (el) el.innerHTML = txt;
-                    });
-                }
+        // IA Integration
+        if (typeof IAModule !== 'undefined') {
+            IAModule.getInterpretation('vista23').then(txt => {
+                const el = document.getElementById('v23_ia_analysis');
+                if (el) el.innerHTML = txt;
+            });
+        }
 
-            })();
-        </script>
+    })();
+</script>

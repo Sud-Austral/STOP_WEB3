@@ -97,7 +97,7 @@
             name: i === 7 ? S.comunaName : `Comuna ${i + 1}`,
             ratio: 15 + Math.random() * 25,
             isMain: i === 7
-        })).sort((a, b) => b.ratio - a.ratio);
+        })).sort((a, b) => a.ratio - b.ratio); // Sort Low Ratio to High (Rank 1 = Lowest Eff = Bad)
 
         const myPos = regionalData.findIndex(d => d.isMain) + 1;
         const myRatio = regionalData.find(d => d.isMain).ratio;
@@ -105,10 +105,18 @@
 
         document.getElementById('v16_rank_pos').textContent = `${myPos} de ${totalComunas} comunas`;
 
+        // USER LOGIC: Rank 1 (High Ratio) = RED (Bad/Critical). Rank 50 = Green.
         const statusEl = document.getElementById('v16_performance_status');
-        if (myRatio > median * 1.2) { statusEl.textContent = 'ALTA PERFORMANCE'; statusEl.style.color = '#10b981'; }
-        else if (myRatio < median * 0.8) { statusEl.textContent = 'BAJA PERFORMANCE'; statusEl.style.color = '#ef4444'; }
-        else { statusEl.textContent = 'PERFORMANCE ESTÁNDAR'; statusEl.style.color = '#64748b'; }
+        if (myPos <= 15) {
+            statusEl.textContent = 'ALTA PREVALENCIA (CRÍTICO)';
+            statusEl.style.color = '#ef4444';
+        } else if (myPos > 35) {
+            statusEl.textContent = 'BAJA PREVALENCIA (OPTIMO)';
+            statusEl.style.color = '#10b981';
+        } else {
+            statusEl.textContent = 'RANGO MEDIO';
+            statusEl.style.color = '#f59e0b';
+        }
 
         // --- Horizontal Bar Chart ---
         const ctx = document.getElementById('v16_chart_ranking_eff').getContext('2d');
@@ -117,9 +125,14 @@
             data: {
                 labels: regionalData.map(d => d.name),
                 datasets: [{
-                    label: '% Efectividad',
+                    label: '% Indicador',
                     data: regionalData.map(d => d.ratio),
-                    backgroundColor: regionalData.map(d => d.isMain ? '#10b981' : d.ratio > median ? '#bae6fd' : '#f1f5f9'),
+                    backgroundColor: regionalData.map((d, i) => {
+                        if (d.isMain) return '#1e293b'; // Me
+                        if (i < 10) return 'rgba(239, 68, 68, 0.4)'; // Top 10 Red
+                        if (i > 40) return 'rgba(16, 185, 129, 0.4)'; // Bottom Green
+                        return '#f1f5f9';
+                    }),
                     borderRadius: 4
                 }]
             },
@@ -149,8 +162,7 @@
                 },
                 scales: {
                     x: {
-                        max: 50,
-                        ticks: { callback: v => v + '%' },
+                        ticks: { callback: v => v.toFixed(0) + '%' },
                         grid: { color: '#f1f5f9' }
                     },
                     y: {
@@ -165,16 +177,16 @@
         });
 
 
-        // --- Historical Matrix (Simulated for Effectiveness Ranking) ---
-        // In real app, we would have historical rank data for efficiency.
+        // --- Historical Matrix (Simulated) ---
         const years = Array.from({ length: 10 }, (_, i) => 2016 + i);
         const heatmap = document.getElementById('v16_heatmap_years');
 
         heatmap.innerHTML = years.map(yr => {
-            const rank = Math.floor(Math.random() * 40) + 1; // 1 to 40
-            let color = '#10b981'; // Top 10
-            if (rank > 10) color = '#f59e0b'; // 11-30
-            if (rank > 30) color = '#ef4444'; // 31+
+            const rank = Math.floor(Math.random() * 52) + 1; // 1 to 52
+            let color = '#f59e0b';
+            // Inverted Logic: Low Rank (1) = Red.
+            if (rank <= 15) color = '#ef4444';
+            if (rank > 35) color = '#10b981';
 
             return `
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">

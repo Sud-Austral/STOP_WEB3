@@ -200,18 +200,19 @@
                     datalabels: {
                         color: (ctx) => {
                             const val = ctx.dataset.data[ctx.dataIndex];
-                            return val > 0 ? '#ef4444' : '#10b981';
+                            // White text if inside, Colored if outside
+                            return Math.abs(val) > 15 ? '#ffffff' : (val > 0 ? '#ef4444' : '#10b981');
                         },
-                        anchor: (ctx) => {
-                            const val = ctx.dataset.data[ctx.dataIndex];
-                            return val > 0 ? 'end' : 'start';
-                        },
+                        anchor: 'end',
                         align: (ctx) => {
-                            const val = ctx.dataset.data[ctx.dataIndex];
-                            return val > 0 ? 'end' : 'start';
+                            // Put label INSIDE ('start') for larger bars to avoid collision with Y-axis
+                            // Put label OUTSIDE ('end') for tiny bars
+                            return Math.abs(ctx.dataset.data[ctx.dataIndex]) > 15 ? 'start' : 'end';
                         },
                         font: { weight: 'bold', size: 12, family: 'Outfit' },
-                        formatter: (val) => (val > 0 ? '+' : '') + val.toFixed(0) + '%'
+                        formatter: (val) => (val > 0 ? '+' : '') + val.toFixed(0) + '%',
+                        textShadowColor: (ctx) => Math.abs(ctx.dataset.data[ctx.dataIndex]) > 15 ? 'rgba(0,0,0,0.2)' : 'transparent',
+                        textShadowBlur: 3
                     },
                     tooltip: {
                         enabled: true,
