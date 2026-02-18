@@ -27,37 +27,48 @@
 
     <!-- Rachas Alert Section -->
     <h3 class="section-title mb-lg" style="font-size: 1rem; margin-top: 2rem;">
-        <i class="fa-solid fa-fire" style="color: #ef4444;"></i> Alertas de Rachas (Semanas al Alza)
+        <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i> Diagnóstico de Rachas
+        (Persistencia Temporal)
     </h3>
     <div id="v21_rachas_container"
-        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+        style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
 
-        <!-- 1 Week -->
-        <div class="card" style="padding: 1rem; border: 1px solid #fed7aa; background: #fff7ed;">
+        <!-- Alza 2 Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #f97316; background: #fffaf5;">
             <h4
-                style="margin: 0 0 8px 0; font-size: 0.75rem; font-weight: 700; color: #9a3412; text-transform: uppercase;">
-                1 Semana al Alza</h4>
-            <div id="v21_streak_1" style="display: flex; flex-direction: column; gap: 4px;">
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #9a3412; text-transform: uppercase;">
+                ALZA (2 SEMANAS)</h4>
+            <div id="v21_streak_alza_2" style="display: flex; flex-direction: column; gap: 4px;">
                 <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
             </div>
         </div>
 
-        <!-- 2 Weeks -->
-        <div class="card" style="padding: 1rem; border: 1px solid #ffedd5; background: #fffaf5;">
+        <!-- Alza 3+ Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #ef4444; background: #fef2f2;">
             <h4
-                style="margin: 0 0 8px 0; font-size: 0.75rem; font-weight: 700; color: #c2410c; text-transform: uppercase;">
-                2 Semanas al Alza</h4>
-            <div id="v21_streak_2" style="display: flex; flex-direction: column; gap: 4px;">
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #991b1b; text-transform: uppercase;">
+                ALZA (3+ SEMANAS)</h4>
+            <div id="v21_streak_alza_3" style="display: flex; flex-direction: column; gap: 4px;">
                 <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
             </div>
         </div>
 
-        <!-- 3+ Weeks -->
-        <div class="card" style="padding: 1rem; border: 1px solid #fecaca; background: #fef2f2;">
+        <!-- Baja 2 Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #60a5fa; background: #eff6ff;">
             <h4
-                style="margin: 0 0 8px 0; font-size: 0.75rem; font-weight: 700; color: #dc2626; text-transform: uppercase;">
-                3+ Semanas (Crítico)</h4>
-            <div id="v21_streak_3" style="display: flex; flex-direction: column; gap: 4px;">
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #1e40af; text-transform: uppercase;">
+                BAJA (2 SEMANAS)</h4>
+            <div id="v21_streak_baja_2" style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
+            </div>
+        </div>
+
+        <!-- Baja 3+ Weeks -->
+        <div class="card" style="padding: 1rem; border-top: 4px solid #10b981; background: #f0fdf4;">
+            <h4
+                style="margin: 0 0 8px 0; font-size: 0.7rem; font-weight: 900; color: #064e3b; text-transform: uppercase;">
+                BAJA (3+ SEMANAS)</h4>
+            <div id="v21_streak_baja_3" style="display: flex; flex-direction: column; gap: 4px;">
                 <span style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">Cargando...</span>
             </div>
         </div>
@@ -82,10 +93,38 @@
 <!-- Nota Metodológica -->
 <div class="row" style="margin-top: 2rem;">
     <div
-        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
-        <strong>Nota Metodológica:</strong> El Momentum utiliza el CAGR (Compound Annual Growth Rate) ajustado a 4
-        semanas para medir la velocidad de propagación. Las Rachas detectan incrementos porcentuales consecutivos en la
-        frecuencia semanal.
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem 1.25rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.6;">
+        <strong>Nota Metodológica:</strong> Esta vista combina dos indicadores complementarios para evaluar la dinámica
+        de crecimiento delictual:
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.75rem;">
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                <div style="font-weight: 800; color: #3b82f6; font-size: 0.8rem; margin-bottom: 4px;">
+                    <i class="fa-solid fa-gauge-high"></i> RACHAS DE CRECIMIENTO
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; line-height: 1.5;">
+                    Una <strong>racha</strong> es una secuencia de semanas <em>consecutivas</em> en que un delito
+                    aumenta respecto a la semana anterior. Una racha de 3+ semanas es una señal de alerta táctica: el
+                    fenómeno no es ruido estadístico, sino un patrón sostenido que requiere intervención. Cuanto más
+                    larga la racha, mayor la urgencia operativa.
+                </p>
+            </div>
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem;">
+                <div style="font-weight: 800; color: #ef4444; font-size: 0.8rem; margin-bottom: 4px;">
+                    <i class="fa-solid fa-rocket"></i> ACELERACIÓN (MOMENTUM / CAGR)
+                </div>
+                <p style="margin: 0; font-size: 0.8rem; line-height: 1.5;">
+                    El <strong>Momentum</strong> mide la <em>velocidad de cambio</em> usando el CAGR ajustado a 4
+                    semanas. Un CAGR positivo indica que el delito está creciendo de forma compuesta: no solo aumenta,
+                    sino que cada semana crece <em>más rápido</em> que la anterior. Un CAGR negativo indica
+                    desaceleración o disipación activa.
+                </p>
+            </div>
+        </div>
+        <div style="margin-top: 0.75rem; font-size: 0.78rem; color: #94a3b8;">
+            <strong>Regla de decisión:</strong> Un delito con <strong>racha larga + CAGR alto</strong> es la prioridad
+            táctica máxima. Un delito con racha larga pero CAGR bajo puede estar estabilizándose.
+        </div>
     </div>
 </div>
 
@@ -109,7 +148,10 @@
 
         // --- 1. Streak Logic ---
         const crimes = [...new Set(S.allDataHistory.map(r => r[C.DELITO]))];
-        const streaks = { 1: [], 2: [], 3: [] };
+        const streaks = {
+            alza_2: [], alza_3: [],
+            baja_2: [], baja_3: []
+        };
 
         crimes.forEach(delito => {
             const records = S.allDataHistory
@@ -118,20 +160,27 @@
 
             if (records.length < 4) return;
             const lastRow = records[records.length - 1];
-            const streakVal = lastRow[C.RACHA_ALZA] || 0;
 
-            if (streakVal >= 3) streaks[3].push({ delito, val: streakVal });
-            else if (streakVal === 2) streaks[2].push({ delito, val: streakVal });
-            else if (streakVal === 1) streaks[1].push({ delito, val: streakVal });
+            const rAlza = lastRow[C.RACHA_ALZA] || 0;
+            const rBaja = lastRow[C.RACHA_BAJA] || 0;
+
+            // Sort logic for Alza
+            if (rAlza >= 3) streaks.alza_3.push({ delito, val: rAlza });
+            else if (rAlza === 2) streaks.alza_2.push({ delito, val: rAlza });
+
+            // Sort logic for Baja
+            if (rBaja >= 3) streaks.baja_3.push({ delito, val: rBaja });
+            else if (rBaja === 2) streaks.baja_2.push({ delito, val: rBaja });
         });
 
-        const renderStreak = (id, list, color) => {
+        const renderStreak = (id, list, symbol, color) => {
             const el = document.getElementById(id);
+            if (!el) return;
             if (list.length > 0) {
                 el.innerHTML = list.map(item => `
                     <div style="font-size: 0.8rem; font-weight: 600; color: #334155; border-bottom: 1px solid rgba(0,0,0,0.05); padding: 4px 0; display: flex; justify-content: space-between;">
                         <span>${item.delito}</span>
-                        <span style="color: ${color}; font-weight: 800;">+${item.val}</span>
+                        <span style="color: ${color}; font-weight: 800;">${symbol}${item.val}</span>
                     </div>
                 `).join('');
             } else {
@@ -139,9 +188,10 @@
             }
         };
 
-        renderStreak('v21_streak_1', streaks[1], '#b45309');
-        renderStreak('v21_streak_2', streaks[2], '#ea580c');
-        renderStreak('v21_streak_3', streaks[3], '#dc2626');
+        renderStreak('v21_streak_alza_2', streaks.alza_2, '▲', '#ea580c');
+        renderStreak('v21_streak_alza_3', streaks.alza_3, '▲', '#dc2626');
+        renderStreak('v21_streak_baja_2', streaks.baja_2, '▼', '#2563eb');
+        renderStreak('v21_streak_baja_3', streaks.baja_3, '▼', '#059669');
 
 
         // --- 2. Momentum Chart (CAGR 4S) ---

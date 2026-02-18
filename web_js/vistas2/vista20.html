@@ -146,8 +146,7 @@
             listCead.innerHTML = success.map(r => `
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eff6ff; padding-bottom: 8px;">
                      <span style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">
-                        ${r[C.DELITO]}
-                        ${r.Delito_STOP_Ref ? `<span style="font-weight:400; color: #64748b; font-size: 0.75rem; margin-left:5px;">/ ${r.Delito_STOP_Ref}</span>` : ''}
+                        ${r.Delito_STOP_Ref || r[C.DELITO]}
                      </span>
                      <span style="font-weight: 800; color: #3b82f6; font-size: 0.85rem;">Z = ${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
                 </div>

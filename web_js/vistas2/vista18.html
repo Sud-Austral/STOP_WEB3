@@ -66,13 +66,13 @@
                     Delitos con contacto físico directo o intimidación grave:
                 </div>
                 <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
-                    <li>Homicidios</li>
-                    <li>Violaciones</li>
-                    <li>Robo con Violencia</li>
-                    <li>Robo con Intimidación</li>
-                    <li>Lesiones Graves</li>
-                    <li>Secuestro</li>
-                    <li>Extorsión</li>
+                    <li>Homicidios y Femicidios</li>
+                    <li>Violaciones y Delitos Sexuales</li>
+                    <li>Robos con Violencia e Intimidación</li>
+                    <li>Delitos en Contexto de VIF</li>
+                    <li>Lesiones graves / menos graves / leves</li>
+                    <li>Amenazas con Armas</li>
+                    <li>Ley de Control de Armas</li>
                 </ul>
             </div>
 
@@ -87,11 +87,11 @@
                     Delitos contra bienes sin violencia directa:
                 </div>
                 <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
-                    <li>Hurtos (simple y agravado)</li>
-                    <li>Robo en Lugar No Habitado</li>
-                    <li>Robo en Lugar Habitado</li>
-                    <li>Robo de Vehículo Motorizado</li>
-                    <li>Robo de Accesorios de Vehículo</li>
+                    <li>Robos en Lugares Habitados y No Habitados</li>
+                    <li>Robos por Sorpresa</li>
+                    <li>Robos de Vehículos y sus Accesorios</li>
+                    <li>Otros Robos con Fuerza en las Cosas</li>
+                    <li>Hurtos</li>
                     <li>Receptación</li>
                 </ul>
             </div>
@@ -107,12 +107,12 @@
                     Delitos que no clasifican en categorías tácticas principales:
                 </div>
                 <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <li>Amenazas y Riñas</li>
                     <li>Daños</li>
-                    <li>Amenazas</li>
-                    <li>Estafas y Fraudes</li>
-                    <li>Delitos Económicos</li>
-                    <li>Delitos Informáticos</li>
-                    <li>Faltas y Contravenciones</li>
+                    <li>Ley de Drogas</li>
+                    <li>Incivilidades</li>
+                    <li>Consumo de Alcohol y Drogas en Vía Pública</li>
+                    <li>Otros desórdenes públicos</li>
                 </ul>
             </div>
         </div>
@@ -153,15 +153,51 @@
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // Classification of crimes by "Violence Factor"
         const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
 
+        // ─── Clasificación exacta basada en los 21 delitos oficiales del sistema STOP ───
+        const STOP_TAXONOMY = {
+            'Homicidios y Femicidios': 'VIOLENTO',
+            'Violaciones y Delitos Sexuales': 'VIOLENTO',
+            'Robos con Violencia e Intimidación': 'VIOLENTO',
+            'Delitos en Contexto de Violencia Intrafamiliar': 'VIOLENTO',
+            'Lesiones graves': 'VIOLENTO',
+            'Lesiones menos graves': 'VIOLENTO',
+            'Lesiones leves': 'VIOLENTO',
+            'Amenazas con Armas': 'VIOLENTO',
+            'Ley de Control de Armas': 'VIOLENTO',
+            'Robos en Lugares Habitados y No Habitados': 'PROPIEDAD',
+            'Robos por Sorpresa': 'PROPIEDAD',
+            'Robos de Vehículos y sus Accesorios': 'PROPIEDAD',
+            'Otros Robos con Fuerza en las Cosas': 'PROPIEDAD',
+            'Hurtos': 'PROPIEDAD',
+            'Receptación': 'PROPIEDAD',
+            'Amenazas y Riñas': 'OTROS',
+            'Daños': 'OTROS',
+            'Ley de Drogas': 'OTROS',
+            'Incivilidades': 'OTROS',
+            'Consumo de Alcohol y de Drogas en la Vía Pública': 'OTROS',
+            'Otros desórdenes públicos': 'OTROS',
+        };
+
+        // Normalize taxonomy keys to Uppercase for robust matching
+        const NORM_TAXONOMY = {};
+        Object.keys(STOP_TAXONOMY).forEach(k => {
+            NORM_TAXONOMY[k.toUpperCase()] = STOP_TAXONOMY[k];
+        });
+
         const classify = (delito) => {
-            const d = delito.toUpperCase();
-            if (d.includes('ROBO CON VIOLENCIA') || d.includes('INTIMIDACIÓN') || d.includes('HOMICIDIO') || d.includes('VIOLACIÓN') || d.includes('LESIONES')) return 'VIOLENTO';
-            if (d.includes('ROBO EN LUGAR') || d.includes('HURTO') || d.includes('ROBO DE VEHÍCULO')) return 'PROPIEDAD';
+            if (!delito) return 'OTROS';
+            const d = delito.toUpperCase().trim();
+            // Try direct match
+            if (NORM_TAXONOMY[d]) return NORM_TAXONOMY[d];
+            // Fallback: contains logic for edge cases
+            if (d.includes('LESIONES')) return 'VIOLENTO';
+            if (d.includes('ROBO')) return (d.includes('VIOLENCIA') || d.includes('INTIMIDACIÓN')) ? 'VIOLENTO' : 'PROPIEDAD';
             return 'OTROS';
         };
+
+        console.log('[V18] Clasificación activa. Muestra:', currentData.slice(0, 5).map(r => `${r[C.DELITO]} -> ${classify(r[C.DELITO])}`));
 
         const sums = currentData.reduce((acc, r) => {
             const cat = classify(r[C.DELITO]);

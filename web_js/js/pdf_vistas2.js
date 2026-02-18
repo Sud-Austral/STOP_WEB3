@@ -23,7 +23,7 @@ window.PDFModuleV2 = {
         "Vs. Región", "Ranking Histórico", "Vs. País", "Vs. Comunas Similares", "Aporte Regional", // Nivel 4
         "Efectividad Policial", // Nivel 5
         "Gravedad (IDI)", "Proyección Gravedad", "Gravedad por Delito", "IDI Comparativo", // Nivel 6
-        "Tendencia 20 Años", "Alertas Rachas", "Proyecciones", "Aceleración", "Normalidad", "Prioridades Semanales" // Nivel 7
+        "Tendencia 20 Años", "Alertas Rachas", "Priorización Estratégica", "Categoría", "Reporte Ejecutivo", "Auditoría Técnica" // Nivel 7
     ],
 
     levels: [

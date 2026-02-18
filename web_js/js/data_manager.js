@@ -400,6 +400,9 @@ window.DataManager = {
         window.COLS.RANK_CLUSTER_SEM = 'ranking_cluster_semanal';
         window.COLS.RANK_CLUSTER_ACUM = 'ranking_cluster_acum';
         window.COLS.RANK_CLUSTER_TASA_SEM = 'ranking_cluster_tasa_sem';
+        window.COLS.RACHA_ALZA = 'racha_alza';
+        window.COLS.RACHA_BAJA = 'racha_baja';
+        window.COLS.T31_CAGR_4S = 't31_cagr_4s';
 
         // COLS_CEAD: Defined primarily in data_cead.js. DataManager respects existing definition.
         if (!window.COLS_CEAD) window.COLS_CEAD = {};

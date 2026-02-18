@@ -174,8 +174,7 @@
             tbodyCead.innerHTML = emerging.map(r => `
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 8px; font-weight: 700; color: #1e293b;">
-                        ${r[C.DELITO]} 
-                        ${r.Delito_STOP_Ref ? `<span style="font-weight:400; color: #64748b; font-size: 0.8em; margin-left:5px;">/ ${r.Delito_STOP_Ref}</span>` : ''}
+                        ${r.Delito_STOP_Ref || r[C.DELITO]}
                     </td>
                     <td style="padding: 8px; text-align: right;">
                         <span style="font-weight: 800; color: #f97316;">${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
