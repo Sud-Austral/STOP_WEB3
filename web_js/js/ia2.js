@@ -150,29 +150,46 @@ window.IAModuleV2 = {
             console.log("Comienza el prompt")
             const prompt = `
 Eres un analista de inteligencia policial experto en el sistema STOP y CEAD de Carabineros de Chile.
-Genera interpretaciones estratégicas breves para el dashboard de seguridad de la comuna de ${context.comuna}.
+Tu misión es generar interpretaciones estratégicas CONCISAS y EJECUTIVAS para el dashboard de seguridad de la COMUNA DE ${context.comuna.toUpperCase()}.
 
-DATOS CLAVE:
-${JSON.stringify(context, null, 2)}
+CONTEXTO OPERATIVO (${context.week}):
+${JSON.stringify(context.metrics, null, 2)}
 
-INSTRUCCIONES ESPECÍFICAS PARA VISTAS (Max 25 palabras c/u):
-- Vista 1-11: Resumen general de tendencias STOP.
-- Vista 12 (Nacional): Contextualiza el ranking nacional (${context.metrics.national_rank}).
-- Vista 13 (Clúster): Analiza posición respecto a comunas similares (${context.metrics.cluster_rank}).
-- Vista 14 (Aporte): Comenta el peso delictual de la comuna.
-- Vista 15 (Efectividad): Evalúa la tasa de detención (${context.metrics.effectiveness_ratio}).
-- Vista 16 (Regional): Comparativa regional.
-- Vista 17 (Riesgo): Factores socio-delictuales.
-- Vista 19 (Emergentes): Alerta sobre: ${context.insights.emerging_short_term} (Corto Plazo) y ${context.insights.emerging_long_term} (Largo Plazo).
-- Vista 20 (Disipación): Destaca logros en: ${context.insights.success_stories}.
-- Vista 21 (Proyección): Comenta tendencia esperada.
-- Vista 22 (Tactical): Prioridad Nº1: ${context.insights.priority_focus}.
-- Vista 23 (Acción): Sugiere acción táctica inmediata.
-- Vista 24 (Ejecutivo): Veredicto final de mando.
-- Vista 25 (Data): Calidad de la información.
+REGLAS CRÍTICAS:
+- Máximo 30 palabras por vista. Sin rodeos.
+- Menciona SIEMPRE la comuna: "${context.comuna}".
+- Usa lenguaje de mando policial: directo, sin eufemismos.
+- Si el dato es positivo (baja), destácalo como logro. Si es negativo (alza), como alerta.
+
+INSTRUCCIONES POR VISTA:
+- vista1: Veredicto general de la semana. ¿Alza o baja? ¿Cuánto? ¿Qué delito lidera?
+- vista2: Tendencia de los últimos 6 meses. ¿Estamos sobre o bajo el promedio histórico?
+- vista3: ¿La semana actual está cerca del máximo o mínimo histórico? ¿Qué implica?
+- vista4: ¿Qué mes o trimestre concentra históricamente más delitos? ¿Estamos en ese período?
+- vista5: ¿Qué delito concentra el 80% del problema (Pareto)? Nombra el top 1.
+- vista6: ¿Qué delito tuvo el mayor salto porcentual esta semana? ¿Es preocupante?
+- vista7: ¿Qué delito lleva más semanas consecutivas al alza (racha negativa)?
+- vista8: ¿Existe correlación entre delitos que deba alertar al mando?
+- vista9: ¿Cuál es la tasa delictual por habitante y cómo se compara con la región?
+- vista10: ¿En qué posición del ranking regional está ${context.comuna} esta semana?
+- vista11: En perspectiva de 20 años, ¿estamos en un período de alza estructural o baja?
+- vista12: Ranking nacional (${context.metrics.national_rank}). ¿Mejora o deterioro vs semana anterior?
+- vista13: Clúster (${context.metrics.cluster_rank}). ¿Mejor o peor que comunas de tamaño similar?
+- vista14: ¿Qué porcentaje del total regional aporta ${context.comuna}? ¿Aumentó o bajó?
+- vista15: Tasa de detención (${context.metrics.effectiveness_ratio}). ¿Es suficiente para el nivel de delitos?
+- vista16: Comparativa regional. ¿${context.comuna} está sobre o bajo la media de la región?
+- vista17: Proyección de cierre anual. ¿Vamos a terminar el año mejor o peor que el anterior?
+- vista18: Análisis de rachas. ¿Cuántas semanas consecutivas en alza o baja?
+- vista19: Delitos emergentes de corto plazo: ${context.insights.emerging_short_term || 'sin datos'}. ¿Qué acción inmediata se requiere?
+- vista20: Delitos en disipación: ${context.insights.success_stories || 'sin datos'}. ¿Qué factor explica la baja?
+- vista21: Momentum de crecimiento. ¿La tendencia de aceleración es preocupante o controlada?
+- vista22: Prioridad táctica N°1: ${context.insights.priority_focus}. Justifica en una frase.
+- vista23: Recomendación de acción inmediata para el mando comunal. Sé específico.
+- vista24: Veredicto ejecutivo final. ¿La situación de ${context.comuna} requiere intervención urgente?
+- vista25: Calidad del dato. ¿Hay semanas sin información que afecten el análisis?
 
 FORMATO DE RESPUESTA:
-JSON CRUDO con claves "vista1" a "vista25". Sin markdown.
+JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adicionales.
             `;
 
             const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf"); // Valid key generation

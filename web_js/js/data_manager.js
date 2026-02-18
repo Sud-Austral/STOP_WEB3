@@ -84,7 +84,6 @@ window.DataManager = {
             ]);
 
             this.state.isLoaded = true;
-            this.state.isLoading = false;
 
             console.log("✅ DataManager: All data loaded successfully.");
 
@@ -99,6 +98,8 @@ window.DataManager = {
             this.state.error = error.message;
             this.state.isLoaded = false;
             window.dispatchEvent(new CustomEvent('dataManagerError', { detail: error }));
+        } finally {
+            // P0 Fix: Always reset isLoading to prevent permanent lock on re-init attempts
             this.state.isLoading = false;
         }
     },

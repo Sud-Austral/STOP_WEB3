@@ -53,7 +53,13 @@
         </div>
     </div>
 
-    <!-- Comparative Table -->
+    <!-- Nota de Datos: Semana 46/2025 -->
+    <div
+        style="display: flex; align-items: flex-start; gap: 10px; background: #fef9c3; border-left: 3px solid #f59e0b; border-radius: 6px; padding: 0.6rem 0.9rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: #78350f;">
+        <i class="fa-solid fa-triangle-exclamation" style="margin-top: 2px; flex-shrink: 0;"></i>
+        <span><strong>Nota de Datos:</strong> La <strong>Semana 46/2025</strong> ha sido excluida del análisis
+            histórico. Los valores semanales de ese período no se encuentran disponibles en el sistema STOP.</span>
+    </div>
     <div style="margin-bottom: 2rem;">
         <h4
             style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
@@ -94,7 +100,9 @@
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
         <strong>Nota Metodológica:</strong> Esta vista compara la semana actual con puntos críticos históricos (máximos,
-        mínimos y promedios) para contextualizar el nivel de actividad delictual.
+        mínimos y promedios) para contextualizar el nivel de actividad delictual. El <strong>máximo histórico</strong>
+        indica el peor registro de las últimas 52 semanas; el <strong>mínimo</strong>, el mejor. La línea punteada en el
+        gráfico representa el promedio anual como referencia de normalidad estadística.
     </div>
 </div>
 
@@ -119,10 +127,23 @@
         document.querySelectorAll('.semana-fill').forEach(el => el.textContent = S.semanaDetalle);
 
         // Get History (Last 52 weeks for context)
-        const historyCols = S.allDataHistory_total.filter(r => r[C.CASOS_ACTUAL] !== undefined); // Ensure validity
+        // ⚠️ Semana 46/2025 excluida: valores no disponibles en sistema STOP.
+        const SEMANAS_EXCLUIDAS = new Set(
+            S.allDataHistory_total
+                .filter(r => Number(r[C.SEMANA_ANO]) === 46 && Number(r[C.ANIO]) === 2025)
+                .map(r => r[C.ID_SEMANA])
+        );
+        const historyCols = S.allDataHistory_total.filter(r =>
+            r[C.CASOS_ACTUAL] !== undefined && !SEMANAS_EXCLUIDAS.has(r[C.ID_SEMANA])
+        );
 
         // Sort by ID_SEMANA descending to identify current, prev, etc.
         historyCols.sort((a, b) => b[C.ID_SEMANA] - a[C.ID_SEMANA]);
+
+        // Warn in console if any weeks were excluded
+        if (SEMANAS_EXCLUIDAS.size > 0) {
+            console.warn(`⚠️ [Vista 3] Semana(s) excluida(s) por falta de datos en STOP:`, [...SEMANAS_EXCLUIDAS]);
+        }
 
         // Current Week
         const currentRow = historyCols.find(r => r[C.ID_SEMANA] === S.currentSemana) || historyCols[0];
