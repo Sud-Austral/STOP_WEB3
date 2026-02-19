@@ -22,7 +22,7 @@ window.PDFModuleV2 = {
         "Evolución Delitos (20 años)", "Correlaciones", "Puntos Débiles", // Nivel 3
         "Vs. Región", "Ranking Histórico", "Vs. País", "Vs. Comunas Similares", "Aporte Regional", // Nivel 4
         "Efectividad Policial", // Nivel 5
-        "Gravedad (IDI)", "Proyección Gravedad", "Gravedad por Delito", "IDI Comparativo", // Nivel 6
+        "Efectividad Comparada", "Proporcionalidad Delictual", "Gravedad por Delito", "IDI Comparativo", // Nivel 6
         "Tendencia 20 Años", "Alertas Rachas", "Priorización Estratégica", "Categoría", "Reporte Ejecutivo", "Auditoría Técnica" // Nivel 7
     ],
 

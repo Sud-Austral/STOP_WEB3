@@ -170,7 +170,7 @@ const App = {
         }
 
         try {
-            const response = await fetch(`${this.config.viewsPath}/${viewName}.html`);
+            const response = await fetch(`${this.config.viewsPath}/${viewName}.html?t=${Date.now()}`);
 
             if (!response.ok) {
                 throw new Error(`View not found: ${viewName}`);

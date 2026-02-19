@@ -1,16 +1,23 @@
 import pandas as pd
-import warnings
 import numpy as np
 import os
 import sys
-from statsmodels.tsa.statespace.sarimax import SARIMAX
+import gc
+import json
+import datetime
+
+# =============================================================================
+# proceso_cead.py — Pipeline CEAD optimizado (velocidad + memoria)
+# =============================================================================
 
 
 def ejecutar_proceso():
-    print(">>> Iniciando Proceso CEAD (Modo Secuencial)...")
-    
+    """Pipeline principal CEAD. Retorna df3 con métricas calculadas."""
+    print(">>> Iniciando Proceso CEAD (Optimizado)...")
+    t0 = datetime.datetime.now()
+
     # -----------------------------------------
-    # 0. Configuración Progreso (tqdm)
+    # 0. Utilidades
     # -----------------------------------------
     try:
         from tqdm import tqdm
@@ -19,305 +26,413 @@ def ejecutar_proceso():
         USE_TQDM = False
 
     def progress_wrapper(iterable, desc="Procesando", total=None):
-        try:
-           if USE_TQDM:
-               return tqdm(iterable, desc=desc, total=total, smoothing=0.1)
-        except: pass
+        if USE_TQDM:
+            return tqdm(iterable, desc=desc, total=total, smoothing=0.1)
         return iterable
 
+    def optimize_dtypes(df):
+        """Downcast numéricos y convierte strings a category. Opera in-place."""
+        start_mem = df.memory_usage(deep=True).sum() / 1024**2
+
+        for col in df.columns:
+            dtype = df[col].dtype
+
+            if dtype == object:
+                df[col] = df[col].astype('category')
+            elif pd.api.types.is_integer_dtype(dtype):
+                df[col] = pd.to_numeric(df[col], downcast='integer')
+            elif pd.api.types.is_float_dtype(dtype):
+                df[col] = pd.to_numeric(df[col], downcast='float')
+            # datetime/category/bool: skip
+
+        end_mem = df.memory_usage(deep=True).sum() / 1024**2
+        print(f'   > RAM: {start_mem:.1f} → {end_mem:.1f} MB (-{100*(start_mem-end_mem)/max(start_mem,1):.0f}%)')
+        return df
+
     # -----------------------------------------
-    # 1. Definiciones y Constantes Locales
-    # -----------------------------------------    # Configuración de Fechas
+    # 1. Constantes
+    # -----------------------------------------
     START_FILL = "2025-10-01"
-    END_FILL   = "2025-12-01" # 
-    LIMIT_DATE = "2025-09-01" # 
+    END_FILL   = "2025-12-01"
+    LIMIT_DATE = "2025-09-01"
     MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
              'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    
-    MESES_CORTOS = {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
-                    7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}
-    
+    MESES_CORTOS = {i+1: m for i, m in enumerate(MESES)}  
     TRIMESTRES = {1: 'Enero-Marzo', 2: 'Abril-Junio', 3: 'Julio-Septiembre', 4: 'Octubre-Diciembre'}
-    
     MES_NUM = {m: i+1 for i, m in enumerate(MESES)}
-    
     FILL_PERIODS = pd.date_range(start=START_FILL, end=END_FILL, freq='MS')
-    
+    N_FILL = len(FILL_PERIODS)
+
     def date_to_id(dt): return dt.year * 100 + dt.month
 
     # -----------------------------------------
-    # 2. Funciones Auxiliares (Closures)
+    # 2. Funciones Auxiliares
     # -----------------------------------------
-    def predecir_sarima_secuencial(args):
-        """Función de predicción para ejecución secuencial con validación de anomalías."""
-        # Silenciar advertencias específicas de este modelo para evitar spam en logs
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            
-            (com, tipo, delit, tipo_val_nombre, serie_train) = args
-            
-            # Promedio base para chequeo de sanidad (últimos 12 meses conocidos)
-            avg_base = serie_train.iloc[-12:].mean() if len(serie_train) >= 12 else serie_train.mean()
-            if np.isnan(avg_base) or avg_base == 0: avg_base = 0.1
-
-            if len(serie_train) < 24 or serie_train.std() < 0.01:
-                last_val = serie_train.iloc[-3:].mean() if len(serie_train) >= 3 else serie_train.mean()
-                vals_pred = [max(0, round(last_val))] * len(FILL_PERIODS)
-            else:
-                try:
-                    model = SARIMAX(
-                        serie_train,
-                        order=(1, 1, 1), # Se agrega MA(1) para manejar mejor el ruido
-                        seasonal_order=(1, 1, 0, 12),
-                        enforce_stationarity=False,
-                        enforce_invertibility=False,
-                        simple_differencing=True
-                    )
-                    result = model.fit(disp=False, maxiter=30, cov_type='none')
-                    forecast = result.get_forecast(steps=len(FILL_PERIODS))
-                    vals_pred = [max(0, round(v)) for v in forecast.predicted_mean]
-                    
-                    # --- SANITY CHECK ---
-                    # Si alguna predicción cae un 50% por debajo del promedio anual base (siendo base > 5)
-                    # Lo consideramos una anomalía del modelo (colapso) y usamos promedio simple.
-                    is_anomalous = False
-                    if avg_base > 5:
-                        for v in vals_pred:
-                            if v < (avg_base * 0.5): # Umbral estricto: caída > 50% es anomalía
-                                is_anomalous = True
-                                break
-                    
-                    if is_anomalous:
-                        # Fallback Robusto: Promedio de los últimos 6 meses IGNORANDO ceros finales (posibles datos incompletos)
-                        # Tomamos los ultimos 6 meses
-                        recent = serie_train.iloc[-6:] if len(serie_train) >= 6 else serie_train
-                        
-                        # Si el promedio base es alto (>10), filtramos meses con < 5 casos para no ensuciar el promedio
-                        fallback_val = avg_base # Default a promedio anual
-                        
-                        if avg_base > 10:
-                            months_valid = recent[recent > 5]
-                            if not months_valid.empty:
-                                fallback_val = months_valid.mean()
-                        else:
-                            fallback_val = recent.mean()
-                            
-                        # print(f"⚠️ Anomalía detectada en {delit} (Pred: {vals_pred[0]} vs Base: {avg_base:.1f}). Corrigiendo a {fallback_val:.1f}")
-                        vals_pred = [max(0, round(fallback_val))] * len(FILL_PERIODS)
-                        
-                except:
-                    # Fallback por error de ejecución: Promedio ultimos 3
-                    fallback_val = serie_train.iloc[-3:].mean() if len(serie_train) >= 3 else serie_train.iloc[-1]
-                    vals_pred = [max(0, round(fallback_val))] * len(FILL_PERIODS)
-            
-            res = []
-            for i, date_f in enumerate(FILL_PERIODS):
-                res.append({
-                    'codcom': com, 'tipoValCod': tipo, 'delito': delit,
-                    'año': date_f.year, 'mes': date_f.month,
-                    'id_periodo': date_to_id(date_f), 'fecha': date_f,
-                    'frecuencia': vals_pred[i], 'tipoVal': tipo_val_nombre,
-                    'is_forecast': True
-                })
-            return res
-
     def calc_estacionalidad(group):
         total_rows = group[group['delito'] == 'Total']
-        if total_rows.empty: return pd.Series({'t22_mes_nombre': 'N/D', 't22_mes_pct': 0.0, 't22_trimestre_nombre': 'N/D', 't22_trimestre_pct': 0.0})
+        EMPTY = pd.Series({'t22_mes_nombre': 'N/D', 't22_mes_pct': 0.0,
+                           't22_trimestre_nombre': 'N/D', 't22_trimestre_pct': 0.0})
+        if total_rows.empty:
+            return EMPTY
         por_mes = total_rows.groupby('mes')['frecuencia'].sum()
-        if por_mes.empty or por_mes.sum() == 0: return pd.Series({'t22_mes_nombre': 'N/D', 't22_mes_pct': 0.0, 't22_trimestre_nombre': 'N/D', 't22_trimestre_pct': 0.0})
-        prom_mensual = por_mes.mean()
+        if por_mes.empty or por_mes.sum() == 0:
+            return EMPTY
+        prom = por_mes.mean()
         mes_max = por_mes.idxmax()
-        mes_pct = ((por_mes[mes_max] - prom_mensual) / prom_mensual * 100) if prom_mensual > 0 else 0
-        total_rows_q = total_rows.copy(); total_rows_q['trimestre'] = ((total_rows_q['mes'] - 1) // 3) + 1
-        por_trim = total_rows_q.groupby('trimestre')['frecuencia'].sum()
-        prom_trim = por_trim.mean(); trim_max = por_trim.idxmax() if not por_trim.empty else 1
-        trim_pct = ((por_trim[trim_max] - prom_trim) / prom_trim * 100) if prom_trim > 0 else 0
-        return pd.Series({'t22_mes_nombre': MESES_CORTOS.get(mes_max, str(mes_max)), 't22_mes_pct': round(mes_pct, 1), 't22_trimestre_nombre': TRIMESTRES.get(trim_max, f'Q{trim_max}'), 't22_trimestre_pct': round(trim_pct, 1)})
+        mes_pct = ((por_mes[mes_max] - prom) / prom * 100) if prom > 0 else 0
+        trimestres = ((total_rows['mes'].values - 1) // 3) + 1
+        por_trim = pd.Series(total_rows['frecuencia'].values, index=trimestres).groupby(level=0).sum()
+        prom_t = por_trim.mean()
+        trim_max = por_trim.idxmax() if not por_trim.empty else 1
+        trim_pct = ((por_trim[trim_max] - prom_t) / prom_t * 100) if prom_t > 0 else 0
+        return pd.Series({
+            't22_mes_nombre': MESES_CORTOS.get(mes_max, str(mes_max)),
+            't22_mes_pct': round(mes_pct, 1),
+            't22_trimestre_nombre': TRIMESTRES.get(trim_max, f'Q{trim_max}'),
+            't22_trimestre_pct': round(trim_pct, 1)
+        })
 
     def calc_correlacion_lp(group):
+        EMPTY = pd.Series(
+            {f't24_d{i+1}_{j+1}': '-' for i in range(4) for j in range(2)}
+            | {f't24_v{i+1}': 0.0 for i in range(4)}
+        )
         fam = group[(group['Nivel'] == 'Familia') & (group['delito'] != 'Total')]
-        if fam.empty or fam['delito'].nunique() < 2: return pd.Series({f't24_d{i+1}_{j+1}': '-' for i in range(4) for j in range(2)} | {f't24_v{i+1}': 0.0 for i in range(4)})
-        pivot = fam.pivot_table(index='id_periodo', columns='delito', values='frecuencia', aggfunc='sum').fillna(0)
+        if fam.empty or fam['delito'].nunique() < 2:
+            return EMPTY
+        pivot = fam.pivot_table(index='id_periodo', columns='delito',
+                                values='frecuencia', aggfunc='sum').fillna(0)
         pivot = pivot.loc[:, pivot.std() > 0]
-        if pivot.shape[1] < 2 or len(pivot) < 6: return pd.Series({'t24_d1_1': 'Insuf. Datos'} | {f't24_v{i+1}': 0.0 for i in range(4)})
-        corr = pivot.corr(); mask = np.triu(np.ones_like(corr, dtype=bool), k=1); pairs = corr.where(mask).stack().sort_values(ascending=False)
+        if pivot.shape[1] < 2 or len(pivot) < 6:
+            return pd.Series({'t24_d1_1': 'Insuf. Datos'} | {f't24_v{i+1}': 0.0 for i in range(4)})
+        corr = pivot.corr()
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        pairs = corr.where(mask).stack().sort_values(ascending=False)
         res = {}
-        for i in range(4):
-            if i < len(pairs): (d1, d2), val = pairs.index[i], pairs.iloc[i]; res[f't24_d{i+1}_1'] = d1[:35]; res[f't24_d{i+1}_2'] = d2[:35]; res[f't24_v{i+1}'] = round(val, 2)
-            else: res[f't24_d{i+1}_1'] = '-'; res[f't24_d{i+1}_2'] = '-'; res[f't24_v{i+1}'] = 0.0
+        for i in range(min(4, len(pairs))):
+            (d1, d2), val = pairs.index[i], pairs.iloc[i]
+            res[f't24_d{i+1}_1'] = d1[:35]
+            res[f't24_d{i+1}_2'] = d2[:35]
+            res[f't24_v{i+1}'] = round(val, 2)
+        for i in range(len(pairs), 4):
+            res[f't24_d{i+1}_1'] = '-'
+            res[f't24_d{i+1}_2'] = '-'
+            res[f't24_v{i+1}'] = 0.0
         return pd.Series(res)
 
     def calculate_top_correlation(group):
-        if len(group) < 6: return pd.Series({'t23_d1': 'S.D.', 't23_d2': 'S.D.', 't23_val': 0.0})
-        pivot = group.pivot(index='id_periodo', columns='delito', values='frecuencia').fillna(0)
+        if len(group) < 6:
+            return pd.Series({'t23_d1': 'S.D.', 't23_d2': 'S.D.', 't23_val': 0.0})
+        pivot = group.pivot_table(index='id_periodo', columns='delito', values='frecuencia', aggfunc='sum').fillna(0)
         pivot = pivot.loc[:, (pivot != pivot.iloc[0]).any()]
-        if pivot.shape[1] < 2: return pd.Series({'t23_d1': 'S.Var', 't23_d2': 'S.Var', 't23_val': 0.0})
-        corr_upper = pivot.corr().where(np.triu(np.ones(pivot.corr().shape, dtype=bool), k=1))
+        if pivot.shape[1] < 2:
+            return pd.Series({'t23_d1': 'S.Var', 't23_d2': 'S.Var', 't23_val': 0.0})
+        corr = pivot.corr()
+        corr_upper = corr.where(np.triu(np.ones(corr.shape, dtype=bool), k=1))
         try:
             mv = corr_upper.max().max()
-            if pd.isna(mv): return pd.Series({'t23_d1': '-', 't23_d2': '-', 't23_val': 0.0})
-            idx = corr_upper.stack().idxmax(); return pd.Series({'t23_d1': idx[0], 't23_d2': idx[1], 't23_val': mv})
-        except: return pd.Series({'t23_d1': 'Err', 't23_d2': 'Err', 't23_val': 0.0})
-    
-    # -----------------------------------------
-    # 3. Lógica Principal
-    # -----------------------------------------
-    url = r"C:\Users\limc_\Laboratorio\cead2\CEAD_FULL.csv"
-    if not os.path.exists(url): url = r"CEAD_FULL.csv"
-    if not os.path.exists(url): sys.exit(f"Data file not found: {url}")
+            if pd.isna(mv):
+                return pd.Series({'t23_d1': '-', 't23_d2': '-', 't23_val': 0.0})
+            idx = corr_upper.stack().idxmax()
+            return pd.Series({'t23_d1': idx[0], 't23_d2': idx[1], 't23_val': mv})
+        except:
+            return pd.Series({'t23_d1': 'Err', 't23_d2': 'Err', 't23_val': 0.0})
 
+    # =================================================================
+    # 3. CARGA DE DATOS
+    # =================================================================
+    url = r"C:\Users\limc_\Laboratorio\cead2\CEAD_FULL.csv"
+    if not os.path.exists(url):
+        url = r"CEAD_FULL.csv"
+    if not os.path.exists(url):
+        sys.exit(f"Data file not found: {url}")
+
+    print(f"> Cargando: {url}")
     df_raw = pd.read_csv(url, compression="xz", sep="\t")
-    df_raw = df_raw[df_raw["tipoValCod"] == "1,2"]
     df_raw = df_raw[df_raw["CODIGO"] > 10000].copy()
     df_raw['nivel_original'] = df_raw['Nivel']
     df_raw['is_forecast'] = False
 
-    df = df_raw.melt(id_vars=['Codcom', 'Año', 'tipoValCod', 'tipoVal', 'CODIGO', 'Descripcion', 'Nivel', 'nivel_original', 'is_forecast'], 
-                    value_vars=MESES, var_name='mes_nombre', value_name='frecuencia')
-    df['mes'] = df['mes_nombre'].map(MES_NUM)
-    df['frecuencia'] = pd.to_numeric(df['frecuencia'], errors='coerce').fillna(0).astype(int)
+    # =================================================================
+    # 4. MELT → formato largo
+    # =================================================================
+    df = df_raw.melt(
+        id_vars=['Codcom', 'Año', 'tipoValCod', 'tipoVal', 'CODIGO',
+                 'Descripcion', 'Nivel', 'nivel_original', 'is_forecast'],
+        value_vars=MESES, var_name='mes_nombre', value_name='frecuencia'
+    )
+    del df_raw; gc.collect()
+
+    df['mes'] = df['mes_nombre'].map(MES_NUM).astype(np.int8)
+    df['frecuencia'] = pd.to_numeric(df['frecuencia'], errors='coerce').fillna(0).astype(np.int32)
     df.rename(columns={'Codcom': 'codcom', 'Año': 'año', 'Descripcion': 'delito'}, inplace=True)
-    df['id_periodo'] = df['año'] * 100 + df['mes']
+    df['id_periodo'] = (df['año'] * 100 + df['mes']).astype(np.int32)
     df['fecha'] = pd.to_datetime(df['año'].astype(str) + '-' + df['mes'].astype(str) + '-01')
+    df['periodo_detalle'] = df['mes_nombre'].astype(str) + ' ' + df['año'].astype(str)
 
-    print(f"   > Usando Límites Estáticos: LIMIT_DATE={LIMIT_DATE}, START_FILL={START_FILL}")
-
-    df['periodo_detalle'] = df['mes_nombre'] + ' ' + df['año'].astype(str)
+    df = optimize_dtypes(df)
+    print(f"   > Filas post-melt: {len(df):,}")
 
     delitos_config = df[['delito', 'Nivel', 'nivel_original', 'CODIGO']].drop_duplicates('delito')
 
-    # 4. SARIMA SECUENCIAL
+    # =================================================================
+    # 5. PREDICCIÓN VECTORIZADA (Seasonal Naive + Drift)
+    #    Genera predicciones como DataFrame directo, no lista de dicts
+    # =================================================================
+    print("> Generando predicciones...")
     limit_id = date_to_id(pd.to_datetime(LIMIT_DATE))
-    df_train = df[df['id_periodo'] <= limit_id].copy()
-    grupos = df_train[df_train['delito'] != 'Total'].groupby(['codcom', 'tipoValCod', 'delito'])
+    df_train = df[df['id_periodo'] <= limit_id]
+    tipoval_map = df_train[['tipoValCod', 'tipoVal']].drop_duplicates().set_index('tipoValCod')['tipoVal'].to_dict()
+    df_nototal = df_train[df_train['delito'] != 'Total']
 
-    resultados_raw = []
-    print(f"> Procesando {len(grupos):,} series de tiempo secuencialmente...")
-    
-    for (com, tipo, delit), group in progress_wrapper(grupos, desc="Prediciendo"):
-        serie = group.groupby('fecha')['frecuencia'].sum().sort_index().asfreq('MS').fillna(0)
-        
-        # --- NUEVO: TRATAMIENTO DE HUECOS (INTERPOLACIÓN) ---
-        # Si hay ceros entre datos (huecos de carga), interpolamos para no arruinar el modelo ni el gráfico
-        mask = serie > 0
-        if mask.any():
-            first_date = serie[mask].index[0]
-            last_date = serie[mask].index[-1]
-            
-            # Solo actuamos sobre el rango donde ya existen datos "antes y después"
-            subset = serie.loc[first_date:last_date]
-            if (subset == 0).any():
-                # print(f"   ! Corrigiendo huecos en {delit} ({com})")
-                full_range_fixed = subset.replace(0, np.nan).interpolate(method='linear').fillna(0).round().astype(int)
-                serie.loc[first_date:last_date] = full_range_fixed
-                
-                # Actualizamos los datos originales para que el gráfico real no muestre la caída a cero
-                df.loc[(df['codcom']==com) & (df['tipoValCod']==tipo) & (df['delito']==delit) & 
-                       (df['fecha'] >= first_date) & (df['fecha'] <= last_date), 'frecuencia'] = serie.loc[first_date:last_date].values
-        
-        serie_train = serie
-        if serie_train.empty: continue
-        
-        # Ejecución directa sin pool
-        res = predecir_sarima_secuencial((com, tipo, delit, group['tipoVal'].iloc[0], serie_train))
-        resultados_raw.append(res)
+    pred_frames = []  # Acumular DataFrames, no dicts individuales
 
-    df_preds = pd.DataFrame([item for sublist in resultados_raw for item in sublist])
+    for tipo_cod in df_nototal['tipoValCod'].unique():
+        df_tipo = df_nototal[df_nototal['tipoValCod'] == tipo_cod]
+        tipo_val_nombre = tipoval_map.get(tipo_cod, tipo_cod)
+
+        pivot = df_tipo.pivot_table(
+            index='fecha', columns=['codcom', 'delito'],
+            values='frecuencia', aggfunc='sum'
+        ).sort_index().asfreq('MS').fillna(0)
+
+        n_periodos, n_series = pivot.shape
+        if n_periodos == 0 or n_series == 0:
+            continue
+        print(f"  > tipoValCod={tipo_cod}: {n_periodos} periodos × {n_series:,} series")
+
+        mat = pivot.values.astype(np.float32)  # float32 suficiente
+
+        # Interpolación vectorizada (columnar)
+        for c in range(n_series):
+            col_vec = mat[:, c]
+            nz = np.nonzero(col_vec)[0]
+            if len(nz) >= 2:
+                seg = col_vec[nz[0]:nz[-1]+1]
+                zm = seg == 0
+                if zm.any():
+                    idx = np.arange(len(seg))
+                    seg[zm] = np.interp(idx[zm], idx[~zm], seg[~zm])
+                    mat[nz[0]:nz[-1]+1, c] = seg
+
+        # Seasonal Naive + Drift — matricial
+        if n_periodos >= 24:
+            last12 = mat[-12:]
+            prev12 = mat[-24:-12]
+            drift = np.clip(last12 - prev12,
+                            -np.where(last12 > 0, last12, 1) * 0.5,
+                             np.where(last12 > 0, last12, 1) * 0.5)
+        elif n_periodos >= 12:
+            last12 = mat[-12:]
+            drift = np.zeros_like(last12)
+        else:
+            last12 = None
+            w = min(6, n_periodos)
+            weights = np.arange(1, w + 1, dtype=np.float32)
+            wma = np.maximum(0, np.round(np.average(mat[-w:], axis=0, weights=weights))).astype(np.int32)
+
+        # Construir predicciones como arrays columna → DataFrame de golpe
+        cols_multi = pivot.columns.tolist()
+        codcoms = np.array([c[0] for c in cols_multi])
+        delitos = np.array([c[1] for c in cols_multi])
+
+        for date_f in FILL_PERIODS:
+            m_idx = date_f.month - 1
+            if last12 is not None:
+                pred_vals = np.maximum(0, np.round(last12[m_idx] + drift[m_idx])).astype(np.int32)
+            else:
+                pred_vals = wma
+
+            pred_df = pd.DataFrame({
+                'codcom': codcoms,
+                'delito': delitos,
+                'tipoValCod': tipo_cod,
+                'tipoVal': tipo_val_nombre,
+                'año': date_f.year,
+                'mes': date_f.month,
+                'id_periodo': date_to_id(date_f),
+                'fecha': date_f,
+                'frecuencia': pred_vals,
+                'is_forecast': True
+            })
+            pred_frames.append(pred_df)
+
+        del mat, pivot
+        gc.collect()
+
+    df_preds = pd.concat(pred_frames, ignore_index=True)
+    del pred_frames; gc.collect()
+
     df_preds = df_preds.merge(delitos_config, on='delito', how='left')
+    df_preds['mes_nombre'] = df_preds['mes'].map(MESES_CORTOS)
+    df_preds['periodo_detalle'] = df_preds['mes_nombre'].astype(str) + ' ' + df_preds['año'].astype(str)
 
-    # Redefinir para asegurar scope en entornos extraños de notebook
-    meses_map = {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
-                 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}
-    
-    df_preds['mes_nombre'] = df_preds['mes'].map(meses_map)
-    df_preds['periodo_detalle'] = df_preds['mes_nombre'] + ' ' + df_preds['año'].astype(str)
+    print(f"> Predicciones: {len(df_preds):,} filas")
 
-    df = pd.concat([df_train, df_preds], ignore_index=True).sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
+    # =================================================================
+    # 6. CONCAT train + predicciones
+    # =================================================================
+    df = pd.concat([df_train, df_preds], ignore_index=True)
+    del df_train, df_preds; gc.collect()
 
-    print("> Calculando métricas y acumulados...")
-    df = df[df['delito'] != 'Total']
-    totales = df.groupby(['codcom', 'id_periodo', 'tipoValCod', 'tipoVal'], as_index=False)['frecuencia'].sum()
-    totales['delito'] = 'Total'; totales['CODIGO'] = 0; totales['Nivel'] = 'Total'; totales['nivel_original'] = 'Total'
-    time_meta = df[['id_periodo', 'año', 'mes', 'fecha', 'mes_nombre', 'periodo_detalle']].drop_duplicates()
-    df = pd.concat([df, totales.merge(time_meta, on='id_periodo')], ignore_index=True).sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
+    df = df.sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
+    df = optimize_dtypes(df)
 
-    df['media_movil_3m'] = df.groupby(['delito', 'codcom', 'tipoValCod'])['frecuencia'].transform(lambda x: x.rolling(3, min_periods=1).mean())
-    df['promedio_hist'] = df.groupby(['delito', 'codcom', 'tipoValCod'])['frecuencia'].transform(lambda x: x.expanding().mean())
-    df['std_hist'] = df.groupby(['delito', 'codcom', 'tipoValCod'])['frecuencia'].transform(lambda x: x.expanding().std())
-    # Calcular Z-Score para detectar anomalías
-    df['z_score'] = np.where(df['std_hist'] > 0, (df['frecuencia'] - df['promedio_hist']) / df['std_hist'], 0)
-    
+    # =================================================================
+    # 7. TOTALES
+    # =================================================================
+    print("> Calculando totales...")
+    df_notot = df[df['delito'] != 'Total']
+    totales = df_notot.groupby(['codcom', 'id_periodo', 'tipoValCod', 'tipoVal'],
+                                as_index=False)['frecuencia'].sum()
+    totales['delito'] = 'Total'
+    totales['CODIGO'] = 0
+    totales['Nivel'] = 'Total'
+    totales['nivel_original'] = 'Total'
+    time_meta = df[['id_periodo', 'año', 'mes', 'fecha', 'mes_nombre', 'periodo_detalle']].drop_duplicates('id_periodo')
+    totales = totales.merge(time_meta, on='id_periodo', how='left')
+
+    df = pd.concat([df_notot, totales], ignore_index=True)
+    del totales, time_meta, df_notot; gc.collect()
+    df = df.sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
+    df = optimize_dtypes(df)
+
+    # =================================================================
+    # 8. MÉTRICAS ROLLING/EXPANDING (una sola agrupación, múltiples columnas)
+    # =================================================================
+    print("> Calculando métricas temporales...")
+    grp_key = ['delito', 'codcom', 'tipoValCod']
+    df['media_movil_3m'] = df.groupby(grp_key)['frecuencia'].transform(lambda x: x.rolling(3, min_periods=1).mean())
+    df['promedio_hist'] = df.groupby(grp_key)['frecuencia'].transform(lambda x: x.expanding().mean())
+    df['std_hist'] = df.groupby(grp_key)['frecuencia'].transform(lambda x: x.expanding().std())
+    gc.collect()
+
+    df['z_score'] = np.where(
+        df['std_hist'] > 0,
+        ((df['frecuencia'] - df['promedio_hist']) / df['std_hist']).astype(np.float32),
+        np.float32(0)
+    )
+
     df['acumulado_anual'] = df.groupby(['delito', 'codcom', 'tipoValCod', 'año'])['frecuencia'].cumsum()
-    df['proyeccion_anual'] = df['acumulado_anual'] * (12.0 / df['mes'])
-    
-    print("> Agregando metadatos finales...")
-    try:
-        localiza = pd.read_excel(r"D:\GitHub\STOP_WEB3\web_js\data\Localiza Chile (1).xlsx")[['Provincia', 'Comuna', 'Región', 'Codcom', 'Codreg']].drop_duplicates()
-        df = df.merge(localiza, left_on='codcom', right_on='Codcom', how='left')
-    except:
-        try:
-            localiza = pd.read_excel(r"D:\GitHub\LOCALIZA_DB\Localiza Chile (1).xlsx")[['Provincia', 'Comuna', 'Región', 'Codcom', 'Codreg']].drop_duplicates()
-            df = df.merge(localiza, left_on='codcom', right_on='Codcom', how='left')
-        except: pass
+    df['proyeccion_anual'] = (df['acumulado_anual'] * (np.float32(12.0) / df['mes'])).astype(np.float32)
 
-    try:
-        pob = pd.read_excel(r"C:\Users\limc_\Downloads\Factores Población.xlsx", sheet_name="Factores")[['Codcom', 'Año', 'Población', 'Factor Población']]
-        df = df.merge(pob.rename(columns={'Año': 'año', 'Factor Población': 'factor_poblacion'}), left_on=['codcom', 'año'], right_on=['Codcom', 'año'], how='left')
-    except: df['factor_poblacion'] = 100000
+    # =================================================================
+    # 9. LOCALIZACIÓN + POBLACIÓN (merges pequeños)
+    # =================================================================
+    print("> Fusionando localización y población...")
+    localiza_paths = [
+        r"D:\GitHub\STOP_WEB3\web_js\data\Localiza Chile (1).xlsx",
+        r"D:\GitHub\LOCALIZA_DB\Localiza Chile (1).xlsx"
+    ]
+    for lp in localiza_paths:
+        if os.path.exists(lp):
+            try:
+                localiza = pd.read_excel(lp, usecols=['Provincia', 'Comuna', 'Región', 'Codcom', 'Codreg']).drop_duplicates()
+                df = df.merge(localiza, left_on='codcom', right_on='Codcom', how='left')
+                if 'Codcom' in df.columns:
+                    df.drop(columns='Codcom', inplace=True)
+                break
+            except Exception as e:
+                print(f"   ⚠️ Error localización ({lp}): {e}")
 
-    # Determinar Clase Poblacional (User Request Step 835)
-    print("> Calculando Clase Poblacional...")
-    try:
-        if 'Población' in df.columns:
-            df.rename(columns={'Población': 'poblacion'}, inplace=True)
-        
-        if 'poblacion' not in df.columns:
-            # Fallback estimation based on factor
-            df['poblacion'] = df['factor_poblacion'] * 100000
-            
-        def get_clase_pob(p):
-            if pd.isna(p): return 'Sin Clasificar'
-            if p > 100000: return 'Más de 100.000'
-            if p >= 50000: return 'Entre 50.000 y 100.000'
-            if p >= 20000: return 'Entre 20.000 y 50.000'
-            if p >= 5000: return 'Entre 5.000 y 20.000'
-            if p >= 1000: return 'Entre 1.000 y 5.000'
-            return 'Menos de 1.000'
-            
-        df['clase_poblacion'] = df['poblacion'].apply(get_clase_pob)
-    except Exception as e:
-        print(f"⚠️ Error calculando clase_poblacion: {e}")
-        df['clase_poblacion'] = 'Más de 100.000' # Default fallback
-    
-    print("> Calculando Rankings CEAD...")
-    # Ranking Regional por Frecuencia (Descendente: Mayor delito = Rank 1)
+    pob_paths = [
+        r"C:\Users\limc_\Downloads\Factores Población.xlsx",
+        r"..\data\input\Factores Población.xlsx"
+    ]
+    pob_loaded = False
+    for pp in pob_paths:
+        if os.path.exists(pp):
+            try:
+                pob = pd.read_excel(pp, sheet_name="Factores",
+                                    usecols=['Codcom', 'Año', 'Población', 'Factor Población'])
+                pob.rename(columns={'Año': 'año', 'Factor Población': 'factor_poblacion'}, inplace=True)
+                df = df.merge(pob, left_on=['codcom', 'año'], right_on=['Codcom', 'año'], how='left')
+                if 'Codcom' in df.columns:
+                    df.drop(columns='Codcom', inplace=True)
+                pob_loaded = True
+                break
+            except Exception as e:
+                print(f"   ⚠️ Error población ({pp}): {e}")
+    if not pob_loaded:
+        df['factor_poblacion'] = np.float32(100000)
+
+    # =================================================================
+    # 10. CLASE POBLACIONAL (vectorizado con pd.cut)
+    # =================================================================
+    print("> Clasificando población...")
+    if 'Población' in df.columns:
+        df.rename(columns={'Población': 'poblacion'}, inplace=True)
+    if 'poblacion' not in df.columns:
+        df['poblacion'] = df['factor_poblacion'] * 100000
+
+    bins = [-np.inf, 1000, 5000, 20000, 50000, 100000, np.inf]
+    labels = ['Menos de 1.000', 'Entre 1.000 y 5.000', 'Entre 5.000 y 20.000',
+              'Entre 20.000 y 50.000', 'Entre 50.000 y 100.000', 'Más de 100.000']
+    df['clase_poblacion'] = pd.cut(df['poblacion'], bins=bins, labels=labels, right=True).astype(str)
+    df.loc[df['poblacion'].isna(), 'clase_poblacion'] = 'Sin Clasificar'
+
+    gc.collect()
+
+    # =================================================================
+    # 11. RANKINGS (una sola pasada, sin duplicación)
+    # =================================================================
+    print("> Calculando rankings...")
+
+    # Tasa CEAD (vectorizada)
+    fp = df['factor_poblacion'].replace(0, np.nan)
+    df['tasa_cead'] = ((df['frecuencia'] / fp) * 100000).fillna(0).astype(np.float32)
+    del fp
+
     if 'Codreg' in df.columns:
-        # Ranking mensual
-        df['ranking_comunal_regional'] = df.groupby(['Codreg', 'delito', 'id_periodo'])['frecuencia'].rank(method='dense', ascending=False)
-        
-        # Ranking Anual (Basado en total anual real)
-        total_anual = df.groupby(['codcom', 'delito', 'año'])['frecuencia'].sum().reset_index(name='total_año_real')
-        df = df.merge(total_anual, on=['codcom', 'delito', 'año'], how='left')
-        
-        # Rankear sobre dataframe reducido para eficiencia y luego merge
-        ranking_anual_df = df[['codcom', 'Codreg', 'delito', 'año', 'total_año_real', 'factor_poblacion']].drop_duplicates()
-        
-        # Tasa Anual
-        ranking_anual_df['tasa_anual_real'] = ranking_anual_df['total_año_real'] / ranking_anual_df['factor_poblacion'].replace(0, np.nan)
-        
-        ranking_anual_df['ranking_regional_anual_metric'] = ranking_anual_df.groupby(['Codreg', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
-        ranking_anual_df['ranking_regional_anual_tasa'] = ranking_anual_df.groupby(['Codreg', 'delito', 'año'])['tasa_anual_real'].rank(method='dense', ascending=False)
-        
-        df = df.merge(ranking_anual_df[['codcom', 'delito', 'año', 'ranking_regional_anual_metric', 'ranking_regional_anual_tasa']], on=['codcom', 'delito', 'año'], how='left')
-        
-    # Ranking Nacional Mensual
-    df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'])['frecuencia'].rank(method='dense', ascending=False)
+        # Regional por tasa
+        df['ranking_comunal_regional'] = df.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].rank(
+            method='min', ascending=False).astype(np.int16)
 
-    print("> Calculando IDI CEAD (Basado en Union)...")
+        # Regional anual (reducido → merge)
+        total_anual = df.groupby(['codcom', 'delito', 'año'], observed=True)['frecuencia'].sum().reset_index(name='total_año_real')
+        df = df.merge(total_anual, on=['codcom', 'delito', 'año'], how='left')
+
+        rk = df[['codcom', 'Codreg', 'delito', 'año', 'total_año_real', 'factor_poblacion']].drop_duplicates()
+        rk['tasa_anual_real'] = (rk['total_año_real'] / rk['factor_poblacion'].replace(0, np.nan)).astype(np.float32)
+        rk['ranking_regional_anual_metric'] = rk.groupby(['Codreg', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
+        rk['ranking_regional_anual_tasa'] = rk.groupby(['Codreg', 'delito', 'año'])['tasa_anual_real'].rank(method='dense', ascending=False)
+        df = df.merge(rk[['codcom', 'delito', 'año', 'ranking_regional_anual_metric', 'ranking_regional_anual_tasa']],
+                      on=['codcom', 'delito', 'año'], how='left')
+        del total_anual, rk; gc.collect()
+
+        # Infografía V10 — calculada via transform (SIN merge extra)
+        print("   > Infografía V10...")
+        df['tasa_regional_promedio'] = df.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].transform('mean')
+        df['diff_tasa_regional_pct'] = np.where(
+            df['tasa_regional_promedio'] > 0,
+            ((df['tasa_cead'] - df['tasa_regional_promedio']) / df['tasa_regional_promedio'] * 100),
+            np.float32(0)
+        ).astype(np.float32)
+
+        conditions = [
+            df['diff_tasa_regional_pct'] > 5,
+            df['diff_tasa_regional_pct'] > 3,
+            df['diff_tasa_regional_pct'] < -5,
+            df['diff_tasa_regional_pct'] < -3,
+        ]
+        df['infografia_v10'] = np.select(
+            conditions,
+            ['SOBRE_CRITICO', 'SOBRE_ALERTA', 'BAJO_DESTACADO', 'BAJO_BUENO'],
+            default='PROMEDIO'
+        )
+    else:
+        df['ranking_comunal_regional'] = np.int16(0)
+        df['infografia_v10'] = 'N/A'
+
+    # Nacional
+    df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'])['tasa_cead'].rank(
+        method='min', ascending=False).astype(np.int16)
+
+    # =================================================================
+    # 12. IDI CEAD (Basado en Union)
+    # =================================================================
+    print("> Calculando IDI CEAD...")
     try:
-        import json
-        # 1. Definir Pesos Base STOP
         weights_stop = {
             'HOMICIDIOS Y FEMICIDIOS': 1000,
             'ROBOS CON VIOLENCIA E INTIMIDACIÓN': 150,
@@ -326,170 +441,122 @@ def ejecutar_proceso():
             'LEY DE DROGAS': 30,
             'DELITOS EN CONTEXTO DE VIOLENCIA INTRAFAMILIAR': 40
         }
-        
-        # 2. Cargar Union
-        union_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config", "union.json")
+        union_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                  "config", "union.json")
         if os.path.exists(union_path):
             with open(union_path, 'r', encoding='utf-8') as f:
                 union_data = json.load(f)
-            
-            map_cead_weight = {}
-            map_stop_name = {}
+
+            map_w, map_n = {}, {}
             for item in union_data:
-                stop_name = item.get(' Delitos_stop', '').strip()
-                weight = weights_stop.get(stop_name, 0)
-                if weight > 0:
-                    map_cead_weight[item['id_subgrupo']] = weight
-                
-                # Mapping for stop_delito
-                if 'id_subgrupo' in item:
-                    map_stop_name[item['id_subgrupo']] = stop_name
-            
-            # 3. Aplicar mapeo (df['CODIGO'] es el id_subgrupo CEAD)
-            df['idi_peso'] = df['CODIGO'].map(map_cead_weight).fillna(0)
-            df['stop_delito'] = df['CODIGO'].map(map_stop_name).fillna("OTRO")
-            
-            # 4. Calcular Métricas IDI
-            # IDI Mensual Ponderado por Población (Puntos)
-            df['idi_mensual'] = (df['frecuencia'] * df['idi_peso'] / df['factor_poblacion']).fillna(0)
-            
-            # IDI Acumulado Anual
+                su = item.get('Delitos_stop', '').strip()
+                sn = item.get('Delitos min_stop', '').strip()
+                w = weights_stop.get(su, 0)
+                if w > 0:
+                    map_w[item['id_subgrupo']] = w
+                if sn and sn != 'NO STOP':
+                    map_n[item['id_subgrupo']] = sn
+
+            df['idi_peso'] = df['CODIGO'].map(map_w).fillna(0).astype(np.float32)
+            df['stop_delito'] = df['CODIGO'].map(map_n).fillna("NO APLICA")
+            df['idi_mensual'] = (df['frecuencia'] * df['idi_peso'] / df['factor_poblacion']).fillna(0).astype(np.float32)
             df['idi_acumulado_anual'] = df.groupby(['codcom', 'delito', 'año'])['idi_mensual'].cumsum()
-            
-            print(f"   - Pesos y nombres STOP asignados exitosamente usando union.json")
+            print("   - IDI asignado via union.json")
         else:
-            print(f"⚠️ Archivo union.json no encontrado en {union_path}")
-            df['idi_peso'] = 0
-            df['idi_mensual'] = 0
+            print(f"   ⚠️ union.json no encontrado: {union_path}")
+            df['idi_peso'] = np.float32(0)
+            df['idi_mensual'] = np.float32(0)
             df['stop_delito'] = "OTRO"
-            
     except Exception as e:
-        print(f"⚠️ Error calculando IDI CEAD: {e}")
-        df['idi_peso'] = 0
+        print(f"   ⚠️ Error IDI: {e}")
+        df['idi_peso'] = np.float32(0)
         df['stop_delito'] = "OTRO"
 
-    df3 = df.copy()
+    # =================================================================
+    # 13. ESTACIONALIDAD + CORRELACIONES (apply sobre subsets reducidos)
+    # =================================================================
+    gc.collect()
+    df = optimize_dtypes(df)
 
-    # ----------------------------------------------------
-    # NUEVO: Cálculo de Rankings (Regional y Nacional)
-    # ----------------------------------------------------
-    print("   > Calculando Rankings CEAD...")
-    # Calcular Tasa 
-    df3['tasa_cead'] = np.where(df3['factor_poblacion'] > 0, (df3['frecuencia'] / df3['factor_poblacion']) * 100000, 0)
-    
-    # Ranking Regional (Ascending=False -> Mayor tasa es Rank 1)
-    if 'Codreg' in df3.columns:
-        df3['ranking_comunal_regional'] = df3.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].rank(method='min', ascending=False)
-    else:
-        df3['ranking_comunal_regional'] = 0
+    # Renombrar df → df3 sin copia (reasignación de referencia)
+    df3 = df
+    del df  # Libera la referencia 'df', df3 apunta al mismo objeto
 
-    # Ranking Nacional
-    df3['ranking_nacional_mensual'] = df3.groupby(['id_periodo', 'delito'])['tasa_cead'].rank(method='min', ascending=False)
-    
-    # --- INFOGRAFIA V10 LOGIC (User Request: sobre/bajo 3-5%) ---
-    print("   > Calculando Infografía V10 (Diferencial Regional)...")
-    if 'Codreg' in df3.columns:
-        # Calc average rate per region/period/crime
-        # We need MEAN rate of communes in the region (or Weighted? lets do Mean of rates for simplicity as 'Promedio Regional')
-        avg_rates = df3.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].mean().reset_index(name='tasa_regional_promedio')
-        df3 = df3.merge(avg_rates, on=['id_periodo', 'delito', 'Codreg'], how='left')
-        
-        # Calc Diff %
-        # diff = (tasa_com - tasa_reg) / tasa_reg * 100
-        # Check div by zero
-        df3['diff_tasa_regional_pct'] = np.where(df3['tasa_regional_promedio'] > 0, ((df3['tasa_cead'] - df3['tasa_regional_promedio']) / df3['tasa_regional_promedio'] * 100), 0)
-        
-        # Classify
-        # > 5%: SOBRE_CRITICO
-        # 3-5%: SOBRE_ALERTA
-        # -3 to 3: PROMEDIO
-        # -5 to -3: BAJO_BUENO
-        # < -5: BAJO_DESTACADO
-        
-        conditions = [
-            (df3['diff_tasa_regional_pct'] > 5),
-            (df3['diff_tasa_regional_pct'] > 3),
-            (df3['diff_tasa_regional_pct'] < -5),
-            (df3['diff_tasa_regional_pct'] < -3)
-        ]
-        choices = ['SOBRE_CRITICO', 'SOBRE_ALERTA', 'BAJO_DESTACADO', 'BAJO_BUENO']
-        df3['infografia_v10'] = np.select(conditions, choices, default='PROMEDIO')
-    else:
-        df3['infografia_v10'] = 'N/A'
-    
-    est = df3.groupby(['codcom', 'tipoValCod']).apply(calc_estacionalidad).reset_index()
+    print("> Calculando estacionalidad...")
+    est = df3.groupby(['codcom', 'tipoValCod'], observed=True).apply(calc_estacionalidad).reset_index()
     df3 = df3.merge(est, on=['codcom', 'tipoValCod'], how='left')
-    
-    df_c = df3[(df3['delito'] != 'Total') & (df3['Nivel'] != 'Familia') & (df3['tipoValCod'] == '1,2')]
-    df3 = df3.merge(df_c.groupby('codcom').apply(calculate_top_correlation).reset_index(), on='codcom', how='left')
-    df3 = df3.merge(df3.groupby(['codcom', 'tipoValCod']).apply(calc_correlacion_lp).reset_index(), on=['codcom', 'tipoValCod'], how='left')
+    del est; gc.collect()
 
+    print("> Calculando correlaciones (t23)...")
+    df_c = df3[(df3['delito'] != 'Total') & (df3['Nivel'] != 'Familia')]
+    t23 = df_c.groupby('codcom', observed=True).apply(calculate_top_correlation).reset_index()
+    df3 = df3.merge(t23, on='codcom', how='left')
+    del t23, df_c; gc.collect()
+
+    print("> Calculando correlaciones LP (t24)...")
+    t24 = df3.groupby(['codcom', 'tipoValCod'], observed=True).apply(calc_correlacion_lp).reset_index()
+    df3 = df3.merge(t24, on=['codcom', 'tipoValCod'], how='left')
+    del t24; gc.collect()
+
+    # =================================================================
+    # 14. GUARDADO (con groupby directo, sin filtrado repetido)
+    # =================================================================
     out = r"D:\GitHub\STOP_WEB3\web_js\data\cead_split"
     os.makedirs(out, exist_ok=True)
-    for i in progress_wrapper(df3["codcom"].unique(), desc="Guardando"):
-        df3[df3["codcom"] == i].to_json(fr'{out}/{i}', orient='records', compression='gzip', date_format='iso')
 
-    import json
-    import datetime
+    print(f"> Guardando en: {out}")
+    grouped = df3.groupby('codcom', observed=True)
+    for codcom, sub_df in progress_wrapper(grouped, desc="Guardando", total=grouped.ngroups):
+        fpath = os.path.join(out, str(codcom))
+        sub_df.to_json(fpath, orient='records', compression='gzip', date_format='iso')
 
-    # 4. Generar Archivo de Configuración (config/cead.json)
-    print("> Generando metadatos de configuración...")
+    # =================================================================
+    # 15. CONFIGURACIÓN
+    # =================================================================
+    print("> Generando config/cead.json...")
     config_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config")
     os.makedirs(config_dir, exist_ok=True)
-    
-    # Extraer columnas y tipos de datos
-    columns_info = {col: str(dtype) for col, dtype in df3.dtypes.items()}
-    
-    # Extraer rango de fechas
-    min_date = df3['fecha'].min().isoformat() if not df3.empty else None
-    max_date = df3['fecha'].max().isoformat() if not df3.empty else None
-    
+
     config_data = {
         "timestamp": datetime.datetime.now().isoformat(),
         "source": "proceso_cead.py",
         "rows": len(df3),
         "columns": list(df3.columns),
-        "column_types": columns_info,
+        "column_types": {col: str(dtype) for col, dtype in df3.dtypes.items()},
         "date_range": {
-            "start": min_date,
-            "end": max_date
+            "start": df3['fecha'].min().isoformat() if not df3.empty else None,
+            "end": df3['fecha'].max().isoformat() if not df3.empty else None
         },
-        "limits": {
-            "start_fill": START_FILL,
-            "end_fill": END_FILL,
-            "limit_date": LIMIT_DATE
-        },
+        "limits": {"start_fill": START_FILL, "end_fill": END_FILL, "limit_date": LIMIT_DATE},
         "mapping_hint": {
-            "CASOS_ACTUAL": "frecuencia",
-            "CASOS_ANT": "casos_mes_anterior", 
-            "DELITO": "delito",
-            "ID_PERIODO": "id_periodo"
+            "CASOS_ACTUAL": "frecuencia", "CASOS_ANT": "casos_mes_anterior",
+            "DELITO": "delito", "ID_PERIODO": "id_periodo"
         }
     }
-    
-    config_path = os.path.join(config_dir, "cead.json")
-    with open(r"D:\GitHub\STOP_WEB3\web_js\config\cead.json", "w", encoding="utf-8") as f:
-        json.dump(config_data, f, indent=4, ensure_ascii=False)
-    
-    print(f"✅ Configuración guardada en: {config_path}")
 
-    print(f">>> Completado. {len(df3):,} filas procesadas.")
+    config_path = os.path.join(config_dir, "cead.json")
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(config_data, f, indent=4, ensure_ascii=False)
+
+    elapsed = (datetime.datetime.now() - t0).total_seconds()
+    print(f"✅ Config → {config_path}")
+    print(f">>> Completado. {len(df3):,} filas en {elapsed:.1f}s")
     return df3
 
 
-# Inicializar variable global
+# =================================================================
+# ENTRY POINT
+# =================================================================
 df3 = None
 
 if __name__ == "__main__":
     df3 = ejecutar_proceso()
 else:
-    # Carga automática al importar
-    print("Iniciando carga automática de proces_cead...")
+    print("Iniciando carga automática de proceso_cead...")
     try:
         df3 = ejecutar_proceso()
     except Exception as e:
-        print(f"❌ Error CRÍTICO en carga automática: {e}")
-        # Re-raise para que el usuario vea el trace en el notebook
+        print(f"❌ Error CRÍTICO: {e}")
         raise e
     except SystemExit as e:
-        print(f"❌ El proceso detuvo la ejecución (posiblemente falta archivo): {e}")
+        print(f"❌ Proceso detenido: {e}")

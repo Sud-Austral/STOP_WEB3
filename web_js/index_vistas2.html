@@ -154,8 +154,8 @@
             'vista13': 'Vs. Comunas Similares',
             'vista14': 'Aporte Regional',
             'vista15': 'Efectividad Policial',
-            'vista16': 'Gravedad (IDI)',
-            'vista17': 'Proyección Gravedad',
+            'vista16': 'Efectividad Comparada',
+            'vista17': 'Proporcionalidad Delictual',
             'vista18': 'Gravedad por Delito',
             'vista19': 'IDI Comparativo',
             'vista20': 'Tendencia 20 Años',
@@ -169,7 +169,8 @@
         // Override configuration for Vistas 2
         // We run this immediately to ensure it overrides App before App.init() is called by the DOMContentLoaded event in app.js
         if (window.App) {
-            // Definir vistas disponibles según la tabla (01 a 25)
+            // Definir vistas disponibles según la tabla (01 a 27)
+            // Definir vistas disponibles (01 a 25)
             const vistasEstrategicas = Array.from({ length: 25 }, (_, i) => `vista${i + 1}`);
 
             App.config.viewsPath = 'vistas2';
