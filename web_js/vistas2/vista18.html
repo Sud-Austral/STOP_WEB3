@@ -52,7 +52,8 @@
     <div class="card" style="margin-top: 1.5rem; padding: 1.5rem; border: 1px solid #e2e8f0; background: #fff;">
         <h4
             style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i> Referencia de Categorización
+            <i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i> Detalle por Categoría (Semana
+            Actual)
         </h4>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
             <!-- VIOLENTOS -->
@@ -62,17 +63,10 @@
                     style="font-weight: 800; color: #ef4444; font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-triangle-exclamation"></i> VIOLENTOS
                 </div>
-                <div style="font-size: 0.7rem; color: #6b7280; line-height: 1.5; margin-bottom: 8px;">
-                    Delitos con contacto físico directo o intimidación grave:
-                </div>
-                <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
-                    <li>Homicidios y Femicidios</li>
-                    <li>Violaciones y Delitos Sexuales</li>
-                    <li>Robos con Violencia e Intimidación</li>
-                    <li>Delitos en Contexto de VIF</li>
-                    <li>Lesiones graves / menos graves / leves</li>
-                    <li>Amenazas con Armas</li>
-                    <li>Ley de Control de Armas</li>
+                <ul id="v18_list_violentos"
+                    style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <!-- Filled dynamically -->
+                    <li>Cargando...</li>
                 </ul>
             </div>
 
@@ -83,16 +77,10 @@
                     style="font-weight: 800; color: #3b82f6; font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-house-lock"></i> A LA PROPIEDAD
                 </div>
-                <div style="font-size: 0.7rem; color: #6b7280; line-height: 1.5; margin-bottom: 8px;">
-                    Delitos contra bienes sin violencia directa:
-                </div>
-                <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
-                    <li>Robos en Lugares Habitados y No Habitados</li>
-                    <li>Robos por Sorpresa</li>
-                    <li>Robos de Vehículos y sus Accesorios</li>
-                    <li>Otros Robos con Fuerza en las Cosas</li>
-                    <li>Hurtos</li>
-                    <li>Receptación</li>
+                <ul id="v18_list_propiedad"
+                    style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <!-- Filled dynamically -->
+                    <li>Cargando...</li>
                 </ul>
             </div>
 
@@ -103,16 +91,10 @@
                     style="font-weight: 800; color: #64748b; font-size: 0.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-ellipsis"></i> OTROS
                 </div>
-                <div style="font-size: 0.7rem; color: #6b7280; line-height: 1.5; margin-bottom: 8px;">
-                    Delitos que no clasifican en categorías tácticas principales:
-                </div>
-                <ul style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
-                    <li>Amenazas y Riñas</li>
-                    <li>Daños</li>
-                    <li>Ley de Drogas</li>
-                    <li>Incivilidades</li>
-                    <li>Consumo de Alcohol y Drogas en Vía Pública</li>
-                    <li>Otros desórdenes públicos</li>
+                <ul id="v18_list_otros"
+                    style="margin: 0; padding-left: 1.2rem; font-size: 0.7rem; color: #4b5563; line-height: 1.6;">
+                    <!-- Filled dynamically -->
+                    <li>Cargando...</li>
                 </ul>
             </div>
         </div>
@@ -155,69 +137,95 @@
 
         const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
 
-        // ─── Clasificación exacta basada en los 21 delitos oficiales del sistema STOP ───
-        const STOP_TAXONOMY = {
-            'Homicidios y Femicidios': 'VIOLENTO',
-            'Violaciones y Delitos Sexuales': 'VIOLENTO',
-            'Robos con Violencia e Intimidación': 'VIOLENTO',
-            'Delitos en Contexto de Violencia Intrafamiliar': 'VIOLENTO',
-            'Lesiones graves': 'VIOLENTO',
-            'Lesiones menos graves': 'VIOLENTO',
-            'Lesiones leves': 'VIOLENTO',
-            'Amenazas con Armas': 'VIOLENTO',
-            'Ley de Control de Armas': 'VIOLENTO',
-            'Robos en Lugares Habitados y No Habitados': 'PROPIEDAD',
-            'Robos por Sorpresa': 'PROPIEDAD',
-            'Robos de Vehículos y sus Accesorios': 'PROPIEDAD',
-            'Otros Robos con Fuerza en las Cosas': 'PROPIEDAD',
-            'Hurtos': 'PROPIEDAD',
-            'Receptación': 'PROPIEDAD',
-            'Amenazas y Riñas': 'OTROS',
-            'Daños': 'OTROS',
-            'Ley de Drogas': 'OTROS',
-            'Incivilidades': 'OTROS',
-            'Consumo de Alcohol y de Drogas en la Vía Pública': 'OTROS',
-            'Otros desórdenes públicos': 'OTROS',
-        };
+        // ─── Clasificación Dinámica desde delito_class.json ───
+        let taxonomy = {};
+        try {
+            const response = await fetch('./config/delito_class.json');
+            if (response.ok) {
+                const classes = await response.json();
+                classes.forEach(c => {
+                    let type = 'OTROS';
+                    // Map JSON 'violencia' values to internal categories
+                    if (c.violencia === 'Violentos') type = 'VIOLENTO';
+                    else if (c.violencia === 'A la Propiedad') type = 'PROPIEDAD';
+                    // 'Otros' remains 'OTROS'
 
-        // Normalize taxonomy keys to Uppercase for robust matching
-        const NORM_TAXONOMY = {};
-        Object.keys(STOP_TAXONOMY).forEach(k => {
-            NORM_TAXONOMY[k.toUpperCase()] = STOP_TAXONOMY[k];
-        });
+                    if (c.delito) {
+                        taxonomy[c.delito.toUpperCase().trim()] = type;
+                    }
+                });
+            } else {
+                console.warn('[V18] No se pudo cargar delito_class.json, usando fallback.');
+            }
+        } catch (e) {
+            console.error('[V18] Error cargando clasificación:', e);
+        }
 
         const classify = (delito) => {
             if (!delito) return 'OTROS';
             const d = delito.toUpperCase().trim();
-            // Try direct match
-            if (NORM_TAXONOMY[d]) return NORM_TAXONOMY[d];
-            // Fallback: contains logic for edge cases
-            if (d.includes('LESIONES')) return 'VIOLENTO';
-            if (d.includes('ROBO')) return (d.includes('VIOLENCIA') || d.includes('INTIMIDACIÓN')) ? 'VIOLENTO' : 'PROPIEDAD';
-            return 'OTROS';
+            return taxonomy[d] || 'OTROS';
         };
 
-        console.log('[V18] Clasificación activa. Muestra:', currentData.slice(0, 5).map(r => `${r[C.DELITO]} -> ${classify(r[C.DELITO])}`));
+        // --- Calculate Stats per Crime and Group ---
+        const stats = {
+            VIOLENTO: { total: 0, crimes: {} },
+            PROPIEDAD: { total: 0, crimes: {} },
+            OTROS: { total: 0, crimes: {} }
+        };
 
-        const sums = currentData.reduce((acc, r) => {
+        currentData.forEach(r => {
             const cat = classify(r[C.DELITO]);
-            acc[cat] = (acc[cat] || 0) + (r[C.CASOS_ACTUAL] || 0);
-            return acc;
-        }, { VIOLENTO: 0, PROPIEDAD: 0, OTROS: 0 });
+            const count = r[C.CASOS_ACTUAL] || 0;
+            const name = r[C.DELITO];
 
-        const total = sums.VIOLENTO + sums.PROPIEDAD + sums.OTROS;
-        const vPct = total > 0 ? (sums.VIOLENTO / total * 100) : 0;
+            // Safety check for category based on taxonomy default
+            const target = stats[cat] ? stats[cat] : stats.OTROS;
 
+            target.total += count;
+            target.crimes[name] = (target.crimes[name] || 0) + count;
+        });
+
+        // --- Populate Details Lists ---
+        const populateList = (listId, categoryKey) => {
+            const container = document.getElementById(listId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            const groupData = stats[categoryKey];
+            const sortedCrimes = Object.entries(groupData.crimes).sort((a, b) => b[1] - a[1]);
+
+            if (sortedCrimes.length === 0) {
+                container.innerHTML = '<li style="color: #94a3b8; font-style: italic;">Sin registros esta semana</li>';
+                return;
+            }
+
+            sortedCrimes.forEach(([name, count]) => {
+                const pct = groupData.total > 0 ? (count / groupData.total * 100).toFixed(1) : 0;
+
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${name}</strong>: ${count} <span style="color: #64748b;">(${pct}%)</span>`;
+                container.appendChild(li);
+            });
+        };
+
+        populateList('v18_list_violentos', 'VIOLENTO');
+        populateList('v18_list_propiedad', 'PROPIEDAD');
+        populateList('v18_list_otros', 'OTROS');
+
+        // --- Top Level KPIs ---
+        const totalCases = stats.VIOLENTO.total + stats.PROPIEDAD.total + stats.OTROS.total;
+        const vPct = totalCases > 0 ? (stats.VIOLENTO.total / totalCases * 100) : 0;
         document.getElementById('v18_violence_index').textContent = `${vPct.toFixed(1)}% Índice Violencia`;
 
-        // --- Pie Chart ---
+        // --- Pie Chart with Datalabels ---
         const pieCtx = document.getElementById('v18_chart_pie').getContext('2d');
         new Chart(pieCtx, {
             type: 'pie',
             data: {
                 labels: ['Violentos', 'Propiedad', 'Otros'],
                 datasets: [{
-                    data: [sums.VIOLENTO, sums.PROPIEDAD, sums.OTROS],
+                    data: [stats.VIOLENTO.total, stats.PROPIEDAD.total, stats.OTROS.total],
                     backgroundColor: ['#ef4444', '#3b82f6', '#94a3b8'],
                     borderWidth: 2,
                     borderColor: '#fff'
@@ -226,17 +234,44 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } }
-            }
+                layout: {
+                    padding: 20
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { enabled: false }, // Disable tooltip to prioritize datalabels
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 11 },
+                        textAlign: 'center',
+                        formatter: (val, ctx) => {
+                            if (val === 0) return '';
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct = (val / total * 100).toFixed(1) + '%';
+                            return `${val}\n(${pct})`;
+                        },
+                        display: 'auto'
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
         });
 
         // --- Trend 12 weeks ---
         const last12 = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
-        const trendData = last12.map(id => {
+
+        const trendDataViolento = last12.map(id => {
             const rows = S.allDataHistory.filter(r => r[C.ID_SEMANA] === id);
             const v = rows.filter(r => classify(r[C.DELITO]) === 'VIOLENTO').reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
             const t = rows.reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
             return t > 0 ? (v / t * 100).toFixed(1) : 0;
+        });
+
+        const trendDataPropiedad = last12.map(id => {
+            const rows = S.allDataHistory.filter(r => r[C.ID_SEMANA] === id);
+            const p = rows.filter(r => classify(r[C.DELITO]) === 'PROPIEDAD').reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
+            const t = rows.reduce((s, r) => s + (r[C.CASOS_ACTUAL] || 0), 0);
+            return t > 0 ? (p / t * 100).toFixed(1) : 0;
         });
 
         const lineCtx = document.getElementById('v18_chart_trend').getContext('2d');
@@ -244,23 +279,62 @@
             type: 'line',
             data: {
                 labels: last12.map(id => S.getDateLabel ? S.getDateLabel(id) : `S${id % 100}`),
-                datasets: [{
-                    label: '% Violencia',
-                    data: trendData,
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4
-                }]
+                datasets: [
+                    {
+                        label: '% Violencia',
+                        data: trendDataViolento,
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex % 2 === 0, // Show on even indices
+                            align: 'top',
+                            color: '#ef4444',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (v) => v + '%'
+                        }
+                    },
+                    {
+                        label: '% Propiedad',
+                        data: trendDataPropiedad,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        datalabels: {
+                            display: (ctx) => ctx.dataIndex % 2 !== 0, // Show on odd indices
+                            align: 'bottom',
+                            color: '#3b82f6',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (v) => v + '%'
+                        }
+                    }
+                ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
-            }
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: { display: false } // Default off, controlled by dataset
+                },
+                scales: {
+                    y: {
+                        // Auto-scale (remove fixed min/max 0-100) to use space better
+                        ticks: { callback: v => v + '%' },
+                        grid: { color: '#f1f5f9' },
+                        grace: '10%' // Add some breathing room
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels] // Ensure plugin is active for this chart
         });
-
 
         // IA Integration
         if (typeof IAModule !== 'undefined') {

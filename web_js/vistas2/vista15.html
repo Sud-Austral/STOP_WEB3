@@ -71,7 +71,7 @@
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
         <strong>Nota Metodológica:</strong> La <strong>Efectividad Policial</strong> se mide como la razón entre
-        detenidos y delitos registrados en la semana. Una tasa alta indica mayor capacidad de respuesta operativa. Este
+        detenidos y delitos registrados en el año. Una tasa alta indica mayor capacidad de respuesta operativa. Este
         indicador debe interpretarse en conjunto con el volumen absoluto de delitos: una tasa alta con alto volumen
         sigue siendo una situación de riesgo.
     </div>
@@ -91,71 +91,69 @@
 
         await waitForData();
         const S = window.STATE_DATA_CEAD;
-        const C = window.COLS_CEAD;
 
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
 
-        // --- Real Data Processing (No Simulation) ---
-        let years = [];
         let data = [];
+        let years = [];
 
         try {
-            // Get real years from data
-            years = [...new Set(S.allDataHistory_total.map(r => r[C.ANIO]))].sort().slice(-10);
+            // Usar nombres de columnas explícitos: 'año', 'tipoVal', 'frecuencia'
+            if (S.allDataHistory_total && S.allDataHistory_total.length > 0) {
+                // Obtener años únicos
+                years = [...new Set(S.allDataHistory_total.map(r => r.año))].sort((a, b) => a - b).slice(-10);
 
-            // Only proceed if we have actual data
-            if (years.length > 0) {
+                // Procesar datos
                 data = years.map(yr => {
-                    // Aggregate cases for the entire year
-                    const yearRows = S.allDataHistory_total.filter(r => r[C.ANIO] === yr);
-                    const cases = yearRows.reduce((acc, r) => acc + (r[C.CASOS_ACTUAL] || 0), 0);
+                    const yearRows = S.allDataHistory_total.filter(r => r.año === yr);
 
-                    // Try to get arrest data if available in the dataset
-                    const arrests = yearRows.reduce((acc, r) => acc + (r[C.DETENIDOS] || 0), 0);
+                    // Sumar Casos (Solo 'Casos' para no duplicar con 'Denuncia')
+                    const cases = yearRows
+                        .filter(r => r.tipoVal === 'Casos')
+                        .reduce((acc, r) => acc + (r.frecuencia || 0), 0);
+
+                    // Sumar Detenciones (Sumar 'Detenciones' + 'Aprehendido' para capturar todo positivo policial)
+                    const arrests = yearRows
+                        .filter(r => r.tipoVal === 'Detenciones' || r.tipoVal === 'Aprehendido')
+                        .reduce((acc, r) => acc + (r.frecuencia || 0), 0);
+
                     const ratio = cases > 0 ? (arrests / cases * 100) : 0;
 
                     return { year: yr, cases, arrests, ratio };
-                }).filter(d => d.cases > 0); // Only include years with actual data
+                }).filter(d => d.cases > 0);
             }
         } catch (e) {
-            console.warn('Vista 15: Error processing data', e);
+            console.warn('Vista 15: Error procesando datos', e);
         }
 
-        // If no valid data, show message instead of rendering
         if (data.length === 0) {
-            document.getElementById('v15_casos').textContent = '--';
-            document.getElementById('v15_detenidos').textContent = '--';
-            document.getElementById('v15_ratio').textContent = '--';
             console.warn('Vista 15: No hay datos disponibles para mostrar');
             return;
         }
 
-        // Continue with rendering if we have data
+        // --- Renderizado KPIs ---
+        const current = data[data.length - 1];
+        const prev = data[data.length - 2] || current;
 
-        if (data.length > 0) {
-            const current = data[data.length - 1];
-            const prev = data[data.length - 2] || current;
+        // Promedios históricos
+        const avgCases = Math.round(data.reduce((a, b) => a + b.cases, 0) / data.length);
+        const avgArrests = Math.round(data.reduce((a, b) => a + b.arrests, 0) / data.length);
+        const avgRatio = (data.reduce((a, b) => a + b.ratio, 0) / data.length).toFixed(1);
 
-            // Averages
-            const avgCases = Math.round(data.reduce((a, b) => a + b.cases, 0) / data.length);
-            const avgArrests = Math.round(data.reduce((a, b) => a + b.arrests, 0) / data.length);
-            const avgRatio = (data.reduce((a, b) => a + b.ratio, 0) / data.length).toFixed(1);
+        const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
 
-            const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+        setTxt('v15_ratio_val', `${current.ratio.toFixed(1)}%`);
+        setTxt('v15_ratio_hist', `${avgRatio}%`);
+        setTxt('v15_detenidos_val', parseInt(current.arrests).toLocaleString('es-CL'));
+        setTxt('v15_detenidos_avg', parseInt(avgArrests).toLocaleString('es-CL'));
+        setTxt('v15_casos_val', parseInt(current.cases).toLocaleString('es-CL'));
+        setTxt('v15_casos_avg', parseInt(avgCases).toLocaleString('es-CL'));
 
-            setTxt('v15_ratio_val', `${current.ratio.toFixed(1)}%`);
-            setTxt('v15_ratio_hist', `${avgRatio}%`);
-            setTxt('v15_detenidos_val', ChartHelper.formatNumber(current.arrests));
-            setTxt('v15_detenidos_avg', ChartHelper.formatNumber(avgArrests));
-            setTxt('v15_casos_val', ChartHelper.formatNumber(current.cases));
-            setTxt('v15_casos_avg', ChartHelper.formatNumber(avgCases));
-
-            const effDelta = prev.ratio > 0 ? ((current.ratio - prev.ratio) / prev.ratio * 100) : 0;
-            const deltaEl = document.getElementById('v15_eff_delta');
-            if (deltaEl) {
-                deltaEl.textContent = `${effDelta >= 0 ? '+' : ''}${effDelta.toFixed(1)}%`;
-                deltaEl.style.color = effDelta >= 0 ? '#10b981' : '#ef4444';
-            }
+        const effDelta = prev.ratio > 0 ? ((current.ratio - prev.ratio) / prev.ratio * 100) : 0;
+        const deltaEl = document.getElementById('v15_eff_delta');
+        if (deltaEl) {
+            deltaEl.textContent = `${effDelta >= 0 ? '+' : ''}${effDelta.toFixed(1)}%`;
+            deltaEl.style.color = effDelta >= 0 ? '#10b981' : '#ef4444';
         }
 
         // --- Dual Axis Chart ---
@@ -169,14 +167,16 @@
                         label: 'Casos Totales',
                         data: data.map(d => d.cases),
                         backgroundColor: 'rgba(51, 65, 85, 0.2)',
-                        yAxisID: 'yCases'
+                        yAxisID: 'yCases',
+                        order: 2
                     },
                     {
                         type: 'bar',
-                        label: 'Detenciones',
+                        label: 'Detenciones + Aprehensiones',
                         data: data.map(d => d.arrests),
                         backgroundColor: '#3b82f6',
-                        yAxisID: 'yCases'
+                        yAxisID: 'yCases',
+                        order: 1
                     },
                     {
                         type: 'line',
@@ -187,7 +187,8 @@
                         pointRadius: 6,
                         pointBackgroundColor: '#fff',
                         fill: false,
-                        yAxisID: 'yRatio'
+                        yAxisID: 'yRatio',
+                        order: 0
                     }
                 ]
             },
@@ -203,7 +204,7 @@
                     yRatio: {
                         position: 'right',
                         min: 0,
-                        max: 60,
+                        // max: 100, // Dejar auto para ver mejor la variación si es baja
                         grid: { display: false },
                         title: { display: true, text: 'Ratio (%)', font: { family: 'Outfit', weight: '700' } },
                         ticks: { callback: v => v + '%' }
