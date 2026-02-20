@@ -46,10 +46,17 @@
                     <span>Informe PDF</span>
                 </button>
 
-                <button class="btn btn--primary" id="btnComuna">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <span id="btnComunaText">Cargando...</span>
-                </button>
+                <!-- Indicador de Comuna (No interactivo para evitar confusión) -->
+                <div id="btnComuna" title="Comuna analizada en este reporte"
+                    style="display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; color: #475569;">
+                    <i class="fa-solid fa-location-dot" style="color: #3b82f6; font-size: 0.8rem;"></i>
+                    <div style="display: flex; flex-direction: column; line-height: 1;">
+                        <span
+                            style="font-size: 0.6rem; font-weight: 800; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase;">Comuna</span>
+                        <span id="btnComunaText"
+                            style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">Cargando...</span>
+                    </div>
+                </div>
 
                 <!-- Navigation Sequence -->
                 <div class="nav-sequence"
