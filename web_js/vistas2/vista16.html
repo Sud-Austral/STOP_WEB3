@@ -96,7 +96,7 @@
             ¿Qué tan efectivos somos comparados con otras comunas?
         </h2>
         <p style="color: #64748b; margin: 0.25rem 0 0 0; font-size: 0.95rem;">
-            Comparativo de desempeño contra pares del mismo grupo.
+            Comparativo de desempeño (Ranking) contra pares del mismo grupo.
             <span id="v16_subtitle_info" style="color: #3b82f6; font-weight: 700;"></span>
         </p>
     </div>
@@ -113,13 +113,13 @@
         <!-- KPIs Grid -->
         <div class="v16-kpi-grid">
             <div class="v16-kpi-card v16-highlight">
-                <div class="v16-kpi-label">Ranking Nacional</div>
+                <div class="v16-kpi-label">Ranking Nacional (Tasa)</div>
                 <div class="v16-kpi-value" id="v16_rank_nac">--</div>
-                <div class="v16-kpi-sub">de <span id="v16_total_nac">--</span> comunas (1 = Mayor Carga)</div>
+                <div class="v16-kpi-sub">de <span id="v16_total_nac">--</span> comunas (1 = Mayor Tasa)</div>
             </div>
 
             <div class="v16-kpi-card">
-                <div class="v16-kpi-label">Ranking Clúster</div>
+                <div class="v16-kpi-label">Ranking Clúster (Tasa)</div>
                 <div class="v16-kpi-value" id="v16_rank_clus">--</div>
                 <div class="v16-kpi-sub">de <span id="v16_total_clus">--</span> similares</div>
             </div>
@@ -144,20 +144,20 @@
                     <canvas id="v16_scatter"></canvas>
                 </div>
                 <div style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin-top: 8px;">
-                    * Se muestran las 10 comunas con perfil (Tasa/Ranking Clúster) más similar al tuyo.
+                    * Se muestran las 10 comunas con perfil (Tasa/Ranking Tasa) más similar al tuyo.
                 </div>
             </div>
 
             <!-- Listado Mejor/Peor -->
             <div class="card" style="padding: 1.5rem; border: 1px solid #e2e8f0;">
                 <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">
-                    Contexto Clúster
+                    Contexto Clúster (Ranking Tasa)
                 </h4>
 
                 <div style="margin-bottom: 1.5rem;">
                     <div
                         style="font-size: 0.75rem; font-weight: 700; color: #10b981; margin-bottom: 8px; text-transform: uppercase; border-bottom: 2px solid #10b981; padding-bottom: 4px;">
-                        Top 3 (Menor Carga)
+                        Top 3 (Menor Tasa / Mejor Rank)
                     </div>
                     <div id="v16_list_best"></div>
                 </div>
@@ -165,7 +165,7 @@
                 <div>
                     <div
                         style="font-size: 0.75rem; font-weight: 700; color: #ef4444; margin-bottom: 8px; text-transform: uppercase; border-bottom: 2px solid #ef4444; padding-bottom: 4px;">
-                        Top 3 (Mayor Carga)
+                        Top 3 (Mayor Tasa / Peor Rank)
                     </div>
                     <div id="v16_list_worst"></div>
                 </div>
@@ -180,8 +180,8 @@
     <div
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
         <strong>Nota Metodológica:</strong> El <strong>Mapa de Posicionamiento</strong> compara tu comuna con las 10
-        comunas de perfil más similar (basado en Tasa x 100k y Ranking Clúster). Se muestran los pares estadísticos más
-        cercanos para evaluar la situación relativa evitando sesgos por tamaño o región.
+        comunas de perfil más similar (basado en Tasa x 100k y Ranking Tasa). Se ordenan por
+        <em>ranking_cluster_semanal_tasa</em> (donde 1 = mayor tasa delictual).
     </div>
 </div>
 
@@ -226,11 +226,16 @@
         loadingEl.style.display = 'none';
         contentEl.style.display = 'block';
 
+        // --- Helper Rank Accessor ---
+        // Fallback to cluster_semanal if rate rank is missing (compatibility)
+        const getClusterRank = (c) => c.ranking_cluster_semanal_tasa || c.ranking_cluster_semanal || 0;
+        const getNacionalRank = (c) => c.ranking_nacional_semanal_tasa || c.ranking_nacional_semanal || 0;
+
         // 2. KPIs
         const tasa = miData.tasa_semanal || 0;
-        document.getElementById('v16_rank_nac').textContent = miData.ranking_nacional_semanal || '--';
+        document.getElementById('v16_rank_nac').textContent = getNacionalRank(miData) || '--';
         document.getElementById('v16_total_nac').textContent = allComunas.length;
-        document.getElementById('v16_rank_clus').textContent = miData.ranking_cluster_semanal || '--';
+        document.getElementById('v16_rank_clus').textContent = getClusterRank(miData) || '--';
         document.getElementById('v16_total_clus').textContent = clusterComunas.length;
         document.getElementById('v16_tasa').textContent = tasa.toFixed(1);
 
@@ -244,7 +249,7 @@
         // 3. Lógica "Top 10 Cercanos" (Scatter)
         // Normalizar datos para calcular distancia euclidiana justa
         const tasas = clusterComunas.map(c => c.tasa_semanal || 0);
-        const ranks = clusterComunas.map(c => c.ranking_cluster_semanal || 0); // Corrected to Cluster Rank
+        const ranks = clusterComunas.map(c => getClusterRank(c));
 
         const minT = Math.min(...tasas), maxT = Math.max(...tasas);
         const minR = Math.min(...ranks), maxR = Math.max(...ranks);
@@ -252,12 +257,12 @@
         const rangeR = maxR - minR || 1;
 
         const myTNorm = (tasa - minT) / rangeT;
-        const myRNorm = ((miData.ranking_cluster_semanal || 0) - minR) / rangeR;
+        const myRNorm = (getClusterRank(miData) - minR) / rangeR;
 
         // Calcular distancias y ordenar
         const neighbors = clusterComunas.map(c => {
             const tNorm = ((c.tasa_semanal || 0) - minT) / rangeT;
-            const rNorm = ((c.ranking_cluster_semanal || 0) - minR) / rangeR;
+            const rNorm = (getClusterRank(c) - minR) / rangeR;
             const dist = Math.sqrt(Math.pow(tNorm - myTNorm, 2) + Math.pow(rNorm - myRNorm, 2));
             return { ...c, dist };
         })
@@ -268,13 +273,13 @@
         // Preparar Data Chart
         const dataNeighbors = neighbors.map(c => ({
             x: c.tasa_semanal,
-            y: c.ranking_cluster_semanal, // Use Cluster Rank
+            y: getClusterRank(c),
             label: c.Comuna
         }));
 
         const dataMe = [{
             x: tasa,
-            y: miData.ranking_cluster_semanal, // Use Cluster Rank
+            y: getClusterRank(miData),
             label: S.comunaName
         }];
 
@@ -290,15 +295,14 @@
         const minViewX = Math.max(0, minValX - rangeX * 0.15); // 15% padding
         const maxViewX = maxValX + rangeX * 0.15;
 
-        // Eje Y: Ranking (Recordar que el eje está invertido visualmente, pero los valores son numéricos)
+        // Eje Y: Ranking
         const minValY = Math.min(...allY);
         const maxValY = Math.max(...allY);
         const rangeY = maxValY - minValY || 1;
 
-        // Queremos ver desde un ranking "mejor" (menor número) a uno "peor" (mayor número)
-        // Restar al mínimo (subir en el gráfico) y sumar al máximo (bajar en el gráfico)
-        const minViewY = Math.max(1, minValY - 2); // Al menos rango 1, y darle 2 puestos de aire arriba
-        const maxViewY = maxValY + 2; // 2 puestos de aire abajo
+        // Rango de vista Y
+        const minViewY = Math.max(1, minValY - 2);
+        const maxViewY = maxValY + 2;
 
         // Render Chart
         const ctxSc = document.getElementById('v16_scatter').getContext('2d');
@@ -347,7 +351,7 @@
                         top: 20,
                         bottom: 10,
                         left: 10,
-                        right: 20 // Extra padding right for long labels
+                        right: 20
                     }
                 },
                 scales: {
@@ -358,7 +362,7 @@
                         max: maxViewX
                     },
                     y: {
-                        title: { display: true, text: 'Ranking Clúster (1 = Mayor Carga)', font: { weight: 'bold' } },
+                        title: { display: true, text: 'Ranking Clúster Tasa (1 = Mayor)', font: { weight: 'bold' } },
                         reverse: true,
                         grid: { color: '#f1f5f9' },
                         min: minViewY,
@@ -369,24 +373,29 @@
                     legend: { display: true, position: 'bottom' },
                     tooltip: {
                         callbacks: {
-                            label: (ctx) => `${ctx.raw.label}: Rank Cluster #${ctx.raw.y} (Tasa ${ctx.raw.x.toFixed(1)})`
+                            label: (ctx) => `${ctx.raw.label}: Rank Tasa #${ctx.raw.y} (Tasa ${ctx.raw.x.toFixed(1)})`
                         }
                     }
                 }
             },
-            plugins: [ChartDataLabels] // Activar Plugin Labels
+            plugins: [ChartDataLabels]
         });
 
-        // 4. Listados Laterales
-        const sorted = [...clusterComunas].sort((a, b) => (a.tasa_semanal || 0) - (b.tasa_semanal || 0));
-        const best3 = sorted.slice(0, 3);
-        const worst3 = sorted.slice(-3).reverse();
+        // 4. Listados Laterales (Ranking Tasa)
+        // Ordenar por Tasa (que es la base del Ranking Tasa)
+        // Mayor tasa = Rank 1 (Mayor carga)
+        const sorted = [...clusterComunas].sort((a, b) => (b.tasa_semanal || 0) - (a.tasa_semanal || 0)); // Descending Tasa
+
+        // Pero queremos mostrar "Mejor" (Menor Tasa, Rankings Altos como #50) vs "Peor" (Mayor Tasa, Rank #1)
+        // "Mejor" comportamiento = Menor tasa delictual.
+        const best3 = [...sorted].reverse().slice(0, 3); // Lowest rates
+        const worst3 = sorted.slice(0, 3); // Highest rates (Rank 1, 2, 3)
 
         const renderList = (id, items) => {
             const html = items.map(c => `
                 <div class="v16-list-item">
                     <div style="display:flex; align-items:center;">
-                        <span class="v16-rank-badge">#${c.ranking_cluster_semanal}</span>
+                        <span class="v16-rank-badge">#${getClusterRank(c)}</span>
                         <span style="font-weight:600; color:#334155; font-size:0.8rem;">${c.Comuna}</span>
                     </div>
                     <span style="font-weight:700; color:#64748b;">${(c.tasa_semanal || 0).toFixed(0)}</span>

@@ -62,6 +62,8 @@ COLUMNAS_SALIDA = [
     'ranking_cluster_semanal',
     'ranking_cluster_proy_anual',
     'ranking_nacional_acum',
+    'ranking_nacional_semanal_tasa',
+    'ranking_cluster_semanal_tasa',
     # IDI
     'idi_proy_mes',
     'idi_proy_anual',
@@ -157,11 +159,19 @@ def build(df_stop: pd.DataFrame) -> pd.DataFrame:
         df_ultima.loc[mask_tp, 'factor_poblacion'] * 100_000
     )
 
+    # ── NUEVO: Rankings por Tasa (Mayor tasa = Rank 1) ──
+    df_ultima['ranking_nacional_semanal_tasa'] = df_ultima['tasa_semanal'].rank(ascending=False, method='min')
+    
+    # Ranking Cluster por Tasa
+    # (Asegurar que clase_poblacion no sea nulo para agrupar bien, o tratar NaNs)
+    df_ultima['ranking_cluster_semanal_tasa'] = df_ultima.groupby('clase_poblacion')['tasa_semanal'].rank(ascending=False, method='min')
+
     # 999 → NaN en rankings (sentinela de "sin datos")
     rank_cols = [
         'ranking_nacional_semanal', 'ranking_nacional_proy_anual',
         'ranking_comunal_regional', 'ranking_cluster_semanal',
         'ranking_cluster_proy_anual', 'ranking_nacional_acum',
+        'ranking_nacional_semanal_tasa', 'ranking_cluster_semanal_tasa' # Nuevos
     ]
     for rc in rank_cols:
         if rc in df_ultima.columns:
