@@ -29,11 +29,7 @@ jobs:
       - name: Setup Build
         run: |
           cd web_js
-          # 1. Asegurar que la nueva vista estratégica sea el punto de entrada oficial
-          # Copiamos index_vistas2.html a index.html (sobreescribiendo el viejo)
-          cp index_vistas2.html index.html
-          
-          # 2. Crear .nojekyll para evitar que GitHub ignore carpetas con dots/underscores
+          # 1. Crear .nojekyll para evitar que GitHub ignore carpetas con dots/underscores
           touch .nojekyll
 
       - name: Cache Busting (Update Versions)
