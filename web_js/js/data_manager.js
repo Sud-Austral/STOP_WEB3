@@ -71,32 +71,52 @@ window.DataManager = {
         const params = new URLSearchParams(window.location.search);
         this.state.comunaId = codcom || parseInt(params.get('codcom')) || this.config.defaultComuna;
 
-        console.log(`🔄 DataManager: Initializing for Comuna ${this.state.comunaId}...`);
+        LOG.info(`🔄 DataManager: Initializing for Comuna ${this.state.comunaId}...`);
 
         try {
             // Priority: Load Union Taxonomy FIRST
             await this.loadUnionData();
 
-            // Load multiple sources in parallel
-            await Promise.all([
+            // ERR-001 Fix: Promise.allSettled for partial fault tolerance
+            const results = await Promise.allSettled([
                 this.loadStopData(this.state.comunaId),
                 this.loadCeadData(this.state.comunaId),
                 this.loadClusterConfig(),
                 this.loadComunasData()
             ]);
 
-            this.state.isLoaded = true;
+            const labels = ['STOP', 'CEAD', 'Cluster', 'Comunas'];
+            const failures = [];
+            results.forEach((r, i) => {
+                if (r.status === 'rejected') {
+                    LOG.warn(`⚠️ DataManager: ${labels[i]} falló:`, r.reason?.message || r.reason);
+                    failures.push(labels[i]);
+                }
+            });
 
-            console.log("✅ DataManager: All data loaded successfully.");
+            // Detection based on actual state — load methods catch internally,
+            // so allSettled always reports 'fulfilled'. Check real data instead.
+            const stopOk = this.state.stop.data && this.state.stop.data.length > 0;
+            const ceadOk = this.state.cead.data && this.state.cead.data.length > 0;
+            this.state.isLoaded = stopOk || ceadOk;
 
-            // Backward Compatibility: Dispatch old events for existing views
-            this.dispatchLegacyEvents();
+            if (this.state.isLoaded) {
+                LOG.info(`✅ DataManager: Data loaded (${failures.length ? 'partial — ' + failures.join(', ') + ' failed' : 'all sources OK'}).`);
 
-            // Dispatch unified event
-            window.dispatchEvent(new CustomEvent('dataManagerLoaded', { detail: this.state }));
+                // Backward Compatibility: Dispatch old events for existing views
+                this.dispatchLegacyEvents();
+
+                // Dispatch unified event
+                window.dispatchEvent(new CustomEvent('dataManagerLoaded', { detail: this.state }));
+            } else {
+                const error = new Error('No primary data source available');
+                LOG.error("❌ DataManager: Neither STOP nor CEAD loaded.");
+                this.state.error = error.message;
+                window.dispatchEvent(new CustomEvent('dataManagerError', { detail: error }));
+            }
 
         } catch (error) {
-            console.error("❌ DataManager Error:", error);
+            LOG.error("❌ DataManager Error:", error);
             this.state.error = error.message;
             this.state.isLoaded = false;
             window.dispatchEvent(new CustomEvent('dataManagerError', { detail: error }));
@@ -112,8 +132,10 @@ window.DataManager = {
     async loadUnionData() {
         if (this.state.union.data.length > 0) return; // Already loaded
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
-            const res = await fetch(this.config.unionPath);
+            const res = await fetch(this.config.unionPath, { signal: controller.signal });
             if (!res.ok) throw new Error("Union config not found");
 
             const data = await res.json();
@@ -135,9 +157,11 @@ window.DataManager = {
                     this.state.union.byCeadCode[row.id_subgrupo] = row;
                 }
             });
-            console.log(`🔗 DataManager: Taxonomy Union Loaded. ${data.length} mappings.`);
+            LOG.info(`🔗 DataManager: Taxonomy Union Loaded. ${data.length} mappings.`);
         } catch (e) {
-            console.warn("⚠️ DataManager: Failed to load Union taxonomy.", e);
+            LOG.warn("⚠️ DataManager: Failed to load Union taxonomy.", e);
+        } finally {
+            clearTimeout(timeoutId);
         }
     },
 
@@ -145,14 +169,18 @@ window.DataManager = {
      * Load Cluster Totals Configuration
      */
     async loadClusterConfig() {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
-            const res = await fetch(this.config.clusterPath);
+            const res = await fetch(this.config.clusterPath, { signal: controller.signal });
             if (!res.ok) throw new Error("Cluster config not found");
             const data = await res.json();
             this.state.meta.clusterConfig = data;
-            console.log("📊 DataManager: Cluster Configuration Loaded.");
+            LOG.info("📊 DataManager: Cluster Configuration Loaded.");
         } catch (e) {
-            console.warn("⚠️ DataManager: Failed to load Cluster config.", e);
+            LOG.warn("⚠️ DataManager: Failed to load Cluster config.", e);
+        } finally {
+            clearTimeout(timeoutId);
         }
     },
 
@@ -162,13 +190,15 @@ window.DataManager = {
      * Exposed as window.COMUNAS_DATA for vistas 26 and 27.
      */
     async loadComunasData() {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
-            const res = await fetch(this.config.comunasPath);
-            console.log(`📂 COMUNAS_DATA fetch → status: ${res.status} | url: ${this.config.comunasPath}`);
+            const res = await fetch(this.config.comunasPath, { signal: controller.signal });
+            LOG.info(`📂 COMUNAS_DATA fetch → status: ${res.status} | url: ${this.config.comunasPath}`);
 
             if (!res.ok) {
                 if (res.status === 404) {
-                    console.warn('⚠️ DataManager: data/comunas/data_comuna.json not found. Run notebook/comunas.py to generate it.');
+                    LOG.warn('⚠️ DataManager: data/comunas/data_comuna.json not found. Run notebook/comunas.py to generate it.');
                 }
                 window.COMUNAS_DATA = [];
                 return;
@@ -179,25 +209,33 @@ window.DataManager = {
             try {
                 const ds = new DecompressionStream('gzip');
                 blob = await new Response(res.body.pipeThrough(ds)).json();
-                console.log(`📦 COMUNAS_DATA descomprimido OK (gzip)`);
+                LOG.info(`📦 COMUNAS_DATA descomprimido OK (gzip)`);
             } catch (decompErr) {
-                // Fallback: intentar como JSON plano
-                console.warn('⚠️ COMUNAS_DATA: fallo gzip, intentando JSON plano...', decompErr.message);
-                const res2 = await fetch(this.config.comunasPath);
-                blob = await res2.json();
-                console.log(`📦 COMUNAS_DATA cargado como JSON plano`);
+                // Fallback: intentar como JSON plano (con timeout propio)
+                LOG.warn('⚠️ COMUNAS_DATA: fallo gzip, intentando JSON plano...', decompErr.message);
+                const fallbackCtrl = new AbortController();
+                const fallbackTimeout = setTimeout(() => fallbackCtrl.abort(), 10000);
+                try {
+                    const res2 = await fetch(this.config.comunasPath, { signal: fallbackCtrl.signal });
+                    blob = await res2.json();
+                    LOG.info(`📦 COMUNAS_DATA cargado como JSON plano`);
+                } finally {
+                    clearTimeout(fallbackTimeout);
+                }
             }
 
             window.COMUNAS_DATA = blob || [];
-            console.log(`✅ COMUNAS_DATA: ${window.COMUNAS_DATA.length} comunas`);
+            LOG.info(`✅ COMUNAS_DATA: ${window.COMUNAS_DATA.length} comunas`);
             if (window.COMUNAS_DATA.length > 0) {
-                console.log(`   🔑 Keys disponibles:`, Object.keys(window.COMUNAS_DATA[0]));
-                console.log(`   🏘️ Primer registro:`, window.COMUNAS_DATA[0]);
+                LOG.info(`   🔑 Keys disponibles:`, Object.keys(window.COMUNAS_DATA[0]));
+                LOG.info(`   🏘️ Primer registro:`, window.COMUNAS_DATA[0]);
             }
 
         } catch (e) {
-            console.error('❌ COMUNAS_DATA Load Error:', e);
+            LOG.error('❌ COMUNAS_DATA Load Error:', e);
             window.COMUNAS_DATA = [];
+        } finally {
+            clearTimeout(timeoutId);
         }
     },
 
@@ -238,9 +276,11 @@ window.DataManager = {
      * Load Weekly STOP Data
      */
     async loadStopData(id) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
             const url = `${this.config.stopPath}/${id}`;
-            const res = await fetch(url);
+            const res = await fetch(url, { signal: controller.signal });
             if (!res.ok) throw new Error(`STOP fetch failed: ${res.status}`);
 
             // Decompress
@@ -259,7 +299,7 @@ window.DataManager = {
             // Find latest week
             if (this.state.stop.totalHistory.length > 0) {
                 // Determine max week ID
-                const maxWeek = Math.max(...this.state.stop.totalHistory.map(r => r.id_semana));
+                const maxWeek = this.state.stop.totalHistory.reduce((max, r) => Math.max(max, r.id_semana || 0), -Infinity);
                 this.state.stop.currentWeek = maxWeek;
 
                 // Set Metadata
@@ -272,7 +312,7 @@ window.DataManager = {
 
                 const latest = this.state.stop.totalHistory.find(r => r.id_semana === maxWeek);
 
-                console.log("   🔎 STOP Metadata Search:", { maxWeek, found: !!latest, comunaDetected: comunaName });
+                LOG.info("   🔎 STOP Metadata Search:", { maxWeek, found: !!latest, comunaDetected: comunaName });
 
                 if (latest) {
                     this.state.stop.weekDetail = latest.semana_detalle;
@@ -281,14 +321,16 @@ window.DataManager = {
                 this.state.meta.comuna = comunaName;
                 this.state.meta.region = regionName || 'Sin Región';
             } else {
-                console.warn("   ⚠️ STOP Data: No 'Total' rows found");
+                LOG.warn("   ⚠️ STOP Data: No 'Total' rows found");
             }
 
-            console.log(`   🔹 STOP Data: ${blob.length} rows. Current Week: ${this.state.stop.currentWeek}`);
+            LOG.info(`   🔹 STOP Data: ${blob.length} rows. Current Week: ${this.state.stop.currentWeek}`);
 
         } catch (e) {
-            console.warn("   ⚠️ STOP Load Warning:", e);
+            LOG.warn("   ⚠️ STOP Load Warning:", e);
             // Default empty state is already set
+        } finally {
+            clearTimeout(timeoutId);
         }
     },
 
@@ -296,13 +338,15 @@ window.DataManager = {
      * Load Monthly CEAD Data
      */
     async loadCeadData(id) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
         try {
             const url = `${this.config.ceadPath}/${id}`;
-            const res = await fetch(url);
+            const res = await fetch(url, { signal: controller.signal });
 
             // CEAD might be missing for some communes
             if (!res.ok) {
-                if (res.status === 404) console.warn(`   ⚠️ CEAD Data not found for ${id}`);
+                if (res.status === 404) LOG.warn(`   ⚠️ CEAD Data not found for ${id}`);
                 return;
             }
 
@@ -320,7 +364,7 @@ window.DataManager = {
 
             // Find latest period
             if (this.state.cead.totalHistory.length > 0) {
-                const maxPeriod = Math.max(...this.state.cead.totalHistory.map(r => r.id_periodo));
+                const maxPeriod = this.state.cead.totalHistory.reduce((max, r) => Math.max(max, r.id_periodo || 0), -Infinity);
                 this.state.cead.currentPeriod = maxPeriod;
 
                 const latest = this.state.cead.totalHistory.find(r => r.id_periodo === maxPeriod);
@@ -334,10 +378,12 @@ window.DataManager = {
                 }
             }
 
-            console.log(`   🔹 CEAD Data: ${blob.length} rows. Current Period: ${this.state.cead.currentPeriod}`);
+            LOG.info(`   🔹 CEAD Data: ${blob.length} rows. Current Period: ${this.state.cead.currentPeriod}`);
 
         } catch (e) {
-            console.warn("   ⚠️ CEAD Load Warning:", e);
+            LOG.warn("   ⚠️ CEAD Load Warning:", e);
+        } finally {
+            clearTimeout(timeoutId);
         }
     },
 
@@ -460,7 +506,7 @@ window.DataManager = {
         if (!window.COLS_CEAD.DELITO) window.COLS_CEAD.DELITO = 'delito';
         if (!window.COLS_CEAD.PERIODO_DETALLE) window.COLS_CEAD.PERIODO_DETALLE = 'periodo_detalle';
 
-        console.log("🔄 DataManager: Legacy STATE_DATA objects hydrated.");
+        LOG.info("🔄 DataManager: Legacy STATE_DATA objects hydrated.");
 
         // Dispatch Events
         window.dispatchEvent(new CustomEvent('dataLoaded', { detail: window.STATE_DATA }));

@@ -226,16 +226,15 @@
         loadingEl.style.display = 'none';
         contentEl.style.display = 'block';
 
-        // --- Helper Rank Accessor ---
-        // Fallback to cluster_semanal if rate rank is missing (compatibility)
-        const getClusterRank = (c) => c.ranking_cluster_semanal_tasa || c.ranking_cluster_semanal || 0;
-        const getNacionalRank = (c) => c.ranking_nacional_semanal_tasa || c.ranking_nacional_semanal || 0;
+        // --- Helper Rank Accessor (Tasa Semanal ONLY — no fallback a volumen) ---
+        const getClusterRankTasa = (c) => c.ranking_cluster_semanal_tasa || 0;
+        const getNacionalRankTasa = (c) => c.ranking_nacional_semanal_tasa || 0;
 
         // 2. KPIs
         const tasa = miData.tasa_semanal || 0;
-        document.getElementById('v16_rank_nac').textContent = getNacionalRank(miData) || '--';
+        document.getElementById('v16_rank_nac').textContent = getNacionalRankTasa(miData) || '--';
         document.getElementById('v16_total_nac').textContent = allComunas.length;
-        document.getElementById('v16_rank_clus').textContent = getClusterRank(miData) || '--';
+        document.getElementById('v16_rank_clus').textContent = getClusterRankTasa(miData) || '--';
         document.getElementById('v16_total_clus').textContent = clusterComunas.length;
         document.getElementById('v16_tasa').textContent = tasa.toFixed(1);
 
@@ -249,7 +248,7 @@
         // 3. Lógica "Top 10 Cercanos" (Scatter)
         // Normalizar datos para calcular distancia euclidiana justa
         const tasas = clusterComunas.map(c => c.tasa_semanal || 0);
-        const ranks = clusterComunas.map(c => getClusterRank(c));
+        const ranks = clusterComunas.map(c => getClusterRankTasa(c));
 
         const minT = Math.min(...tasas), maxT = Math.max(...tasas);
         const minR = Math.min(...ranks), maxR = Math.max(...ranks);
@@ -257,12 +256,12 @@
         const rangeR = maxR - minR || 1;
 
         const myTNorm = (tasa - minT) / rangeT;
-        const myRNorm = (getClusterRank(miData) - minR) / rangeR;
+        const myRNorm = (getClusterRankTasa(miData) - minR) / rangeR;
 
         // Calcular distancias y ordenar
         const neighbors = clusterComunas.map(c => {
             const tNorm = ((c.tasa_semanal || 0) - minT) / rangeT;
-            const rNorm = (getClusterRank(c) - minR) / rangeR;
+            const rNorm = (getClusterRankTasa(c) - minR) / rangeR;
             const dist = Math.sqrt(Math.pow(tNorm - myTNorm, 2) + Math.pow(rNorm - myRNorm, 2));
             return { ...c, dist };
         })
@@ -273,13 +272,13 @@
         // Preparar Data Chart
         const dataNeighbors = neighbors.map(c => ({
             x: c.tasa_semanal,
-            y: getClusterRank(c),
+            y: getClusterRankTasa(c),
             label: c.Comuna
         }));
 
         const dataMe = [{
             x: tasa,
-            y: getClusterRank(miData),
+            y: getClusterRankTasa(miData),
             label: S.comunaName
         }];
 
@@ -395,7 +394,7 @@
             const html = items.map(c => `
                 <div class="v16-list-item">
                     <div style="display:flex; align-items:center;">
-                        <span class="v16-rank-badge">#${getClusterRank(c)}</span>
+                        <span class="v16-rank-badge">#${getClusterRankTasa(c)}</span>
                         <span style="font-weight:600; color:#334155; font-size:0.8rem;">${c.Comuna}</span>
                     </div>
                     <span style="font-weight:700; color:#64748b;">${(c.tasa_semanal || 0).toFixed(0)}</span>

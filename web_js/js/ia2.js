@@ -20,10 +20,14 @@ window.IAModuleV2 = {
     },
 
     init() {
-        this.cache = this.loadCache();
+        // ERR-011: Do NOT access STATE_DATA here — it may not be loaded yet.
+        // Cache is loaded lazily when dataManagerLoaded fires.
+        this.cache = {};
 
         // Listen for data load to fetch analysis if needed
         window.addEventListener('dataManagerLoaded', () => {
+            // NOW STATE_DATA is ready — load cache with correct codcom
+            this.cache = this.loadCache();
             if (!this.cache.vista1) { // If cache empty or partial
                 this.fetchAllAnalyses();
             } else {
@@ -45,27 +49,37 @@ window.IAModuleV2 = {
 
             // Clean bad cache
             if (raw.includes("Sin localización") || raw.includes("anonimato")) {
-                console.warn("IA2: Caché con respuesta genérica detectado. Borrando.");
+                LOG.warn("IA2: Caché con respuesta genérica detectado. Borrando.");
                 localStorage.removeItem(this.CACHE_KEY + codcom);
                 return {};
             }
 
             const { timestamp, data } = JSON.parse(raw);
             if (Date.now() - timestamp > this.CACHE_TTL) {
-                console.log('🤖 IA: Cache expirado (5 días).');
+                LOG.info('🤖 IA: Cache expirado (5 días).');
                 return {};
             }
-            console.log('🤖 IA: Cache cargado.');
+            LOG.info('🤖 IA: Cache cargado.');
             return data;
         } catch (e) { return {}; }
     },
 
     saveCache(data) {
         const codcom = window.STATE_DATA?.codcom || 'default';
-        localStorage.setItem(this.CACHE_KEY + codcom, JSON.stringify({
-            timestamp: Date.now(),
-            data
-        }));
+        const key = this.CACHE_KEY + codcom;
+        try {
+            localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }));
+        } catch (e) {
+            // ERR-009: Handle QuotaExceededError
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                LOG.warn('[IA2] localStorage lleno, limpiando caches antiguos...');
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith(this.CACHE_KEY) && k !== key) localStorage.removeItem(k);
+                }
+                try { localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data })); } catch (_) { }
+            }
+        }
     },
 
     buildContext(S) {
@@ -135,19 +149,19 @@ window.IAModuleV2 = {
     async fetchAllAnalyses() {
         if (this.fetching) return;
         this.fetching = true;
-        console.log('🤖 IA: Generando nuevo análisis estratégico (API)...');
+        LOG.info('🤖 IA: Generando nuevo análisis estratégico (API)...');
 
         const S = window.STATE_DATA;
         const context = this.buildContext(S);
 
         if (!context) {
-            console.warn("IA2: Contexto insuficiente.");
+            LOG.warn("IA2: Contexto insuficiente.");
             this.fetching = false;
             return;
         }
 
         try {
-            console.log("Comienza el prompt")
+            LOG.info("Comienza el prompt")
             const prompt = `
 Eres un analista de inteligencia policial experto en el sistema STOP y CEAD de Carabineros de Chile.
 Tu misión es generar interpretaciones estratégicas CONCISAS y EJECUTIVAS para el dashboard de seguridad de la COMUNA DE ${context.comuna.toUpperCase()}.
@@ -194,15 +208,24 @@ JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adic
 
             const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf"); // Valid key generation
 
-            const response = await fetch(this.API_URL, {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: this.MODEL_NAME,
-                    messages: [{ role: "user", content: prompt }],
-                    temperature: 0.5 // Lower temperature for more analytical output
-                })
-            });
+            // ERR-004: AbortController con timeout de 30s
+            const fetchController = new AbortController();
+            const fetchTimeoutId = setTimeout(() => fetchController.abort(), 30000);
+            let response;
+            try {
+                response = await fetch(this.API_URL, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: this.MODEL_NAME,
+                        messages: [{ role: "user", content: prompt }],
+                        temperature: 0.5
+                    }),
+                    signal: fetchController.signal
+                });
+            } finally {
+                clearTimeout(fetchTimeoutId);
+            }
 
             const result = await response.json();
             const content = result.choices?.[0]?.message?.content || '{}';
@@ -218,10 +241,10 @@ JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adic
             this.updateAllViews();
 
         } catch (e) {
-            console.error('IA Error:', e);
+            LOG.error('IA Error:', e);
             this.updateAllViews(true);
         } finally {
-            console.log("Termina el prompt")
+            LOG.info("Termina el prompt")
             this.fetching = false;
         }
     },

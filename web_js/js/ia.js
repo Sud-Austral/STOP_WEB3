@@ -69,14 +69,14 @@ const IAModule = {
 
             if (age > this.CACHE_TTL_MS) {
                 localStorage.removeItem(key);
-                console.log('[IA] Cache expirado, se renovará');
+                LOG.info('[IA] Cache expirado, se renovará');
                 return null;
             }
 
-            console.log(`[IA] Cache válido (${(age / 3600000).toFixed(1)}h de ${(this.CACHE_TTL_MS / 3600000)}h)`);
+            LOG.info(`[IA] Cache válido (${(age / 3600000).toFixed(1)}h de ${(this.CACHE_TTL_MS / 3600000)}h)`);
             return cached.data;
         } catch (e) {
-            console.warn('[IA] Error leyendo cache:', e);
+            LOG.warn('[IA] Error leyendo cache:', e);
             return null;
         }
     },
@@ -93,7 +93,18 @@ const IAModule = {
             // Limpiar caches antiguos de otras semanas/comunas
             this.cleanOldCaches(key);
         } catch (e) {
-            console.warn('[IA] Error guardando cache:', e);
+            // ERR-009: Handle QuotaExceededError — clean and retry once
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                LOG.warn('[IA] localStorage lleno, limpiando caches antiguos...');
+                this.cleanOldCaches(this.getCacheKey());
+                try {
+                    localStorage.setItem(this.getCacheKey(), JSON.stringify({ timestamp: Date.now(), data }));
+                } catch (e2) {
+                    LOG.warn('[IA] Cache no guardado tras limpieza:', e2);
+                }
+            } else {
+                LOG.warn('[IA] Error guardando cache:', e);
+            }
         }
     },
 
@@ -159,7 +170,7 @@ const IAModule = {
             const semanaIds = data.map(row => row[COLS.ID_SEMANA]).filter(id => id != null);
             if (semanaIds.length === 0) return context;
 
-            const maxSemana = Math.max(...semanaIds);
+            const maxSemana = semanaIds.reduce((a, b) => Math.max(a, b), -Infinity);
             context.semanaId = maxSemana;
             const currentWeekData = data.filter(row => row[COLS.ID_SEMANA] === maxSemana);
 
@@ -261,19 +272,19 @@ const IAModule = {
                 this.interpretations = cached;
                 this.isLoaded = true;
                 this.isLoading = false;
-                console.log('[IA] ✅ Interpretaciones cargadas desde cache');
+                LOG.info('[IA] ✅ Interpretaciones cargadas desde cache');
                 return this.interpretations;
             }
 
             // 2. Sin cache válido → llamar API
             const context = this.buildDataContext();
             if (!context) {
-                console.warn('[IA] No data available for AI interpretation');
+                LOG.warn('[IA] No data available for AI interpretation');
                 this.isLoading = false;
                 return this.getDefaultInterpretations();
             }
 
-            console.log('[IA] Cache vacío/expirado, consultando API...');
+            LOG.info('[IA] Cache vacío/expirado, consultando API...');
             const prompt = this.buildPrompt(context);
 
             const requestBody = {
@@ -292,18 +303,27 @@ const IAModule = {
                 max_tokens: 4000
             };
 
-            const response = await fetch(this.API_URL, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            });
+            // ERR-004: AbortController con timeout de 30s para la API
+            const controller = new AbortController();
+            const fetchTimeoutId = setTimeout(() => controller.abort(), 30000);
+            let response;
+            try {
+                response = await fetch(this.API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                });
+            } finally {
+                clearTimeout(fetchTimeoutId);
+            }
 
             if (!response.ok) {
                 const errBody = await response.text();
-                console.error('[IA] API Error:', errBody);
+                LOG.error('[IA] API Error:', errBody);
                 throw new Error(`API Error: ${response.status} - ${errBody}`);
             }
 
@@ -316,10 +336,10 @@ const IAModule = {
 
             // 3. Guardar en cache para reutilizar durante la semana
             this.saveToCache(this.interpretations);
-            console.log('[IA] ✅ Interpretaciones generadas y guardadas en cache');
+            LOG.info('[IA] ✅ Interpretaciones generadas y guardadas en cache');
 
         } catch (error) {
-            console.error('[IA] Error generating AI interpretations:', error);
+            LOG.error('[IA] Error generating AI interpretations:', error);
             this.interpretations = this.getDefaultInterpretations();
         }
 
@@ -400,7 +420,7 @@ Responde ÚNICAMENTE con el objeto JSON.`;
                 return JSON.parse(cleanContent);
             } catch (e) {
                 // If JSON is truncated, try to fix it
-                console.warn('JSON truncated, attempting to fix...');
+                LOG.warn('JSON truncated, attempting to fix...');
 
                 // Find the last complete key-value pair
                 const lastQuoteIndex = cleanContent.lastIndexOf('"');
@@ -421,21 +441,28 @@ Responde ÚNICAMENTE con el objeto JSON.`;
 
                     try {
                         const parsed = JSON.parse(fixedContent);
-                        console.log('Successfully recovered partial AI response');
+                        LOG.info('Successfully recovered partial AI response');
+
+                        // ERR-006: Mark truncated values (< 20 chars likely incomplete)
+                        Object.keys(parsed).forEach(key => {
+                            if (typeof parsed[key] === 'string' && parsed[key].length < 20) {
+                                parsed[key] = '[⚠️ parcial] ' + parsed[key];
+                            }
+                        });
 
                         // Merge with defaults for missing keys
                         const defaults = this.getDefaultInterpretations();
                         return { ...defaults, ...parsed };
                     } catch (e2) {
-                        console.warn('Could not fix truncated JSON');
+                        LOG.warn('Could not fix truncated JSON');
                     }
                 }
 
                 throw e;
             }
         } catch (error) {
-            console.error('Error parsing AI response:', error);
-            console.log('Raw content:', content.substring(0, 500) + '...');
+            LOG.error('Error parsing AI response:', error);
+            LOG.info('Raw content:', content.substring(0, 500) + '...');
             return this.getDefaultInterpretations();
         }
     },
@@ -489,9 +516,14 @@ Responde ÚNICAMENTE con el objeto JSON.`;
             await this.generateAllInterpretations();
         }
 
-        // Wait if still loading
-        while (this.isLoading) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+        // ERR-003: Wait with 30s safety timeout (prevents infinite busy-wait)
+        let waited = 0;
+        while (this.isLoading && waited < 30000) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+            waited += 200;
+        }
+        if (waited >= 30000) {
+            LOG.warn('[IA] Timeout esperando interpretaciones (30s)');
         }
 
         return this.interpretations[viewId] || this.getDefaultInterpretations()[viewId];

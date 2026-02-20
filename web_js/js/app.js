@@ -108,7 +108,7 @@ const App = {
             // Init tabs
             if (window.switchSidebarTab) window.switchSidebarTab('tab-stop');
         } catch (error) {
-            console.error('Error loading sidebar:', error);
+            LOG.error('Error loading sidebar:', error);
         }
     },
 
@@ -155,7 +155,7 @@ const App = {
         if (typeof ChartHelper !== 'undefined') {
             ChartHelper.destroyAllCharts();
         } else {
-            console.warn('ChartHelper not found during view switch.');
+            LOG.warn('ChartHelper not found during view switch.');
         }
 
         // Toggle PDF button visibility (STOP Views 1-20 only)
@@ -214,7 +214,7 @@ const App = {
             }, 600);
 
         } catch (error) {
-            console.error('Error loading view:', error);
+            LOG.error('Error loading view:', error);
             container.innerHTML = `
                 <div class="card" style="text-align: center; padding: 3rem;">
                     <i class="fa-solid fa-exclamation-triangle" style="font-size: 3rem; color: var(--color-danger); margin-bottom: 1rem;"></i>
@@ -340,7 +340,7 @@ const App = {
                 try {
                     chart.destroy();
                 } catch (e) {
-                    console.warn('Error destroying chart:', e);
+                    LOG.warn('Error destroying chart:', e);
                 }
             });
         }
@@ -432,7 +432,7 @@ const App = {
             pdf.save(`Reporte_RID_${date}.pdf`);
 
         } catch (error) {
-            console.error('Error exporting PDF:', error);
+            LOG.error('Error exporting PDF:', error);
             alert('Error al exportar PDF. Por favor intente nuevamente.');
         } finally {
             // Restore state
