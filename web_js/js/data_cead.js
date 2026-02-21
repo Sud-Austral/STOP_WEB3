@@ -61,6 +61,9 @@ window.COLS_CEAD = {
     MES: 'mes',
     ID_PERIODO: 'id_periodo',
     FECHA: 'fecha',
+    TOTAL_ANIO_REAL: 'total_año_real',
+    TASA_CEAD_ANUAL: 'tasa_cead',
+    TASA_ANUAL_REAL: 'tasa_anual_real',
     PERIODO_DETALLE: 'periodo_detalle',
     IS_FORECAST: 'is_forecast',
 

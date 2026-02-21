@@ -1,7 +1,7 @@
 {
-    "timestamp": "2026-02-19T20:49:03.364904",
+    "timestamp": "2026-02-20T21:46:40.226609",
     "source": "proceso_cead.py",
-    "rows": 18083520,
+    "rows": 16837380,
     "columns": [
         "codcom",
         "año",
@@ -36,6 +36,7 @@
         "total_año_real",
         "ranking_regional_anual_metric",
         "ranking_regional_anual_tasa",
+        "tasa_anual_real",
         "tasa_regional_promedio",
         "diff_tasa_regional_pct",
         "infografia_v10",
@@ -73,7 +74,7 @@
         "delito": "category",
         "Nivel": "category",
         "nivel_original": "category",
-        "is_forecast": "category",
+        "is_forecast": "bool",
         "mes_nombre": "category",
         "frecuencia": "int16",
         "mes": "int8",
@@ -98,6 +99,7 @@
         "total_año_real": "int32",
         "ranking_regional_anual_metric": "float32",
         "ranking_regional_anual_tasa": "float32",
+        "tasa_anual_real": "float32",
         "tasa_regional_promedio": "float32",
         "diff_tasa_regional_pct": "float32",
         "infografia_v10": "category",
@@ -128,7 +130,7 @@
     },
     "date_range": {
         "start": "2005-01-01T00:00:00",
-        "end": "2025-12-01T00:00:00"
+        "end": "2025-09-01T00:00:00"
     },
     "limits": {
         "start_fill": "2025-10-01",

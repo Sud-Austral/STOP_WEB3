@@ -16,11 +16,14 @@
                     <i class="fa-solid fa-file-invoice"></i>
                 </div>
                 <h1 style="font-size: 1.8rem; font-weight: 950; color: #1e293b; margin: 0; letter-spacing: -0.01em;">
-                    REPORTE EJECUTIVO DE SEGURIDAD</h1>
+                    REPORTE DE INTELIGENCIA DELICTUAL</h1>
             </div>
-            <div style="font-size: 0.9rem; font-weight: 600; color: #64748b; display: flex; gap: 15px;">
-                <span>COMUNA: <span class="comuna-fill" style="color:#1e293b; font-weight: 800;">--</span></span>
-                <span>PERIODO: <span class="semana-fill" style="color:#1e293b; font-weight: 800;">--</span></span>
+            <div class="location-source-row"
+                style="font-size: 0.9rem; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 15px; margin-top: 8px;">
+                <span class="comuna-fill" style="color:#1e293b; font-weight: 800;">--</span>
+                <span style="color: #cbd5e1;">/</span>
+                <span class="semana-fill" style="color:#1e293b; font-weight: 800;">--</span>
+                <div id="sourceBadgeContainer" style="margin-left: auto;"></div>
             </div>
         </div>
         <div id="v24_status_badge"
@@ -52,7 +55,8 @@
                 style="font-size: 0.8rem; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
                 Rank Regional</div>
             <div id="v24_kpi_rank" style="font-size: 2.8rem; font-weight: 950; color: #1e293b; line-height: 1;">--</div>
-            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">de 52 comunas</div>
+            <div style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">de <span id="v24_total_comunas">--</span>
+                comunas</div>
         </div>
     </div>
 
@@ -142,6 +146,20 @@
         const prev = totalRow[C.CASOS_ANT] || 0;
         const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
         const rank = totalRow[C.RANK_REG] || null;
+
+        // Fetch total communes in the region for ranking display
+        let totalComunas = 52; // Fallback
+        try {
+            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
+            if (conteoRes.ok) {
+                const conteoData = await conteoRes.json();
+                const miConteo = conteoData.find(c => c.codcom == S.codcom);
+                if (miConteo && miConteo.comunas) {
+                    totalComunas = miConteo.comunas;
+                }
+            }
+        } catch (e) { }
+        document.getElementById('v24_total_comunas').textContent = totalComunas;
 
         // Populate KPIs
         document.getElementById('v24_kpi_total').textContent = cases; // Removed ChartHelper dependency for safety if not loaded

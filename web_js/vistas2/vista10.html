@@ -141,8 +141,22 @@
         document.querySelectorAll('.comuna-fill').forEach(el => el.textContent = S.comunaName);
         document.querySelectorAll('.region-fill').forEach(el => el.textContent = S.regionName || 'Región Metropolitana');
 
-        // Data calculation
-        const totalComunas = S.totalComunasReg || 52;
+        // Data calculation - Fetch total communes in the region from official count JSON
+        let totalComunas = 52; // Fallback
+        try {
+            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
+            if (conteoRes.ok) {
+                const conteoData = await conteoRes.json();
+                const miConteo = conteoData.find(c => c.codcom == S.codcom);
+                if (miConteo && miConteo.comunas) {
+                    totalComunas = miConteo.comunas;
+                    LOG.info(`📍 Vista 10: Total Regional detectado: ${totalComunas} comunas.`);
+                }
+            }
+        } catch (e) {
+            LOG.warn('⚠️ Vista 10: No se pudo cargar data_comuna_conteo, usando fallback 52.', e);
+        }
+
         // Asumiendo que 1 = PEOR (Más delitos)
         const currentRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_PROY] || Math.round(totalComunas / 2);
         const prevRank = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === (S.currentSemana - 1))?.[C.RANK_REG_PROY] || currentRank;
@@ -153,26 +167,20 @@
             ? ((totalComunas - currentRank) / (totalComunas - 1) * 100)
             : 50;
 
-        // CEAD Ranking Integration
-        const CeadS = window.STATE_DATA_CEAD;
-        let ceadRank = null;
-        if (CeadS && CeadS.isLoaded && CeadS.allDataHistory_total.length > 0) {
-            // Sort by period descending
-            const sorted = [...CeadS.allDataHistory_total].sort((a, b) => b[window.COLS_CEAD.ID_PERIODO] - a[window.COLS_CEAD.ID_PERIODO]);
-            ceadRank = sorted[0][window.COLS_CEAD.RANKING];
-        }
+        // STOP Ranking by Rate Integration (ranking_regional_tasa_sem)
+        const rankTasaSem = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.RANK_REG_TASA] || null;
 
         document.getElementById('v10_rank_val').textContent = currentRank;
         document.getElementById('v10_rank_total').textContent = `/ ${totalComunas}`;
         document.getElementById('v10_gauge_val').textContent = `${currentRank}°`;
 
-        // Add CEAD rank indicator
-        if (ceadRank) {
+        // Add STOP Rank by Rate indicator
+        if (rankTasaSem) {
             const rankCard = document.getElementById('v10_rank_val').parentElement.parentElement;
             rankCard.insertAdjacentHTML('beforeend', `
                 <div style="margin-top: 8px; font-size: 0.7rem; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-                    <span title="Ranking calculado según Tasa por 100k hab. (Mensual)"><i class="fa-solid fa-users" style="color:#3b82f6; margin-right:4px;"></i> Rank Tasa Mensual:</span>
-                    <strong style="color: #1e293b; font-size: 0.9rem;">${ceadRank}</strong>
+                    <span title="Ranking calculado según Tasa por 100k hab. (Semanal - STOP)"><i class="fa-solid fa-users" style="color:#3b82f6; margin-right:4px;"></i> Rank Tasa Semanal:</span>
+                    <strong style="color: #1e293b; font-size: 0.9rem;">${rankTasaSem}</strong>
                 </div>
              `);
         }
@@ -209,12 +217,10 @@
             trendEl.style.color = '#64748b';
         }
 
-        // Tasa comparison
+        // Tasa comparison - Use pre-calculated rates from production pipeline
         const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
-        const tasaCom = (totalRow[C.CASOS_ACTUAL] / (factorPob || 1)).toFixed(1);
-        const factorPobReg = (S.totalPobReg || 8000000) / 100000;
-        const tasaReg = ((totalRow[C.CASOS_SEM_REG] || 5000) / factorPobReg).toFixed(1);
+        const tasaCom = (totalRow[C.TASA_SEMANAL] || 0).toFixed(1);
+        const tasaReg = (totalRow[C.TASA_REGIONAL_SEMANAL] || totalRow[C.TASA_REGIONAL] || 0).toFixed(1);
 
         document.getElementById('v10_tasa_com').textContent = tasaCom;
         document.getElementById('v10_tasa_reg').textContent = tasaReg;

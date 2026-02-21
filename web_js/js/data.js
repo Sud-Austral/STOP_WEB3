@@ -124,11 +124,18 @@ window.COLS = {
     T20_DELITO_ANT: 't20_delito_ant',
     T20_RANK_ANT: 't20_rank_ant',
 
-    // Aportes T25
+    // Aportes T25 e Indicadores Regionales
     CASOS_SEM_REG: 'casos_semana_regional',
+    CASOS_REGIONALES__SEM: 'casos_semanales_regionales',
     APORTE_PCT: 'aporte_pct_region',
     APORTE_PCT_ANT: 'aporte_pct_region_ant',
     CASOS_SEM_REG_ANT: 'casos_semana_regional_ant',
+    POB_REGION: 'poblacion_region',
+    FACTOR_POB_REGION: 'factor_poblacion_region',
+    TASA_REGIONAL_SEM: 'tasa_regional_semanal',
+    POB_NACIONAL: 'poblacion_nacional',
+    FACTOR_POB_NACIONAL: 'factor_poblacion_nacional',
+    TASA_NACIONAL_SEM: 'tasa_nacional_semanal',
 
     // Proyecciones
     FECHA_FIN: 'fecha_fin',

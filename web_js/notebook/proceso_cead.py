@@ -149,6 +149,8 @@ def ejecutar_proceso():
 
     print(f"> Cargando: {url}")
     df_raw = pd.read_csv(url, compression="xz", sep="\t")
+    #print(df_raw.columns)
+    #df_raw = df_raw[df_raw["Codcom"] == 13101]
     df_raw = df_raw[df_raw["CODIGO"] > 10000].copy()
     df_raw['nivel_original'] = df_raw['Nivel']
     df_raw['is_forecast'] = False
@@ -270,9 +272,10 @@ def ejecutar_proceso():
     print(f"> Predicciones: {len(df_preds):,} filas")
 
     # =================================================================
-    # 6. CONCAT train + predicciones
+    # 6. CONCAT train + predicciones (Desactivado para vista Histórica precisa)
     # =================================================================
-    df = pd.concat([df_train, df_preds], ignore_index=True)
+    # df = pd.concat([df_train, df_preds], ignore_index=True)
+    df = df_train.copy()
     del df_train, df_preds; gc.collect()
 
     df = df.sort_values(['codcom', 'tipoValCod', 'delito', 'id_periodo']).reset_index(drop=True)
@@ -284,12 +287,12 @@ def ejecutar_proceso():
     print("> Calculando totales...")
     df_notot = df[df['delito'] != 'Total']
     totales = df_notot.groupby(['codcom', 'id_periodo', 'tipoValCod', 'tipoVal'],
-                                as_index=False)['frecuencia'].sum()
+                                as_index=False, observed=True)['frecuencia'].sum()
     totales['delito'] = 'Total'
     totales['CODIGO'] = 0
     totales['Nivel'] = 'Total'
     totales['nivel_original'] = 'Total'
-    time_meta = df[['id_periodo', 'año', 'mes', 'fecha', 'mes_nombre', 'periodo_detalle']].drop_duplicates('id_periodo')
+    time_meta = df[['id_periodo', 'año', 'mes', 'fecha', 'mes_nombre', 'periodo_detalle', 'is_forecast']].drop_duplicates('id_periodo')
     totales = totales.merge(time_meta, on='id_periodo', how='left')
 
     df = pd.concat([df_notot, totales], ignore_index=True)
@@ -313,8 +316,14 @@ def ejecutar_proceso():
         np.float32(0)
     )
 
-    df['acumulado_anual'] = df.groupby(['delito', 'codcom', 'tipoValCod', 'año'])['frecuencia'].cumsum()
-    df['proyeccion_anual'] = (df['acumulado_anual'] * (np.float32(12.0) / df['mes'])).astype(np.float32)
+    df['acumulado_anual'] = df.groupby(['delito', 'codcom', 'tipoValCod', 'año'], observed=True)['frecuencia'].cumsum()
+    # Para años pasados o con los 12 meses ya proyectados/completos, el acumulado a mes 12 ya es el total.
+    # Si estamos a mitad de año REAl sin el resto de meses, ahí sí se usa 12/mes.
+    df['proyeccion_anual'] = np.where(
+        df['año'] < pd.to_datetime('today').year,
+        df['acumulado_anual'],
+        (df['acumulado_anual'] * (np.float32(12.0) / df['mes'])).astype(np.float32)
+    )
 
     # =================================================================
     # 9. LOCALIZACIÓN + POBLACIÓN (merges pequeños)
@@ -378,9 +387,9 @@ def ejecutar_proceso():
     # =================================================================
     print("> Calculando rankings...")
 
-    # Tasa CEAD (vectorizada)
+    # Tasa CEAD (división directa por factor)
     fp = df['factor_poblacion'].replace(0, np.nan)
-    df['tasa_cead'] = ((df['frecuencia'] / fp) * 100000).fillna(0).astype(np.float32)
+    df['tasa_cead'] = (df['frecuencia'] / fp).fillna(0).astype(np.float32)
     del fp
 
     if 'Codreg' in df.columns:
@@ -388,17 +397,20 @@ def ejecutar_proceso():
         df['ranking_comunal_regional'] = df.groupby(['id_periodo', 'delito', 'Codreg'])['tasa_cead'].rank(
             method='min', ascending=False).astype(np.int16)
 
-        # Regional anual (reducido → merge)
-        total_anual = df.groupby(['codcom', 'delito', 'año'], observed=True)['frecuencia'].sum().reset_index(name='total_año_real')
-        df = df.merge(total_anual, on=['codcom', 'delito', 'año'], how='left')
+        # Regional anual: Sumatoria total observada + proyectada (si el año no ha cerrado)
+        # Evaluamos el volumen anual sobre la base completa, ya que los periodos forecast llenan el año real.
+        ann_stats = df.groupby(['codcom', 'tipoValCod', 'delito', 'año'], observed=True)['frecuencia'].sum().reset_index()
+        ann_stats.rename(columns={'frecuencia': 'total_año_real'}, inplace=True)
+        
+        df = df.merge(ann_stats, on=['codcom', 'tipoValCod', 'delito', 'año'], how='left')
 
-        rk = df[['codcom', 'Codreg', 'delito', 'año', 'total_año_real', 'factor_poblacion']].drop_duplicates()
+        rk = df[['codcom', 'Codreg', 'tipoValCod', 'delito', 'año', 'total_año_real', 'factor_poblacion']].drop_duplicates()
         rk['tasa_anual_real'] = (rk['total_año_real'] / rk['factor_poblacion'].replace(0, np.nan)).astype(np.float32)
-        rk['ranking_regional_anual_metric'] = rk.groupby(['Codreg', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
-        rk['ranking_regional_anual_tasa'] = rk.groupby(['Codreg', 'delito', 'año'])['tasa_anual_real'].rank(method='dense', ascending=False)
-        df = df.merge(rk[['codcom', 'delito', 'año', 'ranking_regional_anual_metric', 'ranking_regional_anual_tasa']],
-                      on=['codcom', 'delito', 'año'], how='left')
-        del total_anual, rk; gc.collect()
+        rk['ranking_regional_anual_metric'] = rk.groupby(['Codreg', 'tipoValCod', 'delito', 'año'])['total_año_real'].rank(method='dense', ascending=False)
+        rk['ranking_regional_anual_tasa'] = rk.groupby(['Codreg', 'tipoValCod', 'delito', 'año'])['tasa_anual_real'].rank(method='dense', ascending=False)
+        df = df.merge(rk[['codcom', 'tipoValCod', 'delito', 'año', 'ranking_regional_anual_metric', 'ranking_regional_anual_tasa', 'tasa_anual_real']],
+                      on=['codcom', 'tipoValCod', 'delito', 'año'], how='left')
+        del ann_stats, rk; gc.collect()
 
         # Infografía V10 — calculada via transform (SIN merge extra)
         print("   > Infografía V10...")
@@ -425,7 +437,7 @@ def ejecutar_proceso():
         df['infografia_v10'] = 'N/A'
 
     # Nacional
-    df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'])['tasa_cead'].rank(
+    df['ranking_nacional_mensual'] = df.groupby(['delito', 'id_periodo'], observed=True)['tasa_cead'].rank(
         method='min', ascending=False).astype(np.int16)
 
     # =================================================================
@@ -460,7 +472,7 @@ def ejecutar_proceso():
             df['idi_peso'] = df['CODIGO'].map(map_w).fillna(0).astype(np.float32)
             df['stop_delito'] = df['CODIGO'].map(map_n).fillna("NO APLICA")
             df['idi_mensual'] = (df['frecuencia'] * df['idi_peso'] / df['factor_poblacion']).fillna(0).astype(np.float32)
-            df['idi_acumulado_anual'] = df.groupby(['codcom', 'delito', 'año'])['idi_mensual'].cumsum()
+            df['idi_acumulado_anual'] = df.groupby(['codcom', 'delito', 'año'], observed=True)['idi_mensual'].cumsum()
             print("   - IDI asignado via union.json")
         else:
             print(f"   ⚠️ union.json no encontrado: {union_path}")

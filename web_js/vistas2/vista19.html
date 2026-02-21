@@ -165,7 +165,7 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
 
         const emerging = currentData
-            .filter(r => (r[C.Z_SCORE] || 0) > 1.0)
+            .filter(r => (r[C.Z_SCORE] || 0) > 1.0 && r[C.DELITO] !== 'NO APLICA')
             .sort((a, b) => (b[C.Z_SCORE] || 0) - (a[C.Z_SCORE] || 0))
             .slice(0, 5);
 

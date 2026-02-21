@@ -90,148 +90,101 @@ window.PDFModuleV2 = {
                 // Load View
                 await App.loadView(viewName);
 
-                // Wait for render (charts + animations + maps)
-                await new Promise(r => setTimeout(r, 2000)); // 2s is safer for heavy charts
-
-                // Improve capture quality
+                // 4. Capture Views
                 const container = document.getElementById('viewContainer');
+                if (!container) continue;
+
+                // Wait for render (charts + animations + maps)
+                await new Promise(r => setTimeout(r, 2000));
+
+                // Capture with fixed window width to avoid layout shifting
                 const canvas = await html2canvas(container, {
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    backgroundColor: '#f8fafc'
+                    backgroundColor: '#f8fafc',
+                    windowWidth: 1280
                 });
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const imgHeight = (canvas.height * 210) / canvas.width; // A4 width 210mm
+                const mmPerPx = 210 / canvas.width;
+                const imgHeightMm = canvas.height * mmPerPx;
 
-                // Determine if new page needed (if not first view)
+                // Smart Boundaries Check
+                const containerRect = container.getBoundingClientRect();
+                const cards = Array.from(container.querySelectorAll('.card, .chart-card, .alert, .row, .location-source-row'));
+                const cardBoundaries = cards.map(card => {
+                    const rect = card.getBoundingClientRect();
+                    return {
+                        top: (rect.top - containerRect.top) * mmPerPx,
+                        bottom: (rect.bottom - containerRect.top) * mmPerPx
+                    };
+                });
+
                 if (i > 0) pdf.addPage();
 
-                // Add Image with Slicing Support (using Base Module logic)
-                // Note: base.addSmartSlices might need adaptation if not available, 
-                // but we assuming we can reuse or implement simple addImage here.
-                // Add Content
-                // Content starts below header (15mm)
                 const yOffset = 18;
-                const footerHeight = 15; // Space for footer
-                const availableHeight = 297 - yOffset - footerHeight; // ~264mm
+                const footerHeight = 15;
+                const availableHeight = 297 - yOffset - footerHeight;
 
-                if (imgHeight > availableHeight) {
-                    console.log(`View ${viewNum} overflow (Height: ${imgHeight}mm > ${availableHeight}mm). Splitting...`);
+                if (imgHeightMm > availableHeight) {
+                    console.log(`View ${viewNum} overflow. Smart slicing...`);
 
-                    // Header for first page
-                    this.addHeaderV2(pdf, viewNum, sectionTitle);
-                    this.addFooterV2(pdf, pageCount); // Footer for first page part
+                    let heightLeft = imgHeightMm;
+                    let currentYMm = 0;
+                    let sliceIndex = 0;
 
-                    // Add Slices
-                    // We need to pass yOffset. base.addSmartSlices usually assumes full page or custom logic.
-                    // Let's adapt: The first slice starts at yOffset. Subsequent slices on new pages.
-
-                    // Use a slightly modified version of manual slicing if base logic is too specific to V1
-                    // Logic:
-                    // 1. First page: Crop from 0 to pixel equivalent of availableHeight
-                    // 2. Add Page
-                    // 3. Second page: Crop remaining... 
-
-                    // For robustness and reused logic, let's look at base implementation:
-                    // It usually adds slices to *current* page.
-
-                    // NOTE: Since we are in an async loop and jsPDF is stateful, we can try using the base function.
-                    // But we want V2 headers/footers on new pages too.
-
-                    let remainingHeightPx = canvas.height;
-                    let currentYPx = 0;
-                    let pageIndex = 0;
-
-                    // Pixels to MM factor for PDF
-                    const pxToMm = 25.4 / 96; // Approximation, better to derive from canvas ratio
-                    // Actually: imgHeight (mm) / canvas.height (px) = ratio
-                    const mmPerPx = imgHeight / canvas.height;
-
-                    while (remainingHeightPx > 0) {
-                        // Max height for this page
-                        // First page has header (15mm) + footer space. New pages also have header? 
-                        // Let's assume generic header on subsequent pages.
-
-                        const isFirst = pageIndex === 0;
-                        if (!isFirst) {
+                    while (heightLeft > 0.1) {
+                        if (sliceIndex > 0) {
                             pdf.addPage();
-                            this.addHeaderV2(pdf, viewNum, `${sectionTitle} (Cont.)`);
-                            this.addFooterV2(pdf, pageCount + pageIndex);
+                            pageCount++;
                         }
 
-                        const currentHeaderH = 15;
-                        const currentFooterH = 15;
-                        const currentYOffset = 18; // 15 + padding
-                        const maxContentHeightMm = 297 - currentYOffset - currentFooterH;
+                        let sliceHeightMm = Math.min(heightLeft, availableHeight);
 
-                        // How much source image (in px) fits in maxContentHeightMm?
-                        const maxSourcePx = maxContentHeightMm / mmPerPx;
+                        // Smart Break: Avoid cutting cards
+                        if (heightLeft > availableHeight) {
+                            const targetCutLine = currentYMm + availableHeight;
+                            const overlappingCard = cardBoundaries.find(b =>
+                                b.top < targetCutLine - 5 && b.bottom > targetCutLine + 5
+                            );
 
-                        const sliceHeightPx = Math.min(remainingHeightPx, maxSourcePx);
-                        const sliceHeightMm = sliceHeightPx * mmPerPx;
+                            if (overlappingCard && overlappingCard.top > currentYMm + 10) {
+                                // Cut before the card
+                                sliceHeightMm = overlappingCard.top - currentYMm;
+                            }
+                        }
 
-                        // Create canvas slice
+                        this.addHeaderV2(pdf, viewNum, sliceIndex === 0 ? sectionTitle : `${sectionTitle} (Cont.)`);
+                        this.addFooterV2(pdf, pageCount);
+
+                        // Capture slice
+                        const sliceHeightPx = sliceHeightMm / mmPerPx;
+                        const currentYPx = currentYMm / mmPerPx;
+
                         const sliceCanvas = document.createElement('canvas');
                         sliceCanvas.width = canvas.width;
                         sliceCanvas.height = sliceHeightPx;
                         const ctx = sliceCanvas.getContext('2d');
-
                         ctx.drawImage(canvas,
                             0, currentYPx, canvas.width, sliceHeightPx,
                             0, 0, canvas.width, sliceHeightPx
                         );
 
                         const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.95);
+                        pdf.addImage(sliceImg, 'JPEG', 0, yOffset, 210, sliceHeightMm);
 
-                        // Center horizontally
-                        // If width is standard, aspect ratio is preserved.
-                        // Width on PDF:
-                        const pdfWidth = 210;
-
-                        pdf.addImage(sliceImg, 'JPEG', 0, currentYOffset, pdfWidth, sliceHeightMm);
-
-                        currentYPx += sliceHeightPx;
-                        remainingHeightPx -= sliceHeightPx;
-                        pageIndex++;
+                        heightLeft -= sliceHeightMm;
+                        currentYMm += sliceHeightMm;
+                        sliceIndex++;
                     }
-
-                    // Update main page counter loop to account for extra pages?
-                    // Note: pdf_vistas2.js loop uses `i` but page numbering `pageCount` isn't auto-incremented by PDF instance.
-                    // We need to return the number of extra pages added to update global counter if strictly tracking.
-                    // But here pageCount is just a local var passed + i. 
-                    // To be correct, we should update a shared counter. 
-                    // For now, let's just let pagination be sequential per view.
-
                 } else {
-                    // Fits on one page (Scaled or Native)
-                    // ... (keep scaling logic for minor overflows) ...
-
-                    // Only apply scaling if minor overflow, else it should have been caught above.
-                    // Since we improved criteria, let's keep the minor scaling just in case.
-
-                    let finalWidth = 210;
-                    let finalHeight = imgHeight;
-                    let xOffset = 0;
-
-                    // Recalculate if it STILL overflows slightly (e.g. edge cases not caught by slicing threshold if any)
-                    // But assume slicing handled big overflows. 
-
-                    // If it is SMALLER than page, just add.
-                    if (imgHeight > availableHeight) {
-                        // Fallback scale for small overflows < threshold if not sliced
-                        const ratio = availableHeight / imgHeight;
-                        finalHeight = availableHeight;
-                        finalWidth = 210 * ratio;
-                        xOffset = (210 - finalWidth) / 2;
-                    }
-
+                    // Normal One-Page View
                     this.addHeaderV2(pdf, viewNum, sectionTitle);
-                    this.addFooterV2(pdf, pageCount + i);
-
-                    pdf.addImage(imgData, 'JPEG', xOffset, yOffset, finalWidth, finalHeight);
+                    this.addFooterV2(pdf, pageCount);
+                    pdf.addImage(imgData, 'JPEG', 0, yOffset, 210, imgHeightMm);
                 }
+                pageCount++;
             }
 
             // 5. Back Cover

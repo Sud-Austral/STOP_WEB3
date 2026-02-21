@@ -84,9 +84,25 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
         const factorPob = currentData[0]?.[C.FACTOR_POBLACION] || 1;
 
+        // Fetch total communes in the region for ranking calculations
+        let totalComunas = 52; // Fallback
+        try {
+            const conteoRes = await fetch('data/comunas/data_comuna_conteo.json');
+            if (conteoRes.ok) {
+                const conteoData = await conteoRes.json();
+                const miConteo = conteoData.find(c => c.codcom == S.codcom);
+                if (miConteo && miConteo.comunas) {
+                    totalComunas = miConteo.comunas;
+                    console.log(`📍 Vista 9: Total Regional detectado: ${totalComunas} comunas.`);
+                }
+            }
+        } catch (e) {
+            console.warn('⚠️ Vista 9: No se pudo cargar data_comuna_conteo, usando fallback 52.', e);
+        }
+
         // Get Top 3 Critical by Ranking (Regional or National)
         const critical = currentData
-            .filter(r => (r[C.RANK_NAC_SEM] || 346) < 30 || (r[C.RANK_REG_PROY] || S.totalComunasReg) < 5)
+            .filter(r => (r[C.RANK_NAC_SEM] || 346) < 30 || (r[C.RANK_REG_PROY] || totalComunas) < 5)
             .sort((a, b) => (a[C.RANK_NAC_SEM] || 346) - (b[C.RANK_NAC_SEM] || 346))
             .slice(0, 3);
 
@@ -123,7 +139,7 @@
                 datasets: [
                     {
                         label: 'Tasa Comunal',
-                        data: top3ForChart.map(d => (d[C.TASA_COMUNAL] || 0).toFixed(1)),
+                        data: top3ForChart.map(d => (d[C.TASA_SEMANAL] || 0).toFixed(1)),
                         backgroundColor: '#ef4444',
                         borderRadius: 4,
                         datalabels: {

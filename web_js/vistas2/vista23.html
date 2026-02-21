@@ -27,26 +27,11 @@
         <strong>🤖 Análisis de Situación:</strong> <span id="v23_ia_analysis">Analizando categorías...</span>
     </div>
 
-    <!-- Context Summary -->
-    <div
-        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; margin-bottom: 2rem;">
-        <div class="card" style="padding: 1.5rem; text-align: center; background: #f8fafc;">
-            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TOTAL ACTUAL</div>
-            <div id="v23_total_act" style="font-size: 2.2rem; font-weight: 950; color: #1e293b;">--</div>
-        </div>
-        <div class="card" style="padding: 1.5rem; text-align: center; background: #f8fafc;">
-            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">TOTAL ANTERIOR</div>
-            <div id="v23_total_ant" style="font-size: 2.2rem; font-weight: 950; color: #64748b;">--</div>
-        </div>
-        <div class="card" style="padding: 1.5rem; text-align: center; border: 2px solid #e2e8f0;">
-            <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; margin-bottom: 5px;">VARIACIÓN</div>
-            <div id="v23_total_var" style="font-size: 2.2rem; font-weight: 950; color: #3b82f6;">--%</div>
-        </div>
-    </div>
+
 
     <!-- FIGURAS (Starting directly after Context Summary) -->
     <div style="border-top: 2px solid #e2e8f0; padding-top: 2.5rem;">
-        <div style="margin-bottom: 2rem;">
+        <div style="margin-bottom: 2rem;display: none;">
             <h3 style="color: #1e293b; font-size: 1.4rem; font-weight: 800; margin: 0;">
                 <i class="fa-solid fa-chart-pie" style="color: var(--color-primary); margin-right: 10px;"></i>
                 Visualización por Categorías
@@ -61,40 +46,52 @@
         <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
                 <div
-                    style="background: #3b82f6; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
+                    style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
                     1</div>
-                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Composición Semanal por Severidad</h4>
+                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Severidad (12 Semanas)
+                </h4>
             </div>
-            <div style="height: 320px; position: relative;">
-                <canvas id="v23_chart_1"></canvas>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="v23_chart_1"></canvas>
+                </div>
+                <div class="card"
+                    style="padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h5
+                        style="margin: 0 0 12px 0; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        Distribución Actual (Severidad)</h5>
+                    <div id="v23_list_1" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
             </div>
-            <div
-                style="margin-top: 1rem; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 6px; border-left: 3px solid #3b82f6;">
-                <p style="margin: 0; font-size: 0.82rem; color: #64748b; line-height: 1.6;">
-                    <strong>Lectura:</strong> Muestra qué proporción del total corresponde a cada nivel de gravedad
-                    definida.
-                </p>
-            </div>
+
         </div>
 
         <!-- FIGURA 2 -->
         <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
                 <div
-                    style="background: #f59e0b; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
+                    style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
                     2</div>
-                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Variación Porcentual por Modus Operandi</h4>
+                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Modus Operandi (12
+                    Semanas)</h4>
             </div>
-            <div style="height: 320px; position: relative;">
-                <canvas id="v23_chart_2"></canvas>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="v23_chart_2"></canvas>
+                </div>
+                <div class="card"
+                    style="padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h5
+                        style="margin: 0 0 12px 0; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        Distribución Actual (Modus)</h5>
+                    <div id="v23_list_2" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
             </div>
-            <div
-                style="margin-top: 1rem; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 6px; border-left: 3px solid #f59e0b;">
-                <p style="margin: 0; font-size: 0.82rem; color: #64748b; line-height: 1.6;">
-                    <strong>Lectura:</strong> Indica cuánto creció o disminuyó cada tipo de modalidad respecto a la
-                    semana pasada.
-                </p>
-            </div>
+
         </div>
 
         <!-- FIGURA 3 -->
@@ -103,80 +100,24 @@
                 <div
                     style="background: #10b981; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
                     3</div>
-                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Comparativo Semanal por Naturaleza Jurídica</h4>
-            </div>
-            <div style="height: 320px; position: relative;">
-                <canvas id="v23_chart_3"></canvas>
-            </div>
-            <div
-                style="margin-top: 1rem; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 6px; border-left: 3px solid #10b981;">
-                <p style="margin: 0; font-size: 0.82rem; color: #64748b; line-height: 1.6;">
-                    <strong>Lectura:</strong> Compara el volumen de casos de esta semana vs la anterior para cada bien
-                    jurídico protegido.
-                </p>
-            </div>
-        </div>
-
-        <!-- FIGURA 4 -->
-        <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div
-                    style="background: #ef4444; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
-                    4</div>
-                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Severidad (12 Semanas)
-                </h4>
-            </div>
-            <div style="height: 320px; position: relative;">
-                <canvas id="v23_chart_4"></canvas>
-            </div>
-            <div
-                style="margin-top: 1rem; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 6px; border-left: 3px solid #ef4444;">
-                <p style="margin: 0; font-size: 0.82rem; color: #64748b; line-height: 1.6;">
-                    <strong>Lectura:</strong> Permite ver la evolución temporal de cada nivel de gravedad por separado.
-                </p>
-            </div>
-        </div>
-
-        <!-- FIGURA 5 -->
-        <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div
-                    style="background: #8b5cf6; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
-                    5</div>
-                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Modus Operandi (12
+                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Tendencia Histórica por Naturaleza Jurídica (12
                     Semanas)</h4>
             </div>
-            <div style="height: 320px; position: relative;">
-                <canvas id="v23_chart_5"></canvas>
+            <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
+                <div style="height: 320px; position: relative;">
+                    <canvas id="v23_chart_3"></canvas>
+                </div>
+                <div class="card"
+                    style="padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <h5
+                        style="margin: 0 0 12px 0; font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
+                        Distribución Actual (Naturaleza)</h5>
+                    <div id="v23_list_3" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- JS populated -->
+                    </div>
+                </div>
             </div>
-            <div
-                style="margin-top: 1rem; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 6px; border-left: 3px solid #8b5cf6;">
-                <p style="margin: 0; font-size: 0.82rem; color: #64748b; line-height: 1.6;">
-                    <strong>Lectura:</strong> Muestra si alguna modalidad delictual está ganando terreno a lo largo del
-                    trimestre.
-                </p>
-            </div>
-        </div>
 
-        <!-- FIGURA 6 -->
-        <div class="card" style="padding: 1.75rem; margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
-                <div
-                    style="background: #06b6d4; color: white; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0;">
-                    6</div>
-                <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">Matriz de Concentración (Cruce de
-                    Clasificaciones)</h4>
-            </div>
-            <div style="height: 380px; position: relative;">
-                <canvas id="v23_chart_6"></canvas>
-            </div>
-            <div
-                style="margin-top: 1rem; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 6px; border-left: 3px solid #06b6d4;">
-                <p style="margin: 0; font-size: 0.82rem; color: #64748b; line-height: 1.6;">
-                    <strong>Lectura:</strong> Visualiza dónde se agrupan los delitos al cruzar Modus Operandi vs
-                    Naturaleza Jurídica.
-                </p>
-            </div>
         </div>
     </div>
 </div>
@@ -184,11 +125,18 @@
 <!-- Nota Metodológica -->
 <div class="row" style="margin-top: 2rem;">
     <div
-        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
+        style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1.25rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.6;">
         <strong>Nota Metodológica:</strong> Esta vista clasifica los delitos utilizando una taxonomía multidimensional
-        basada en tres ejes: <strong>Impacto (Severidad)</strong>, <strong>Modus Operandi</strong> y <strong>Naturaleza
-            Jurídica</strong>. Permite identificar patrones estructurales que no son visibles en el conteo simple de
-        casos.
+        basada en tres ejes:
+        <ul style="margin: 0.5rem 0 0.75rem 0; padding-left: 1.25rem;">
+            <li><strong>Impacto (Severidad):</strong> Permite ver la evolución temporal de cada nivel de gravedad por
+                separado.</li>
+            <li><strong>Modus Operandi:</strong> Muestra si alguna modalidad delictual está ganando terreno a lo largo
+                del trimestre.</li>
+            <li><strong>Naturaleza Jurídica:</strong> Evolución del volumen de casos según el bien jurídico protegido
+                por la ley.</li>
+        </ul>
+        Permite identificar patrones estructurales que no son visibles en el conteo simple de casos.
     </div>
 </div>
 
@@ -229,6 +177,7 @@
         // --- PALETTES ---
         const SEV_COLORS = { "Delitos contra la Vida": "#ef4444", "Delitos contra la Integridad Física": "#f59e0b", "Delitos contra el Patrimonio Grave": "#3b82f6", "Delitos de Convivencia y Menor Gravedad": "#10b981" };
         const MODUS_COLORS = { "Violencia/Apremio": "#ef4444", "Fuerza/Intrusión": "#f59e0b", "Delitos de Oportunidad": "#3b82f6", "Conflictos Interpersonales/Domésticos": "#8b5cf6", "Control Territorial": "#06b6d4" };
+        const NAT_COLORS = { "Contra las Personas": "#ef4444", "Contra la Propiedad": "#f59e0b", "Orden Público / Convivencia": "#3b82f6", "Leyes Especiales": "#8b5cf6", "Contra la Propiedad (y Personas)": "#06b6d4" };
 
         const waitForData = () => new Promise(res => {
             const check = () => (window.STATE_DATA?.isLoaded) ? res() : setTimeout(check, 100);
@@ -252,16 +201,6 @@
 
         // --- CURRENT STATS ---
         const currentRows = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana);
-        const totalRow = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === S.currentSemana) || {};
-        const cases = totalRow[C.CASOS_ACTUAL] || 0;
-        const prev = totalRow[C.CASOS_ANT] || 0;
-        const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
-
-        document.getElementById('v23_total_act').textContent = cases;
-        document.getElementById('v23_total_ant').textContent = prev;
-        const vEl = document.getElementById('v23_total_var');
-        vEl.textContent = `${delta > 0 ? '+' : ''}${delta.toFixed(1)}%`;
-        vEl.style.color = delta > 0 ? '#ef4444' : '#10b981';
 
         // ==========================================
         // AGGREGATIONS
@@ -279,41 +218,21 @@
             natAct[cls.naturaleza_juridica].v += v; natAct[cls.naturaleza_juridica].va += va;
         });
 
+        // TREND CHARTS (12 WEEKS)
         // ==========================================
-        // CHARTS
-        // ==========================================
-
-        // Fig 1: Severidad
-        new Chart(document.getElementById('v23_chart_1'), {
-            type: 'doughnut',
-            data: { labels: Object.keys(sevAct), datasets: [{ data: Object.values(sevAct), backgroundColor: Object.keys(sevAct).map(l => SEV_COLORS[l] || '#ccc'), borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right' } } }
-        });
-
-        // Fig 2: Modus Variation (%)
-        const modKeys = Object.keys(modAct);
-        const modVars = modKeys.map(k => { const d = modAct[k]; return d.va > 0 ? ((d.v - d.va) / d.va * 100) : 0; });
-        new Chart(document.getElementById('v23_chart_2'), {
-            type: 'bar',
-            data: { labels: modKeys, datasets: [{ label: 'Var %', data: modVars, backgroundColor: modVars.map(v => v > 0 ? '#ef4444' : '#10b981'), borderRadius: 4 }] },
-            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-
-        // Fig 3: Naturaleza Act vs Ant
-        const natKeys = Object.keys(natAct);
-        new Chart(document.getElementById('v23_chart_3'), {
-            type: 'bar',
-            data: {
-                labels: natKeys, datasets: [
-                    { label: 'Sem Actual', data: natKeys.map(k => natAct[k].v), backgroundColor: '#10b981', borderRadius: 4 },
-                    { label: 'Sem Anterior', data: natKeys.map(k => natAct[k].va), backgroundColor: '#cbd5e1', borderRadius: 4 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
 
         // --- TRENDS ---
+        const getWeekLabel = (id) => {
+            const row = S.allDataHistory_total.find(r => r[C.ID_SEMANA] === id);
+            if (!row) return 'S' + id;
+            const yr = row['año'] || row.anio || '??';
+            const wk = row['semana_numero'] || '??';
+            return `Semana ${wk}/${yr}`;
+        };
+
         const uniqueWeeks = [...new Set(S.allDataHistory.map(r => r[C.ID_SEMANA]))].sort((a, b) => b - a).slice(0, 12).reverse();
+        const labels = uniqueWeeks.map(w => getWeekLabel(w));
+
         const getSeries = (keyField) => {
             const vals = [...new Set(DELITO_CLASS.map(d => d[keyField]))];
             const dataset = {};
@@ -327,41 +246,73 @@
             return dataset;
         };
 
-        // Fig 4 & 5
+        // Fig 1, 2 & 3 (Trends)
         const hSev = getSeries('impacto_severidad');
-        new Chart(document.getElementById('v23_chart_4'), {
+        new Chart(document.getElementById('v23_chart_1'), {
             type: 'line',
-            data: { labels: uniqueWeeks.map(w => 'S' + w), datasets: Object.entries(hSev).map(([l, d]) => ({ label: l, data: d, borderColor: SEV_COLORS[l], tension: 0.3, fill: false })) },
-            options: { responsive: true, maintainAspectRatio: false }
+            data: { labels: labels, datasets: Object.entries(hSev).map(([l, d]) => ({ label: l, data: d, borderColor: SEV_COLORS[l], tension: 0.3, fill: false })) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } } } }
+            }
         });
 
         const hMod = getSeries('modus_operandi');
-        new Chart(document.getElementById('v23_chart_5'), {
+        new Chart(document.getElementById('v23_chart_2'), {
             type: 'line',
-            data: { labels: uniqueWeeks.map(w => 'S' + w), datasets: Object.entries(hMod).map(([l, d]) => ({ label: l, data: d, borderColor: MODUS_COLORS[l], tension: 0.3, fill: false })) },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        // Fig 6: Matrix
-        const matrix = [];
-        const nLabels = [...new Set(DELITO_CLASS.map(d => d.naturaleza_juridica))];
-        const mLabels = [...new Set(DELITO_CLASS.map(d => d.modus_operandi))];
-        currentRows.forEach(r => {
-            const cls = classify(r[C.DELITO]);
-            if (!cls) return;
-            matrix.push({ x: mLabels.indexOf(cls.modus_operandi), y: nLabels.indexOf(cls.naturaleza_juridica), r: Math.min(30, (r[C.CASOS_ACTUAL] || 0) * 2 + 5), label: cls.delito, color: SEV_COLORS[cls.impacto_severidad] });
-        });
-        new Chart(document.getElementById('v23_chart_6'), {
-            type: 'bubble',
-            data: { datasets: [{ label: 'Delitos', data: matrix, backgroundColor: matrix.map(m => m.color + '90') }] },
+            data: { labels: labels, datasets: Object.entries(hMod).map(([l, d]) => ({ label: l, data: d, borderColor: MODUS_COLORS[l], tension: 0.3, fill: false })) },
             options: {
-                responsive: true, maintainAspectRatio: false,
-                scales: {
-                    x: { ticks: { callback: v => mLabels[v] }, title: { display: true, text: 'Modus Operandi' } },
-                    y: { ticks: { callback: v => nLabels[v] }, title: { display: true, text: 'Naturaleza Jurídica' } }
-                }
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } } } }
             }
         });
+
+        const hNat = getSeries('naturaleza_juridica');
+        new Chart(document.getElementById('v23_chart_3'), {
+            type: 'line',
+            data: { labels: labels, datasets: Object.entries(hNat).map(([l, d]) => ({ label: l, data: d, borderColor: NAT_COLORS[l] || '#cbd5e1', tension: 0.3, fill: false })) },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { title: { display: true, text: 'Casos Semanales', font: { weight: 'bold' } } } }
+            }
+        });
+
+        // Matrix removed per request.
+
+        // --- POPULATE SIDEBAR CARDS ---
+        const renderList = (id, data, colors) => {
+            const container = document.getElementById(id);
+            if (!container) return;
+            const total = Object.values(data).reduce((acc, obj) => acc + (typeof obj === 'number' ? obj : obj.v), 0);
+
+            const sorted = Object.entries(data)
+                .map(([name, val]) => ({ name, v: typeof val === 'number' ? val : val.v }))
+                .sort((a, b) => b.v - a.v);
+
+            container.innerHTML = sorted.map(item => {
+                const pct = total > 0 ? (item.v / total * 100) : 0;
+                const color = colors[item.name] || '#cbd5e1';
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; white-space: nowrap;">
+                            <div style="width: 8px; height: 8px; border-radius: 2px; background: ${color}; flex-shrink: 0;"></div>
+                            <span style="color: #334155; font-weight: 600; text-overflow: ellipsis; overflow: hidden;">${item.name}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span style="color: #1e293b; font-weight: 800;">${item.v}</span>
+                            <span style="color: #94a3b8; font-size: 0.65rem; width: 35px; text-align: right;">${pct.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        renderList('v23_list_1', sevAct, SEV_COLORS);
+        renderList('v23_list_2', modAct, MODUS_COLORS);
+        renderList('v23_list_3', natAct, NAT_COLORS);
 
         // IA Integration
         if (typeof IAModule !== 'undefined') {

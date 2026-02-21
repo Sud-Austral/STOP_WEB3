@@ -137,7 +137,7 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
 
         const success = currentData
-            .filter(r => (r[C.Z_SCORE] || 0) < -0.5 && (r[C.CASOS_ACTUAL] || 0) > 0)
+            .filter(r => (r[C.Z_SCORE] || 0) < -0.5 && (r[C.CASOS_ACTUAL] || 0) > 0 && r[C.DELITO] !== 'NO APLICA')
             .sort((a, b) => (a[C.Z_SCORE] || 0) - (b[C.Z_SCORE] || 0))
             .slice(0, 4);
 

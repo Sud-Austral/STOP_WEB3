@@ -276,9 +276,8 @@
             }
         }
 
-        const factorPob = S.allDataHistory.find(r => r[C.ID_SEMANA] === S.currentSemana)?.[C.FACTOR_POBLACION] || 1;
-        const tasaCom = (totalRow[C.CASOS_ACTUAL] / factorPob).toFixed(1);
-        const tasaNac = (S.tasaNacionalAvg || 42.5);
+        const tasaCom = (totalRow[C.TASA_SEMANAL] || 0).toFixed(1);
+        const tasaNac = (totalRow[C.TASA_NACIONAL_SEMANAL] || totalRow[C.TASA_NACIONAL] || 42.5).toFixed(1);
 
         document.getElementById('v12_tasa_com').textContent = tasaCom;
         document.getElementById('v12_tasa_nac').textContent = tasaNac;

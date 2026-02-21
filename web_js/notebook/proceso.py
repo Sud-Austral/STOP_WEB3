@@ -409,18 +409,26 @@ df3['tasa_proyectada_anual'] = df3['proyeccion_anual'] / df3['factor_poblacion']
 # Tasas Regionales y Nacionales
 print("Calculando Tasas Regionales y Nacionales por Delito...")
 # Regional
-df_reg_pob = df3.groupby(['Codreg', 'id_semana', 'codcom'])['factor_poblacion'].max().reset_index().groupby(['Codreg', 'id_semana'])['factor_poblacion'].sum().reset_index(name='pob_total_reg')
-df_reg_cases = df3.groupby(['Codreg', 'id_semana', 'delito'])['frecuencia'].sum().reset_index(name='frecuencia_total_reg')
+df_reg_pob = df3.groupby(['Codreg', 'id_semana', 'codcom'])[['poblacion', 'factor_poblacion']].max().reset_index().groupby(['Codreg', 'id_semana'])[['poblacion', 'factor_poblacion']].sum().reset_index()
+df_reg_pob.rename(columns={'poblacion': 'poblacion_region', 'factor_poblacion': 'factor_poblacion_region'}, inplace=True)
+
+df_reg_cases = df3.groupby(['Codreg', 'id_semana', 'delito'])['frecuencia'].sum().reset_index(name='casos_semanales_regionales')
 df_reg_tasa = df_reg_cases.merge(df_reg_pob, on=['Codreg', 'id_semana'])
-df_reg_tasa['tasa_semanal_regional'] = df_reg_tasa['frecuencia_total_reg'] / df_reg_tasa['pob_total_reg'].replace(0, np.nan)
-df3 = df3.merge(df_reg_tasa[['Codreg', 'id_semana', 'delito', 'tasa_semanal_regional']], on=['Codreg', 'id_semana', 'delito'], how='left')
+df_reg_tasa['tasa_semanal_regional'] = df_reg_tasa['casos_semanales_regionales'] / df_reg_tasa['factor_poblacion_region'].replace(0, np.nan)
+df_reg_tasa['tasa_regional_semanal'] = df_reg_tasa['tasa_semanal_regional']
+
+df3 = df3.merge(df_reg_tasa[['Codreg', 'id_semana', 'delito', 'tasa_semanal_regional', 'poblacion_region', 'factor_poblacion_region', 'tasa_regional_semanal', 'casos_semanales_regionales']], on=['Codreg', 'id_semana', 'delito'], how='left')
 
 # Nacional
-df_nac_pob = df3.groupby(['id_semana', 'codcom'])['factor_poblacion'].max().reset_index().groupby(['id_semana'])['factor_poblacion'].sum().reset_index(name='pob_total_nac')
-df_nac_cases = df3.groupby(['id_semana', 'delito'])['frecuencia'].sum().reset_index(name='frecuencia_total_nac')
+df_nac_pob = df3.groupby(['id_semana', 'codcom'])[['poblacion', 'factor_poblacion']].max().reset_index().groupby(['id_semana'])[['poblacion', 'factor_poblacion']].sum().reset_index()
+df_nac_pob.rename(columns={'poblacion': 'poblacion_nacional', 'factor_poblacion': 'factor_poblacion_nacional'}, inplace=True)
+
+df_nac_cases = df3.groupby(['id_semana', 'delito'])['frecuencia'].sum().reset_index(name='casos_semanales_nacionales')
 df_nac_tasa = df_nac_cases.merge(df_nac_pob, on=['id_semana'])
-df_nac_tasa['tasa_semanal_nacional'] = df_nac_tasa['frecuencia_total_nac'] / df_nac_tasa['pob_total_nac'].replace(0, np.nan)
-df3 = df3.merge(df_nac_tasa[['id_semana', 'delito', 'tasa_semanal_nacional']], on=['id_semana', 'delito'], how='left')
+df_nac_tasa['tasa_semanal_nacional'] = df_nac_tasa['casos_semanales_nacionales'] / df_nac_tasa['factor_poblacion_nacional'].replace(0, np.nan)
+df_nac_tasa['tasa_nacional_semanal'] = df_nac_tasa['tasa_semanal_nacional']
+
+df3 = df3.merge(df_nac_tasa[['id_semana', 'delito', 'tasa_semanal_nacional', 'poblacion_nacional', 'factor_poblacion_nacional', 'tasa_nacional_semanal', 'casos_semanales_nacionales']], on=['id_semana', 'delito'], how='left')
 
 # Rankings Proyección
 if 'Codreg' in df3.columns:
@@ -695,15 +703,22 @@ if not os.path.exists(output_dir):
 
 print(f"> Guardando en: {output_dir}")
 
-for i in progress_wrapper(df3["codcom"].unique(), desc="Guardando"):
-    aux = df3[df3["codcom"] == i]
-    # HERE IS THE FIX: Use os.path.join and str(i)
-    # Original error was: aux.to_json(fr'{output_dir}/{i}', ...)
-    file_path = os.path.join(output_dir, str(i))
+# Optimizar guardado usando groupby (evita filtrado iterativo lento)
+grupos = df3.groupby("codcom")
+
+for codcom, aux in progress_wrapper(grupos, desc="Guardando"):
+    # Aseguramos que el nombre sea un string limpio
+    file_path = os.path.join(output_dir, str(int(codcom)))
     try:
-        aux.to_json(file_path, orient='records', compression='gzip', date_format='iso')
+        # Nivel de compresión 1 para velocidad máxima
+        aux.to_json(
+            file_path, 
+            orient='records', 
+            compression={'method': 'gzip', 'compresslevel': 1}, 
+            date_format='iso'
+        )
     except Exception as e:
-        print(f"Error al guardar comuna {i}: {e}")
+        print(f"Error al guardar comuna {codcom}: {e}")
 
 print(">>> Proceso finalizado.")
 

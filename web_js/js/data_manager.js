@@ -488,6 +488,8 @@ window.DataManager = {
         window.COLS.TASA_NACIONAL = 'tasa_semanal_nacional';
         window.COLS.TASA_COMUNAL = 'tasa_semanal';
         window.COLS.RANK_REG_TASA = 'ranking_regional_tasa_sem';
+        window.COLS.TASA_REGIONAL_SEMANAL = 'tasa_regional_semanal';
+        window.COLS.TASA_NACIONAL_SEMANAL = 'tasa_nacional_semanal';
 
         // Ensure Cluster Rankings are mapped correctly
         window.COLS.RANK_CLUSTER_SEM = 'ranking_cluster_semanal';

@@ -75,13 +75,6 @@ const App = {
         this.bindEvents();
         this.loadView(this.config.defaultView);
 
-        // Pre-load AI interpretations in background (delay 3s to avoid rate-limiting)
-        setTimeout(() => {
-            const dataReady = (window.STATE_DATA?.isLoaded) || (window.STATE_DATA_CEAD?.isLoaded);
-            if (typeof IAModule !== 'undefined' && dataReady) {
-                IAModule.generateAllInterpretations();
-            }
-        }, 3000);
     },
 
     /**
@@ -209,6 +202,9 @@ const App = {
                     ChartEnhancer.applyVariationColors();
                 }
 
+                // Standardize Location/Period Rows
+                this.standardizeLocationRows();
+
                 // Notify that view is fully ready for other modules (like AI)
                 window.dispatchEvent(new CustomEvent('viewLoaded', { detail: { viewName } }));
             }, 600);
@@ -226,6 +222,61 @@ const App = {
     },
 
     /**
+     * Standardizes all location/period rows in the current view
+     */
+    standardizeLocationRows() {
+        const S = window.STATE_DATA;
+        if (!S || !S.isLoaded) return;
+
+        // 1. Format Comuna Name (Title Case)
+        const rawComuna = S.comunaName || 'Sin Comuna';
+        const formattedComuna = rawComuna.toLowerCase().split(' ').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+
+        // 2. Identify view type
+        const match = this.state.currentView.match(/^vista(\d+)$/);
+        const viewNum = match ? parseInt(match[1]) : 0;
+        const historicalViews = [4, 7, 12, 17, 18, 22]; // Views that analysis long-term patterns
+
+        const isHistorical = historicalViews.includes(viewNum);
+
+        // 3. Force detail format
+        let detail = S.semanaDetalle || '--';
+        if (isHistorical) {
+            detail = "HISTÓRICO 2005-2025";
+        } else {
+            // Force "SEMANA" upper case
+            if (detail.toLowerCase().startsWith('semana')) {
+                detail = 'SEMANA' + detail.substring(6);
+            }
+        }
+
+        const fullText = `${formattedComuna} / ${detail}`;
+
+        // 4. Update all location rows found
+        const rows = document.querySelectorAll('.location-source-row');
+        rows.forEach(row => {
+            // Find the first div that usually contains the location info
+            const labelContainer = row.querySelector('div:first-child');
+            if (labelContainer) {
+                const icon = labelContainer.querySelector('i');
+                labelContainer.innerHTML = '';
+                if (icon) labelContainer.appendChild(icon);
+                labelContainer.innerHTML += ` ${fullText}`;
+            }
+        });
+
+        // 5. Update specific fill spans for robustness
+        document.querySelectorAll('.comuna-fill, .comuna-fill-cead, .comuna-fill-hybrid, .comuna-fill-dual').forEach(el => {
+            el.textContent = formattedComuna;
+        });
+        document.querySelectorAll('.semana-fill, .periodo-fill, .periodo-fill-cead').forEach(el => {
+            el.textContent = detail;
+        });
+    },
+
+    /**
      * Generate report header HTML based on view type
      */
     getReportHeaderHtml(viewName) {
@@ -233,18 +284,16 @@ const App = {
         if (!match) return '';
 
         const viewNum = parseInt(match[1]);
-        let title = 'Reporte de Inteligencia Delictual';
+        const title = 'Reporte de Inteligencia Delictual';
         let icon = 'fa-shield-halved';
 
-        // Classification based on confirmed data source
+        // Classification based on confirmed data source (Icons only)
         const ceadViews = [4, 7, 10, 11, 12, 15, 16, 19, 20, 21, 25];
-        const hybridViews = [41, 42, 43, 44, 45]; // Future expansion
+        const hybridViews = [41, 42, 43, 44, 45];
 
         if (ceadViews.includes(viewNum)) {
-            title = 'Reporte CEAD (Estadísticas Delictuales)';
             icon = 'fa-chart-line';
         } else if (hybridViews.includes(viewNum)) {
-            title = 'Reporte Integrado STOP-CEAD';
             icon = 'fa-layer-group';
         }
 
@@ -270,9 +319,9 @@ const App = {
 
         // Determine sources based on view number (STOP vs CEAD)
         // Vistas 2 Strategic categorization
-        const ceadViews = [4, 7, 11, 15, 16, 17, 18, 19, 20];
+        const ceadViews = [7, 11, 15, 16, 17, 18, 19, 20];
         const stopViews = [1, 2, 3, 5, 6, 8, 9, 12, 13, 14, 21, 22, 23, 24];
-        const hybridViews = [10, 25]; // Views that explicitly merge both worlds
+        const hybridViews = [4, 10, 25]; // Views that explicitly merge both worlds
 
         if (stopViews.includes(viewNum) || hybridViews.includes(viewNum)) {
             sources.push({ name: 'STOP (Sistema Táctico de Operación Policial)', class: 'stop' });

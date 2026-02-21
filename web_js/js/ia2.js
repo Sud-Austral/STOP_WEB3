@@ -20,22 +20,23 @@ window.IAModuleV2 = {
     },
 
     init() {
-        // ERR-011: Do NOT access STATE_DATA here — it may not be loaded yet.
-        // Cache is loaded lazily when dataManagerLoaded fires.
+        console.log('🤖 IA [INIT]: Módulo inicializado. Esperando datos...');
         this.cache = {};
 
-        // Listen for data load to fetch analysis if needed
         window.addEventListener('dataManagerLoaded', () => {
-            // NOW STATE_DATA is ready — load cache with correct codcom
-            this.cache = this.loadCache();
-            if (!this.cache.vista1) { // If cache empty or partial
-                this.fetchAllAnalyses();
-            } else {
-                this.updateAllViews();
-            }
+            console.log('🤖 IA [EVENT]: dataManagerLoaded detectado. Esperando 30s de cortesía (Legacy Stable Delay)...');
+            setTimeout(() => {
+                this.cache = this.loadCache();
+                if (!this.cache.vista1) {
+                    console.log('🤖 IA [CACHE]: Vacío o incompleto. Solicitando análisis...');
+                    this.fetchAllAnalyses();
+                } else {
+                    console.log('🤖 IA [CACHE]: Cargado desde local con', Object.keys(this.cache).length, 'vistas.');
+                    this.updateAllViews();
+                }
+            }, 30000);
         });
 
-        // REACTION: Populate views as they are loaded into the DOM
         window.addEventListener('viewLoaded', () => {
             this.updateAllViews();
         });
@@ -47,19 +48,17 @@ window.IAModuleV2 = {
             const raw = localStorage.getItem(this.CACHE_KEY + codcom);
             if (!raw) return {};
 
-            // Clean bad cache
             if (raw.includes("Sin localización") || raw.includes("anonimato")) {
-                LOG.warn("IA2: Caché con respuesta genérica detectado. Borrando.");
+                console.warn("🤖 IA [CACHE]: Datos genéricos detectantes. Limpiando.");
                 localStorage.removeItem(this.CACHE_KEY + codcom);
                 return {};
             }
 
             const { timestamp, data } = JSON.parse(raw);
             if (Date.now() - timestamp > this.CACHE_TTL) {
-                LOG.info('🤖 IA: Cache expirado (5 días).');
+                console.log('🤖 IA [CACHE]: Expirado por tiempo.');
                 return {};
             }
-            LOG.info('🤖 IA: Cache cargado.');
             return data;
         } catch (e) { return {}; }
     },
@@ -132,6 +131,7 @@ window.IAModuleV2 = {
             metrics: {
                 total_cases: cases,
                 weekly_delta: delta.toFixed(1) + '%',
+                communal_rate: (totalRow[C.TASA_SEMANAL] || 0).toFixed(1),
                 national_rank: nationalRank,
                 cluster_rank: clusterRank,
                 effectiveness_ratio: effectiveness.toFixed(1) + '%'
@@ -147,21 +147,25 @@ window.IAModuleV2 = {
     },
 
     async fetchAllAnalyses() {
-        if (this.fetching) return;
+        if (this.fetching) {
+            console.log('🤖 IA [INFO]: Petición en curso, ignorando duplicado.');
+            return;
+        }
         this.fetching = true;
-        LOG.info('🤖 IA: Generando nuevo análisis estratégico (API)...');
+        console.log('🤖 IA [START]: Generando nuevo análisis estratégico...');
 
         const S = window.STATE_DATA;
+        console.log('🤖 IA [DEBUG]: Construyendo contexto para', S?.comunaName);
         const context = this.buildContext(S);
 
         if (!context) {
-            LOG.warn("IA2: Contexto insuficiente.");
+            console.warn("🤖 IA [WARN]: Contexto insuficiente (faltan datos o comuna).");
             this.fetching = false;
             return;
         }
 
         try {
-            LOG.info("Comienza el prompt")
+            console.log('🤖 IA [FETCH]: Iniciando llamada a API Zhipu (GLM-4)...');
             const prompt = `
 Eres un analista de inteligencia policial experto en el sistema STOP y CEAD de Carabineros de Chile.
 Tu misión es generar interpretaciones estratégicas CONCISAS y EJECUTIVAS para el dashboard de seguridad de la COMUNA DE ${context.comuna.toUpperCase()}.
@@ -206,11 +210,17 @@ FORMATO DE RESPUESTA:
 JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adicionales.
             `;
 
-            const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf"); // Valid key generation
-
-            // ERR-004: AbortController con timeout de 30s
+            const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf");
             const fetchController = new AbortController();
-            const fetchTimeoutId = setTimeout(() => fetchController.abort(), 30000);
+            // Aumentamos a 90s por latencia y carga de la API GLM-4
+            const fetchTimeoutId = setTimeout(() => {
+                console.warn('🤖 IA [TIMEOUT]: La petición excedió los 90s y será abortada.');
+                fetchController.abort();
+            }, 90000);
+
+            // jitter
+            await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000));
+
             let response;
             try {
                 response = await fetch(this.API_URL, {
@@ -223,28 +233,37 @@ JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adic
                     }),
                     signal: fetchController.signal
                 });
+                console.log('🤖 IA [RES]: HTTP Status', response.status);
             } finally {
                 clearTimeout(fetchTimeoutId);
             }
 
+            if (response.status === 429) {
+                throw new Error("Límite de peticiones alcanzado (429). Reintentando en próxima sesión.");
+            }
+            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
             const result = await response.json();
             const content = result.choices?.[0]?.message?.content || '{}';
+            console.log('🤖 IA [DATA]: Respuesta recibida (longitud:', content.length, ')');
 
-            // Robust JSON extraction
             const jsonStart = content.indexOf('{');
             const jsonEnd = content.lastIndexOf('}') + 1;
             const cleanJson = content.substring(jsonStart, jsonEnd);
             const analyses = JSON.parse(cleanJson);
 
+            console.log('🤖 IA [OK]: Análisis parseado correctamente. Actualizando UI.');
             this.cache = analyses;
             this.saveCache(analyses);
             this.updateAllViews();
 
         } catch (e) {
-            LOG.error('IA Error:', e);
+            console.error('🤖 IA [ERROR]:', e);
+            if (e.name === 'AbortError') {
+                console.error('🤖 IA [CRITICAL]: La petición fue cancelada por timeout o señal externa.');
+            }
             this.updateAllViews(true);
         } finally {
-            LOG.info("Termina el prompt")
             this.fetching = false;
         }
     },
@@ -280,7 +299,7 @@ JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adic
                 }
             }
         }
-    },
+    }
 };
 
 window.IAModuleV2.init();
