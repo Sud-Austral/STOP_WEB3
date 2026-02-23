@@ -252,24 +252,26 @@
         const infoIcon = document.getElementById('v10_info_icon');
         const infoCard = document.getElementById('v10_infografia');
 
+        const diffStr = diffPct > 0 ? `+${diffPct.toFixed(1)}%` : `${diffPct.toFixed(1)}%`;
+
         if (diffPct > 5) {
-            infoStatus.innerHTML = `<span style="color:#ef4444;">SOBRE REGIÓN (>5%)</span>`;
+            infoStatus.innerHTML = `<span style="color:#ef4444;">SOBRE REGIÓN (${diffStr})</span>`;
             infoIcon.innerHTML = `<i class="fa-solid fa-arrow-trend-up" style="color:#ef4444;"></i>`;
             infoCard.style.borderLeft = "4px solid #ef4444";
         } else if (diffPct > 3) {
-            infoStatus.innerHTML = `<span style="color:#f97316;">SOBRE REGIÓN (3-5%)</span>`;
+            infoStatus.innerHTML = `<span style="color:#f97316;">SOBRE REGIÓN (${diffStr})</span>`;
             infoIcon.innerHTML = `<i class="fa-solid fa-angle-up" style="color:#f97316;"></i>`;
             infoCard.style.borderLeft = "4px solid #f97316";
         } else if (diffPct < -5) {
-            infoStatus.innerHTML = `<span style="color:#10b981;">BAJO REGIÓN (>5%)</span>`;
+            infoStatus.innerHTML = `<span style="color:#10b981;">BAJO REGIÓN (${diffStr})</span>`;
             infoIcon.innerHTML = `<i class="fa-solid fa-arrow_trend-down" style="color:#10b981;"></i>`;
             infoCard.style.borderLeft = "4px solid #10b981";
         } else if (diffPct < -3) {
-            infoStatus.innerHTML = `<span style="color:#3b82f6;">BAJO REGIÓN (3-5%)</span>`;
+            infoStatus.innerHTML = `<span style="color:#3b82f6;">BAJO REGIÓN (${diffStr})</span>`;
             infoIcon.innerHTML = `<i class="fa-solid fa-angle-down" style="color:#3b82f6;"></i>`;
             infoCard.style.borderLeft = "4px solid #3b82f6";
         } else {
-            infoStatus.innerHTML = `<span style="color:#64748b;">EN PROMEDIO (+/- 3%)</span>`;
+            infoStatus.innerHTML = `<span style="color:#64748b;">EN PROMEDIO (${diffStr})</span>`;
             infoIcon.innerHTML = `<i class="fa-solid fa-minus" style="color:#64748b;"></i>`;
             infoCard.style.borderLeft = "4px solid #cbd5e1";
         }

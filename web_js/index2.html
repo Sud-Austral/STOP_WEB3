@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpieza de Caché IA - STOP</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #2563eb;
+            --color-bg: #f8fafc;
+            --color-text: #1e293b;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .cleaner-card {
+            background: white;
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid #e2e8f0;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 1.5rem;
+            color: var(--color-primary);
+            font-size: 2.5rem;
+        }
+
+        h1 {
+            font-weight: 900;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        #status {
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .btn-clean {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 800;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-clean:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-clean:active {
+            transform: translateY(0);
+        }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cleaner-card">
+        <div class="icon-box">
+            <i class="fa-solid fa-broom-ball"></i>
+        </div>
+        <h1>Limpiar Caché IA</h1>
+        <p>Esta acción eliminará todos los análisis estratégicos almacenados localmente de <strong>IAModuleV2</strong>,
+            forzando una nueva consulta a la inteligencia artificial al recargar el dashboard.</p>
+
+        <div id="status"></div>
+
+        <button id="cleanBtn" class="btn-clean" onclick="cleanIA()">
+            <i class="fa-solid fa-trash-can" style="margin-right: 8px;"></i> EJECUTAR LIMPIEZA
+        </button>
+
+        <div class="footer-note">
+            <i class="fa-solid fa-circle-info"></i> Prefijo de caché: <code>ia_v2_fix_</code>
+        </div>
+    </div>
+
+    <script>
+        function cleanIA() {
+            const btn = document.getElementById('cleanBtn');
+            const status = document.getElementById('status');
+            const prefix = 'ia_v2_fix_';
+            let count = 0;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESANDO...';
+
+            // Escanear localStorage
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith(prefix)) {
+                    localStorage.removeItem(key);
+                    count++;
+                }
+            }
+
+            setTimeout(() => {
+                status.style.display = 'block';
+                status.style.backgroundColor = '#dcfce7';
+                status.style.color = '#166534';
+                status.innerHTML = `<i class="fa-solid fa-check-circle"></i> ÉXITO: Se eliminaron ${count} registros de caché.`;
+
+                btn.innerHTML = '<i class="fa-solid fa-rotate-right"></i> RECARGAR DASHBOARD';
+                btn.disabled = false;
+                btn.style.backgroundColor = '#1e293b';
+                btn.onclick = () => window.location.href = 'index.html';
+
+                console.log(`🤖 IA [CLEANER]: Limpieza completada. ${count} llaves eliminadas.`);
+            }, 800);
+        }
+    </script>
+</body>
+
+</html>

@@ -40,6 +40,7 @@
             <div class="kpi-label">Pico Máximo</div>
             <div class="kpi-value" id="v2_max_24s">--</div>
             <div class="kpi-change" id="v2_max_week">--</div>
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">(Registro histórico global)</div>
         </div>
         <div class="kpi-card">
             <div class="kpi-label">Brecha Histórica</div>
@@ -134,16 +135,19 @@
         const prevMA = movingAvg[movingAvg.length - 2] || lastMA;
         const maVar = prevMA > 0 ? ((lastMA - prevMA) / prevMA * 100) : 0;
 
-        // KPI Calculations (24 weeks)
+        // KPI Calculations
         const total24 = cases.reduce((a, b) => a + b, 0);
-        const max24 = Math.max(...cases);
-        const maxIndex = cases.indexOf(max24);
-        const maxWeekLabel = labels[maxIndex] || '--';
+
+        // Histórico Global Maximo
+        const globalMax = Math.max(...S.allDataHistory_total.map(r => r[C.CASOS_ACTUAL] || 0));
+        const maxRecord = S.allDataHistory_total.find(r => (r[C.CASOS_ACTUAL] || 0) === globalMax);
+        const maxWeekLabel = maxRecord ? (S.getDateLabel ? S.getDateLabel(maxRecord[C.ID_SEMANA]) : `Sem ${maxRecord[C.ID_SEMANA] % 100}`) : '--';
+
         const deltaGlobal = globalAvg > 0 ? ((avg24 - globalAvg) / globalAvg * 100) : 0;
 
         document.getElementById('v2_total_24s').textContent = total24;
         document.getElementById('v2_avg_24s').textContent = avg24.toFixed(1);
-        document.getElementById('v2_max_24s').textContent = max24;
+        document.getElementById('v2_max_24s').textContent = globalMax;
         document.getElementById('v2_max_week').textContent = `Semana: ${maxWeekLabel}`;
         const deltaEl = document.getElementById('v2_delta_hist');
         deltaEl.textContent = `${deltaGlobal >= 0 ? '+' : ''}${deltaGlobal.toFixed(1)}%`;
@@ -287,7 +291,7 @@
             }
         });
 
-    
+
         // IA Integration
         if (typeof IAModule !== 'undefined') {
             IAModule.getInterpretation('vista2').then(txt => {

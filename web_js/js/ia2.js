@@ -24,7 +24,7 @@ window.IAModuleV2 = {
         this.cache = {};
 
         window.addEventListener('dataManagerLoaded', () => {
-            console.log('🤖 IA [EVENT]: dataManagerLoaded detectado. Esperando 30s de cortesía (Legacy Stable Delay)...');
+            console.log('🤖 IA [EVENT]: dataManagerLoaded detectado. Esperando 3s para sincronización de UI...');
             setTimeout(() => {
                 this.cache = this.loadCache();
                 if (!this.cache.vista1) {
@@ -34,7 +34,7 @@ window.IAModuleV2 = {
                     console.log('🤖 IA [CACHE]: Cargado desde local con', Object.keys(this.cache).length, 'vistas.');
                     this.updateAllViews();
                 }
-            }, 30000);
+            }, 3000);
         });
 
         window.addEventListener('viewLoaded', () => {
@@ -94,57 +94,67 @@ window.IAModuleV2 = {
         const cases = totalRow[C.CASOS_ACTUAL] || 0;
         const prev = totalRow[C.CASOS_ANT] || 0;
         const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
+        const cagr_4s = totalRow[C.T31_CAGR_4S] || 0;
 
         // --- Specific Vistas Metrics ---
-
-        // V12-V16: Context & Ranks (Simulated/Calculated)
-        const nationalRank = totalRow[C.RANK_NAC] || 120; // Example
-        const clusterRank = totalRow[C.RANK_CLUSTER] || 5;
+        const nationalRank = totalRow['ranking_nacional_semanal'] || totalRow[C.RANK_NAC] || '--';
+        const clusterRank = totalRow[C.RANK_CLUSTER_SEM] || totalRow[C.RANK_CLUSTER] || '--';
+        const regionalRank = totalRow['ranking_regional_semanal'] || '--';
         const effectiveness = (totalRow[C.DETENIDOS] || 0) / (cases || 1) * 100;
 
-        // V19: Emerging (STOP & CEAD)
-        const stopEmerging = S.allDataHistory
-            .filter(r => r[C.ID_SEMANA] === S.currentSemana && r[C.CASOS_ACTUAL] > r[C.CASOS_ANT] * 1.2)
-            .map(r => r[C.DELITO]).slice(0, 2);
+        // Crime breakdown (Top 5 actual week)
+        const currentData = S.allDataHistory.filter(r => r[C.ID_SEMANA] === S.currentSemana).sort((a, b) => (b[C.CASOS_ACTUAL] || 0) - (a[C.CASOS_ACTUAL] || 0));
+        const topCrimes = currentData.slice(0, 5).map(r => `${r[C.DELITO]}: ${r[C.CASOS_ACTUAL]}`);
+        const risingCrimes = currentData.filter(r => (r[C.CASOS_ACTUAL] > r[C.CASOS_ANT])).map(r => `${r[C.DELITO]} (+${r[C.CASOS_ACTUAL] - r[C.CASOS_ANT]})`);
+        const fallingCrimes = currentData.filter(r => (r[C.CASOS_ACTUAL] < r[C.CASOS_ANT])).map(r => `${r[C.DELITO]} (${r[C.CASOS_ACTUAL] - r[C.CASOS_ANT]})`);
+
+        // V19 & V21: Emerging & Momentum
+        const stopEmerging = currentData
+            .filter(r => r[C.CASOS_ACTUAL] > 0 && r[C.CASOS_ACTUAL] > (r[C.CASOS_ANT] * 1.5))
+            .map(r => r[C.DELITO]).slice(0, 3);
+
+        const highMomentum = currentData
+            .filter(r => r[C.DELITO] !== 'Total' && r[C.T31_CAGR_4S] > 0)
+            .sort((a, b) => b[C.T31_CAGR_4S] - a[C.T31_CAGR_4S])
+            .map(r => `${r[C.DELITO]} (CAGR 4S: ${r[C.T31_CAGR_4S].toFixed(1)}%)`).slice(0, 3);
 
         const ceadEmerging = S_CEAD && S_CEAD.allDataHistory
             ? S_CEAD.allDataHistory.filter(r => r[C_CEAD.ID_PERIODO] === S_CEAD.periodoId && r[C_CEAD.Z_SCORE] > 1.5).map(r => r[C_CEAD.DELITO]).slice(0, 2)
             : [];
 
         // V20: Success
-        const stopSuccess = S.allDataHistory
-            .filter(r => r[C.ID_SEMANA] === S.currentSemana && r[C.CASOS_ACTUAL] < r[C.CASOS_ANT] * 0.8)
-            .map(r => r[C.DELITO]).slice(0, 2);
-
-        // V21: Forecast (Simplified)
-        const forecastTrend = "Estable"; // Placeholder for complex SARIMA logic output
+        const stopSuccess = currentData
+            .filter(r => r[C.CASOS_ACTUAL] === 0 && r[C.CASOS_ANT] > 0)
+            .map(r => r[C.DELITO]).slice(0, 3);
 
         // V22: Priority
-        const priorityCrime = S.allDataHistory
-            .filter(r => r[C.ID_SEMANA] === S.currentSemana)
-            .sort((a, b) => (b[C.CASOS_ACTUAL] * (b[C.CASOS_ACTUAL] / b[C.CASOS_ANT] || 1)) - (a[C.CASOS_ACTUAL] * (a[C.CASOS_ACTUAL] / a[C.CASOS_ANT] || 1)))
+        const priorityCrime = currentData
+            .filter(r => r[C.CASOS_ACTUAL] > 5 && r[C.CASOS_ACTUAL] > r[C.CASOS_ANT])
             .map(r => r[C.DELITO])[0] || 'N/A';
-
-        const regionalRank = totalRow['ranking_regional_proy_anual'] || totalRow['ranking_regional_tasa_sem'] || totalRow[C.RANK_REG_TASA] || 'N/A';
 
         return {
             comuna: S.comunaName,
             week: S.semanaDetalle,
             metrics: {
                 total_cases: cases,
-                weekly_delta: delta.toFixed(1) + '%',
+                total_cases_last_week: prev,
+                weekly_delta_percent: delta.toFixed(1) + '%',
+                overall_momentum_cagr_4s: cagr_4s.toFixed(1) + '%',
                 communal_rate: (totalRow[C.TASA_SEMANAL] || 0).toFixed(1),
                 national_rank: nationalRank,
-                cluster_rank: clusterRank,
                 regional_rank: regionalRank,
+                cluster_rank: clusterRank,
                 effectiveness_ratio: effectiveness.toFixed(1) + '%'
             },
             insights: {
+                top_crimes_volume: topCrimes.join(', '),
+                crimes_increasing_wow: risingCrimes.join(', '),
+                crimes_decreasing_wow: fallingCrimes.join(', '),
                 emerging_short_term: stopEmerging.join(', '),
                 emerging_long_term: ceadEmerging.join(', '),
+                crimes_with_high_momentum: highMomentum.join(', '),
                 success_stories: stopSuccess.join(', '),
-                priority_focus: priorityCrime,
-                forecast_trend: forecastTrend
+                priority_focus: priorityCrime
             }
         };
     },
@@ -158,7 +168,6 @@ window.IAModuleV2 = {
         console.log('🤖 IA [START]: Generando nuevo análisis estratégico...');
 
         const S = window.STATE_DATA;
-        console.log('🤖 IA [DEBUG]: Construyendo contexto para', S?.comunaName);
         const context = this.buildContext(S);
 
         if (!context) {
@@ -168,7 +177,6 @@ window.IAModuleV2 = {
         }
 
         try {
-            console.log('🤖 IA [FETCH]: Iniciando llamada a API Zhipu (GLM-4)...');
             const prompt = `
 Eres un analista de inteligencia estratégica y perfilador criminal experto en el sistema STOP y CEAD de Carabineros de Chile.
 Tu misión es generar interpretaciones estratégicas DETALLADAS, ANALÍTICAS y EJECUTIVAS para el dashboard de seguridad de la COMUNA DE ${context.comuna.toUpperCase()}.
@@ -177,51 +185,67 @@ CONTEXTO OPERATIVO (${context.week}):
 ${JSON.stringify(context, null, 2)}
 
 REGLAS CRÍTICAS DE RESPUESTA:
-- El análisis debe ser profundo, extenso y profesional (entre 50 y 85 palabras por cada vista). Aborda el QUÉ, el POR QUÉ y el QUÉ HACER.
+- ESTILO MILITAR ULTRA-CONCISO: Respuestas de impacto, máximo 20 a 30 palabras por vista. Ve directo a la conclusión operativa.
 - Menciona siempre la comuna ("${context.comuna}") para contextualizar territorialmente de manera natural y formal.
-- Adopta un tono de mando policial técnico, directo, sin eufemismos, orientado puramente a toma de decisiones y mitigación de crisis.
-- Relaciona los hallazgos directamente con los datos entregados en el CONTEXTO OPERATIVO. Si falta algún dato empírico, realiza inferencias lógicas basadas en la posición del ranking global de la comuna o en el comportamiento habitual de Chile.
+- Adopta un tono de mando policial técnico, directo, sin eufemismos, orientado puramente a toma de decisiones y mitigación de crisis. Elimina verbosidad inútil.
+- Relaciona los hallazgos directamente con los datos entregados en el CONTEXTO OPERATIVO. Si falta algún dato empírico, realiza inferencias lógicas y razonables según la criminología y el comportamiento habitual en Chile.
 
 PREGUNTAS A RESPONDER DETALLADAMENTE (UNA RESPUESTA CERRADA Y COMPLETA POR VISTA):
-- vista1: ¿Qué ha pasado en la última semana? (Veredicto general, magnitud de la variación y tipología principal que tracciona la estadística).
-- vista2: ¿Cómo ha sido la evolución mensual durante este año y la tendencia de los últimos 6 meses respecto a la media histórica del sector?
-- vista3: ¿Cómo se compara el volumen de la última semana con el historial? ¿Alcanzamos un peak o un valle preocupante?
-- vista4: ¿Existe estacionalidad o patrones recurrentes en el año histórico que debamos anticipar para los próximos meses en esta jurisdicción?
-- vista5: ¿Cuáles son las problemáticas que concentran el 80% de los incidentes en la comuna (Ley de Pareto) que requieren foco operativo inmediato?
-- vista6: ¿Qué tipologías han mostrado las variaciones porcentuales más drásticas recientemente y cómo cambian el pulso de la percepción local?
-- vista7: ¿Hay delitos que muestran rachas continuas de aumento durante varias semanas? ¿A qué táctica evasiva criminal podrían atribuirse?
-- vista8: ¿Existen delitos que suelen ocurrir o aumentar en conjunto indicando un modus operandi complejo en el territorio?
-- vista9: ¿Cuál es nuestra tasa delictual relativa a la población y cómo contrasta el volumen delictual frente al total regional (intercomunal)?
-- vista10: ¿Cómo es nuestra carga comparada con el resto de la región? Analiza la posición del ranking regional de la comuna en el contexto amplio.
-- vista11: En perspectiva de una o dos décadas atrás (sistema CEAD), ¿cuál es el diagnóstico estructural histórico de la zona?
-- vista12: Considerando la posición en el Ranking Nacional de Casos de la comuna, ¿qué lectura estratégica se hace sobre nuestro desempeño frente al país?
-- vista13: Según el Ranking de Clúster (grupos demográficos similares), ¿por qué presentamos estas problemáticas particulares respecto a nuestros pares sociodemográficos?
-- vista14: ¿De todo el panorama regional, qué carga asume nuestra comuna y por qué la vuelve un objetivo crítico o secundario?
-- vista15: Tasa de resolución/detención. ¿La efectividad operativa y preventiva está frenando la tasa de ingresos de ilícitos adecuadamente en el momento?
-- vista16: Mapa de Posicionamiento: ¿Qué tan efectivos somos en comparación a otras comunas vecinas en términos de mitigación de daños?
-- vista17: En base a la inercia delictual actual, ¿cuál es la proyección de casos más agresiva esperada para el Cierre Anual?
-- vista18: Analizando el historial crítico de rachas y fluctuaciones o quiebres estructurales en los últimos meses, ¿hay control sobre la serie?
-- vista19: ¿Qué nuevos delitos "Emergentes" de expansión rápida están apareciendo en la zona para romper el molde normal esperado?
-- vista20: ¿Qué delitos específicos estamos logrando reducir con éxito prolongado y por qué se sostiene la disipación sobre el tiempo?
-- vista21: ¿Están los delitos acelerando su ritmo (Momentum alcista) superando la capacidad de respuesta policial e intervención operativa disponible?
-- vista22: Prioridad estratégica urgente. Si el mando logístico forzara intervenir sólo en un factor, ¿en qué fenómeno enfoca y por qué motivo radical?
-- vista23: ¿Cuál debería ser el diseño o recomendación de la siguiente ronda de servicios focalizados para desbaratar esta coyuntura de manera asimétrica?
-- vista24: REPORTE DE INTELIGENCIA (RESUMEN): Veredicto ejecutivo total del Estado Operacional de la comuna para las altas esferas de Autoridad o Jefatura.
-- vista25: Calidad del informe y suficiencia del dato. ¿Los vacíos de información empírica limitan la toma de decisiones definitivas hoy para este polígono?
+- vista1: ¿Qué ha pasado en la última semana? (Veredicto general, magnitud de la variación y tipologías principales que traccionan la estadística).
+- vista2: ¿Cuál es la evolución reciente del delito? (Tendencia del mes vs meses previos y la media móvil).
+- vista3: ¿Estamos en un nivel crítico de delitos esta semana? (Comparación contra máximos y promedios históricos, magnitud del problema).
+- vista4: ¿Existen patrones estacionales en el delito local? (Meses críticos del año que requieran prevención anticipada).
+- vista5: ¿Cuáles son los delitos críticos que requieren foco inmediato? (Aplicación de Ley de Pareto, qué ilícitos concentran el 80% del daño).
+- vista6: ¿Cuáles son los cambios porcentuales más drásticos que afectan la percepción de seguridad de la población local?
+- vista7: ¿Qué delitos muestran un crecimiento estructural los últimos 20 años? (Tendencias de largo plazo y cambios sistémicos según CEAD).
+- vista8: ¿Existen asociaciones delictuales y patrones concurrentes? (Co-ocurrencia criminal y posibles bandas multicrimen operando).
+- vista9: ¿Qué delitos locales son críticos a nivel nacional y regional comparando la comuna con el estándar global?
+- vista10: ¿Cuál es nuestra carga comparada con el resto de la región? (Tasa versus promedio regional y posición en el ranking).
+- vista11: ¿Nuestra posición relativa ha mejorado o empeorado en la década? (Benchmark histórico regional).
+- vista12: ¿Cuál es nuestra posición en el contexto nacional? (Análisis del ranking país y vulnerabilidad global).
+- vista13: ¿Cómo nos comparamos con comunas similares? (Clúster sociodemográfico, ¿somos los peores o los mejores entre pares?).
+- vista14: ¿Qué peso tiene nuestra comuna en la región? (Proporción de casos aportados al total regional y concentración del riesgo).
+- vista15: ¿Qué tan efectiva es la respuesta policial ante el delito? (Ratio de detenciones versus ingresos de casos en el año).
+- vista16: ¿Qué tan efectivos somos comparados con otras comunas? (Matriz de posicionamiento relativo regional de efectividad).
+- vista17: ¿Nuestra carga delictual es proporcional a nuestra población? (Desproporción entre volumen poblacional y la cantidad de denuncias en el clúster).
+- vista18: ¿Está aumentando la violencia en los delitos? (Balance cualitativo: delitos violentos vs delitos contra la propiedad).
+- vista19: ¿Qué nuevos delitos están "Emergiendo" o acelerándose de forma atípica rompiendo la inercia esperada en la zona?
+- vista20: ¿Qué delitos estamos logrando reducir con éxito sostenido (disipación de la amenaza)?
+- vista21: "Momentum Delictual" y Rachas de Crecimiento: ¿Están los delitos acelerando su ritmo (CAGR alto y rachas de semanas consecutivas)? 
+- vista22: ¿Dónde debemos concentrar los recursos hoy? (Focalización táctica cruzada de alto volumen y alza urgente).
+- vista23: ¿Cómo se comportan las cifras a partir de distintas clasificaciones de delitos? (Severidad, modus operandi y naturaleza jurídica).
+- vista24: REPORTE DE INTELIGENCIA (RESUMEN): Veredicto ejecutivo total del Estado Operacional de la comuna para Autoridades (Directores/Jefes).
+- vista25: Calidad del informe y suficiencia del dato. ¿Qué tan confiable es la información que estamos viendo en base a vacíos u outliers?
 
 FORMATO DE RESPUESTA:
-Crea SOLO Y EXCLUSIVAMENTE un bloque con formato JSON VÁLIDO.
-Las claves deben ir de "vista1" hasta "vista25" estrictamente.
-El valor de cada clave debe ser un STRING directo y simple (sin saltos de línea \n ni comillas no escapadas).
-No escribas la palabra json, no agregues explicaciones afuera. Empieza siempre el mensaje con "{" y termínalo con "}".`;
+NUNCA uses JSON. Devuelve tu respuesta como texto simple, separando cada análisis con una etiqueta de corchetes.
+Tu respuesta debe lucir exactamente así:
+[vista1]
+Tu análisis para la vista 1 aquí...
+[vista2]
+Tu análisis para la vista 2 aquí...
+(Y así sucesivamente hasta [vista25]). No agregues encabezados ni despedidas.`;
+
+            // Auditoría de Calidad Preventiva
+            if (window.PromptQuality && !window.PromptQuality.audit(prompt, context)) {
+                this.updateAllViews(true);
+                this.fetching = false;
+                return;
+            }
 
             const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf");
             const fetchController = new AbortController();
-            // Aumentamos a 90s por latencia y carga de la API GLM-4
+            // Aumentamos a 240s (4 minutos) para evitar abortar durante procesamiento complejo
             const fetchTimeoutId = setTimeout(() => {
-                console.warn('🤖 IA [TIMEOUT]: La petición excedió los 90s y será abortada.');
+                console.warn('🤖 IA [TIMEOUT]: La petición excedió los 240s y será abortada.');
                 fetchController.abort();
-            }, 90000);
+            }, 240000);
+
+            const payload = {
+                model: this.MODEL_NAME,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.5
+            };
 
             // jitter
             await new Promise(r => setTimeout(r, 1000 + Math.random() * 2000));
@@ -231,33 +255,58 @@ No escribas la palabra json, no agregues explicaciones afuera. Empieza siempre e
                 response = await fetch(this.API_URL, {
                     method: 'POST',
                     headers: { 'Authorization': 'Bearer ' + API_KEY, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: this.MODEL_NAME,
-                        messages: [{ role: "user", content: prompt }],
-                        temperature: 0.5
-                    }),
+                    body: JSON.stringify(payload),
                     signal: fetchController.signal
                 });
-                console.log('🤖 IA [RES]: HTTP Status', response.status);
             } finally {
                 clearTimeout(fetchTimeoutId);
             }
 
             if (response.status === 429) {
-                throw new Error("Límite de peticiones alcanzado (429). Reintentando en próxima sesión.");
+                let errorDetails = "Límite de peticiones alcanzado (429).";
+                try {
+                    const errorJson = await response.json();
+                    if (errorJson.error && errorJson.error.message) {
+                        errorDetails += " Detalle: " + errorJson.error.message;
+                    }
+                } catch (e) {
+                    // Si no es JSON, intentar como texto
+                    try {
+                        const errorText = await response.text();
+                        if (errorText) errorDetails += " Info: " + errorText.substring(0, 100);
+                    } catch (e2) { }
+                }
+                console.error('🤖 IA [ERROR]:', errorDetails);
+                throw new Error(errorDetails);
             }
-            if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+            if (!response.ok) {
+                let failMsg = `HTTP Error ${response.status}`;
+                try {
+                    const failBody = await response.text();
+                    failMsg += ` - ${failBody.substring(0, 150)}`;
+                } catch (e) { }
+                throw new Error(failMsg);
+            }
 
             const result = await response.json();
-            const content = result.choices?.[0]?.message?.content || '{}';
-            console.log('🤖 IA [DATA]: Respuesta recibida (longitud:', content.length, ')');
+            const content = result.choices?.[0]?.message?.content || '';
 
-            const jsonStart = content.indexOf('{');
-            const jsonEnd = content.lastIndexOf('}') + 1;
-            const cleanJson = content.substring(jsonStart, jsonEnd);
-            const analyses = JSON.parse(cleanJson);
+            // Parser de Texto Libre (RegEx) para extraer [vistaX]
+            const analyses = {};
+            const regex = /\[(vista\d+)\]([\s\S]*?)(?=\[vista\d+\]|$)/gi;
+            let match;
 
-            console.log('🤖 IA [OK]: Análisis parseado correctamente. Actualizando UI.');
+            while ((match = regex.exec(content)) !== null) {
+                const vistaKey = match[1].toLowerCase();
+                const textVal = match[2].trim();
+                analyses[vistaKey] = textVal;
+            }
+
+            if (Object.keys(analyses).length === 0) {
+                throw new Error("El modelo generó un texto pero no se detectaron etiquetas de vistas.");
+            }
+
             this.cache = analyses;
             this.saveCache(analyses);
             this.updateAllViews();
@@ -265,7 +314,7 @@ No escribas la palabra json, no agregues explicaciones afuera. Empieza siempre e
         } catch (e) {
             console.error('🤖 IA [ERROR]:', e);
             if (e.name === 'AbortError') {
-                console.error('🤖 IA [CRITICAL]: La petición fue cancelada por timeout o señal externa.');
+                console.error('🤖 IA [CRITICAL]: La petición fue cancelada por timeout.');
             }
             this.updateAllViews(true);
         } finally {
@@ -282,24 +331,20 @@ No escribas la palabra json, no agregues explicaciones afuera. Empieza siempre e
                 if (isError) {
                     el.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Servicio de IA no disponible. Verifique conexión.';
                     if (parent) {
-                        // Cambiar estilo a Error visualmente
-                        parent.style.backgroundColor = 'rgba(254, 226, 226, 0.5)'; // Rojo claro
-                        parent.style.borderColor = '#fca5a5';
-                        parent.style.color = '#b91c1c';
-                        // Intentar quitar alert--info si entra en conflicto
                         parent.classList.remove('alert--info');
                         parent.classList.add('alert--danger');
+                        parent.style.backgroundColor = 'rgba(254, 226, 226, 0.5)';
+                        parent.style.borderColor = '#fca5a5';
+                        parent.style.color = '#b91c1c';
                     }
-                }
-                else if (this.cache[vid]) {
+                } else if (this.cache[vid]) {
                     el.textContent = this.cache[vid];
                     if (parent) {
-                        // Restaurar estilo Info
+                        parent.classList.add('alert--info');
+                        parent.classList.remove('alert--danger');
                         parent.style.backgroundColor = '';
                         parent.style.borderColor = '';
                         parent.style.color = '';
-                        parent.classList.add('alert--info');
-                        parent.classList.remove('alert--danger');
                     }
                 }
             }

@@ -173,25 +173,25 @@
         const status = document.getElementById('v24_status_badge');
 
         if (delta > 15) {
-            status.textContent = 'STATUS: CRÍTICO';
+            status.textContent = 'STATUS: TENDENCIA DESBORDADA';
             status.style.background = '#fef2f2';
             status.style.color = '#ef4444';
             status.style.border = '2px solid #ef4444';
-            document.getElementById('v24_kpi_risk').textContent = "ALTO";
+            document.getElementById('v24_kpi_risk').textContent = "EXPANSIVO";
             document.getElementById('v24_kpi_risk').style.color = "#ef4444";
         } else if (delta < -5) {
-            status.textContent = 'STATUS: FAVORABLE';
+            status.textContent = 'STATUS: TENDENCIA CONTENIDA';
             status.style.background = '#f0fdf4';
             status.style.color = '#10b981';
             status.style.border = '2px solid #10b981';
-            document.getElementById('v24_kpi_risk').textContent = "BAJO";
+            document.getElementById('v24_kpi_risk').textContent = "RECESIVO";
             document.getElementById('v24_kpi_risk').style.color = "#10b981";
         } else {
-            status.textContent = 'STATUS: ESTABLE';
+            status.textContent = 'STATUS: TENDENCIA LATENTE';
             status.style.background = '#f8fafc';
             status.style.color = '#64748b';
             status.style.border = '2px solid #cbd5e1';
-            document.getElementById('v24_kpi_risk').textContent = "MODERADO";
+            document.getElementById('v24_kpi_risk').textContent = "ESTANCADO";
             document.getElementById('v24_kpi_risk').style.color = "#f59e0b";
         }
 

@@ -420,12 +420,18 @@
 
         // ── Pie de página ──
         const tasaMe = miData.tasa_semanal || 0;
-        const tasaClusAvg = clusterComunas.reduce((s, c) => s + (c.tasa_semanal || 0), 0) / clusterComunas.length;
-        const tasaRegAvg = regionComunas.reduce((s, c) => s + (c.tasa_semanal || 0), 0) / regionComunas.length;
+
+        // Cálculo Real Ponderado (Total Casos / Total Población * 100k)
+        // totalPobClus y totalDelClus ya fueron calculados en la línea 233
+        const trueTasaClus = totalPobClus > 0 ? (totalDelClus / totalPobClus) * 100000 : 0;
+
+        // Valor Oficial calculado por Backend para garantizar consistencia cruzada (Ej: Vista 10)
+        const totalRow = S.allDataHistory_total.find(r => r[window.COLS.ID_SEMANA] === S.currentSemana) || {};
+        const trueTasaReg = totalRow[window.COLS.TASA_REGIONAL_SEMANAL] || totalRow.tasa_regional || 0;
 
         document.getElementById('v17_tasa_me').textContent = tasaMe.toFixed(1);
-        document.getElementById('v17_tasa_clus').textContent = tasaClusAvg.toFixed(1);
-        document.getElementById('v17_tasa_reg').textContent = tasaRegAvg.toFixed(1);
+        document.getElementById('v17_tasa_clus').textContent = trueTasaClus.toFixed(1);
+        document.getElementById('v17_tasa_reg').textContent = trueTasaReg.toFixed(1);
 
     })();
 </script>

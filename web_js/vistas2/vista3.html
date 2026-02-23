@@ -34,6 +34,7 @@
             </div>
             <div id="v3_max_val" style="font-size: 2.2rem; font-weight: 900; color: #ef4444;">--</div>
             <div id="v3_max_date" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">--</div>
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">(Registro histórico global)</div>
         </div>
         <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #10b981;">
             <div
@@ -42,6 +43,7 @@
             </div>
             <div id="v3_min_val" style="font-size: 2.2rem; font-weight: 900; color: #10b981;">--</div>
             <div id="v3_min_date" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">--</div>
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 4px;">(Registro histórico global)</div>
         </div>
         <div class="kpi-card" style="text-align: center; padding: 1.5rem; border-top: 4px solid #f59e0b;">
             <div
@@ -49,16 +51,18 @@
                 PROMEDIO
             </div>
             <div id="v3_avg_val" style="font-size: 2.2rem; font-weight: 900; color: #f59e0b;">--</div>
-            <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Últimas 52 Semanas</div>
+            <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Últimas 53 Semanas</div>
         </div>
     </div>
 
-    <!-- Nota de Datos: Semana 46/2025 -->
     <div
         style="display: flex; align-items: flex-start; gap: 10px; background: #fef9c3; border-left: 3px solid #f59e0b; border-radius: 6px; padding: 0.6rem 0.9rem; margin-bottom: 1.5rem; font-size: 0.8rem; color: #78350f;">
         <i class="fa-solid fa-triangle-exclamation" style="margin-top: 2px; flex-shrink: 0;"></i>
-        <span><strong>Nota de Datos:</strong> La <strong>Semana 46/2025</strong> ha sido excluida del análisis
-            histórico. Los valores semanales de ese período no se encuentran disponibles en el sistema STOP.</span>
+        <span><strong>Nota de Datos:</strong>
+            1. La <strong>Semana 46/2025</strong> ha sido excluida del análisis por falta de datos.
+            2. Para el cálculo del <strong>Mínimo Histórico</strong>, las <strong>Semanas 1 y 53</strong> de todos los
+            años han sido excluidas debido a que, por sistema, históricamente agrupan menos días.
+        </span>
     </div>
     <div style="margin-bottom: 2rem;">
         <h4
@@ -81,7 +85,7 @@
 
     <!-- Sparkline Header -->
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
-        <h4 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin: 0;">Perspectiva Anual (52 Semanas)</h4>
+        <h4 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin: 0;">Perspectiva Anual (53 Semanas)</h4>
         <div style="font-size: 0.7rem; color: #64748b; font-weight: 600;">
             <span style="color: var(--color-primary);">■</span> Semana Actual destacada
         </div>
@@ -89,7 +93,7 @@
 
     <!-- Sparkline Container -->
     <div class="chart-wrapper"
-        style="height: 120px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">
+        style="height: 250px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">
         <canvas id="v3_sparkline"></canvas>
     </div>
 </div>
@@ -101,8 +105,8 @@
         style="background-color: #f8fafc; border-left: 4px solid #cbd5e1; padding: 1rem; border-radius: 4px; color: #64748b; font-size: 0.85rem; line-height: 1.5;">
         <strong>Nota Metodológica:</strong> Esta vista compara la semana actual con puntos críticos históricos (máximos,
         mínimos y promedios) para contextualizar el nivel de actividad delictual. El <strong>máximo histórico</strong>
-        indica el peor registro de las últimas 52 semanas; el <strong>mínimo</strong>, el mejor. La línea punteada en el
-        gráfico representa el promedio anual como referencia de normalidad estadística.
+        indica el peor registro de su historia; el <strong>mínimo</strong>, el mejor. La línea punteada en el
+        gráfico representa el promedio anual (53 semanas) como referencia de normalidad estadística.
     </div>
 </div>
 
@@ -155,24 +159,46 @@
         const casosAnt = prevRow?.[C.CASOS_ACTUAL] || 0; // Fixed: Use CASOS_ACTUAL of previous row
         const fechaAnt = prevRow ? (S.getDateLabel ? S.getDateLabel(prevRow[C.ID_SEMANA]) : 'Semana Ant.') : '--';
 
-        // Calculate Stats (Max, Min, Avg) over last 52 weeks
-        const weeks52 = historyCols.slice(0, 52); // Ensure we only look at last year window
-        if (weeks52.length === 0) return;
-
-        let maxVal = -1, minVal = 999999, sumVal = 0;
+        // Calculate Max and Min globally
+        let maxVal = -1, minVal = 999999;
         let maxRow = null, minRow = null;
 
-        weeks52.forEach(r => {
+        historyCols.forEach(r => {
             const val = r[C.CASOS_ACTUAL] || 0;
-            sumVal += val;
 
+            // Extraer el número real de semana desde la etiqueta generada por el sistema (ej: "Semana 53/2024" -> 53)
+            const dateLabelStr = S.getDateLabel ? String(S.getDateLabel(r[C.ID_SEMANA])) : '';
+            const weekMatch = dateLabelStr.match(/Semana\s*(\d+)/i);
+            const weekNumber = weekMatch ? parseInt(weekMatch[1], 10) : -1;
+
+            // Máximo histórico (evalúa todas)
             if (val > maxVal) { maxVal = val; maxRow = r; }
-            if (val < minVal) { minVal = val; minRow = r; }
+
+            // Mínimo histórico (Filtrar Semana 1 y 53 por ser anómalas estadísticamente)
+            if (weekNumber !== 1 && weekNumber !== 53) {
+                if (val < minVal) { minVal = val; minRow = r; }
+            }
         });
 
-        const avgVal = sumVal / weeks52.length;
+        // Fallback: si por alguna razón todas fueron filtradas, usar el mínimo absoluto
+        if (minRow === null && historyCols.length > 0) {
+            minRow = historyCols.reduce((prev, curr) => (prev[C.CASOS_ACTUAL] || 0) < (curr[C.CASOS_ACTUAL] || 0) ? prev : curr);
+            minVal = minRow[C.CASOS_ACTUAL] || 0;
+        }
+
         const maxDate = maxRow ? (S.getDateLabel ? S.getDateLabel(maxRow[C.ID_SEMANA]) : `S${maxRow[C.ID_SEMANA]}`) : '--';
         const minDate = minRow ? (S.getDateLabel ? S.getDateLabel(minRow[C.ID_SEMANA]) : `S${minRow[C.ID_SEMANA]}`) : '--';
+
+        // Calculate Stats (Avg) over last 53 weeks
+        const weeks53 = historyCols.slice(0, 53); // Consider 53 weeks as full operational year
+        if (weeks53.length === 0) return;
+
+        let sumVal = 0;
+        weeks53.forEach(r => {
+            sumVal += r[C.CASOS_ACTUAL] || 0;
+        });
+
+        const avgVal = sumVal / weeks53.length;
 
         // Update Cards
         document.getElementById('v3_max_val').textContent = ChartHelper.formatNumber(maxVal);
@@ -191,7 +217,7 @@
             { label: 'Semana Actual', date: fechaActual, val: casosActual, color: '#3b82f6', bg: '#eff6ff' }, // Blue
             { label: 'Semana Anterior', date: fechaAnt, val: casosAnt, color: '#ef4444', bg: '#fef2f2' }, // Red (Requested)
             { label: 'Mínimo Histórico', date: minDate, val: minVal, color: '#10b981', bg: '#ecfdf5' }, // Green
-            { label: 'Promedio (52 Sem)', date: 'Último Año', val: avgVal.toFixed(1), color: '#f59e0b', bg: '#fffbeb' } // Yellow
+            { label: 'Promedio Anual', date: 'Últimas 53 Sem.', val: avgVal.toFixed(1), color: '#f59e0b', bg: '#fffbeb' } // Yellow
         ];
 
         tbody.innerHTML = tableData.map(r => `
@@ -209,7 +235,7 @@
         `).join('');
 
         // Sparkline Data Preparation (Reverse for Chronological Order)
-        const sparkRows = [...weeks52].reverse(); // Oldest -> Newest
+        const sparkRows = [...weeks53].reverse(); // Oldest -> Newest
         const sparkLabels = sparkRows.map(r => S.getDateLabel ? S.getDateLabel(r[C.ID_SEMANA]) : `S${r[C.ID_SEMANA]}`);
         const sparkData = sparkRows.map(r => r[C.CASOS_ACTUAL] || 0);
 
@@ -262,10 +288,45 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true },
+                    datalabels: {
+                        color: function (ctx) {
+                            const val = ctx.dataset.data[ctx.dataIndex];
+                            if (val === maxVal) return '#ef4444'; // Red
+                            if (val === minVal) return '#10b981'; // Green
+                            if (ctx.dataIndex === sparkData.length - 1) return '#3b82f6'; // Blue
+                            return 'transparent';
+                        },
+                        align: 'top',
+                        font: { weight: 'bold', size: 11 },
+                        formatter: function (value, ctx) {
+                            const val = value;
+                            if (val === maxVal || val === minVal || ctx.dataIndex === sparkData.length - 1) return value;
+                            return '';
+                        },
+                        backgroundColor: function (ctx) {
+                            const val = ctx.dataset.data[ctx.dataIndex];
+                            if (val === maxVal || val === minVal || ctx.dataIndex === sparkData.length - 1) return 'rgba(255, 255, 255, 0.8)';
+                            return 'transparent';
+                        },
+                        borderRadius: 4,
+                        padding: 2
+                    }
+                },
                 scales: {
-                    y: { display: false, beginAtZero: false },
-                    x: { display: false }
+                    y: {
+                        display: true,
+                        beginAtZero: true,
+                        title: { display: true, text: 'Casos Semanales', color: '#64748b' }
+                    },
+                    x: {
+                        display: true,
+                        title: { display: true, text: 'Semanas (Último Año)', color: '#64748b' },
+                        grid: { display: false },
+                        ticks: { maxTicksLimit: 12 }
+                    }
                 }
             }
         });
