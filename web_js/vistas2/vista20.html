@@ -137,7 +137,7 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
 
         const success = currentData
-            .filter(r => (r[C.Z_SCORE] || 0) < -0.5 && (r[C.CASOS_ACTUAL] || 0) > 0 && r[C.DELITO] !== 'NO APLICA')
+            .filter(r => (r[C.Z_SCORE] || 0) < -0.5 && (r[C.CASOS_ACTUAL] || 0) > 0 && r.stop_delito !== 'NO APLICA')
             .sort((a, b) => (a[C.Z_SCORE] || 0) - (b[C.Z_SCORE] || 0))
             .slice(0, 4);
 
@@ -146,7 +146,7 @@
             listCead.innerHTML = success.map(r => `
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eff6ff; padding-bottom: 8px;">
                      <span style="font-weight: 700; color: #1e293b; font-size: 0.85rem;">
-                        ${r.Delito_STOP_Ref || r[C.DELITO]}
+                        ${r.stop_delito || r[C.DELITO]}
                      </span>
                      <span style="font-weight: 800; color: #3b82f6; font-size: 0.85rem;">Z = ${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
                 </div>

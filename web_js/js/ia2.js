@@ -125,6 +125,8 @@ window.IAModuleV2 = {
             .sort((a, b) => (b[C.CASOS_ACTUAL] * (b[C.CASOS_ACTUAL] / b[C.CASOS_ANT] || 1)) - (a[C.CASOS_ACTUAL] * (a[C.CASOS_ACTUAL] / a[C.CASOS_ANT] || 1)))
             .map(r => r[C.DELITO])[0] || 'N/A';
 
+        const regionalRank = totalRow['ranking_regional_proy_anual'] || totalRow['ranking_regional_tasa_sem'] || totalRow[C.RANK_REG_TASA] || 'N/A';
+
         return {
             comuna: S.comunaName,
             week: S.semanaDetalle,
@@ -134,6 +136,7 @@ window.IAModuleV2 = {
                 communal_rate: (totalRow[C.TASA_SEMANAL] || 0).toFixed(1),
                 national_rank: nationalRank,
                 cluster_rank: clusterRank,
+                regional_rank: regionalRank,
                 effectiveness_ratio: effectiveness.toFixed(1) + '%'
             },
             insights: {
@@ -167,48 +170,50 @@ window.IAModuleV2 = {
         try {
             console.log('🤖 IA [FETCH]: Iniciando llamada a API Zhipu (GLM-4)...');
             const prompt = `
-Eres un analista de inteligencia policial experto en el sistema STOP y CEAD de Carabineros de Chile.
-Tu misión es generar interpretaciones estratégicas CONCISAS y EJECUTIVAS para el dashboard de seguridad de la COMUNA DE ${context.comuna.toUpperCase()}.
+Eres un analista de inteligencia estratégica y perfilador criminal experto en el sistema STOP y CEAD de Carabineros de Chile.
+Tu misión es generar interpretaciones estratégicas DETALLADAS, ANALÍTICAS y EJECUTIVAS para el dashboard de seguridad de la COMUNA DE ${context.comuna.toUpperCase()}.
 
 CONTEXTO OPERATIVO (${context.week}):
-${JSON.stringify(context.metrics, null, 2)}
+${JSON.stringify(context, null, 2)}
 
-REGLAS CRÍTICAS:
-- Máximo 30 palabras por vista. Sin rodeos.
-- Menciona SIEMPRE la comuna: "${context.comuna}".
-- Usa lenguaje de mando policial: directo, sin eufemismos.
-- Si el dato es positivo (baja), destácalo como logro. Si es negativo (alza), como alerta.
+REGLAS CRÍTICAS DE RESPUESTA:
+- El análisis debe ser profundo, extenso y profesional (entre 50 y 85 palabras por cada vista). Aborda el QUÉ, el POR QUÉ y el QUÉ HACER.
+- Menciona siempre la comuna ("${context.comuna}") para contextualizar territorialmente de manera natural y formal.
+- Adopta un tono de mando policial técnico, directo, sin eufemismos, orientado puramente a toma de decisiones y mitigación de crisis.
+- Relaciona los hallazgos directamente con los datos entregados en el CONTEXTO OPERATIVO. Si falta algún dato empírico, realiza inferencias lógicas basadas en la posición del ranking global de la comuna o en el comportamiento habitual de Chile.
 
-INSTRUCCIONES POR VISTA:
-- vista1: Veredicto general de la semana. ¿Alza o baja? ¿Cuánto? ¿Qué delito lidera?
-- vista2: Tendencia de los últimos 6 meses. ¿Estamos sobre o bajo el promedio histórico?
-- vista3: ¿La semana actual está cerca del máximo o mínimo histórico? ¿Qué implica?
-- vista4: ¿Qué mes o trimestre concentra históricamente más delitos? ¿Estamos en ese período?
-- vista5: ¿Qué delito concentra el 80% del problema (Pareto)? Nombra el top 1.
-- vista6: ¿Qué delito tuvo el mayor salto porcentual esta semana? ¿Es preocupante?
-- vista7: ¿Qué delito lleva más semanas consecutivas al alza (racha negativa)?
-- vista8: ¿Existe correlación entre delitos que deba alertar al mando?
-- vista9: ¿Cuál es la tasa delictual por habitante y cómo se compara con la región?
-- vista10: ¿En qué posición del ranking regional está ${context.comuna} esta semana?
-- vista11: En perspectiva de 20 años, ¿estamos en un período de alza estructural o baja?
-- vista12: Ranking nacional (${context.metrics.national_rank}). ¿Mejora o deterioro vs semana anterior?
-- vista13: Clúster (${context.metrics.cluster_rank}). ¿Mejor o peor que comunas de tamaño similar?
-- vista14: ¿Qué porcentaje del total regional aporta ${context.comuna}? ¿Aumentó o bajó?
-- vista15: Tasa de detención (${context.metrics.effectiveness_ratio}). ¿Es suficiente para el nivel de delitos?
-- vista16: Comparativa regional. ¿${context.comuna} está sobre o bajo la media de la región?
-- vista17: Proyección de cierre anual. ¿Vamos a terminar el año mejor o peor que el anterior?
-- vista18: Análisis de rachas. ¿Cuántas semanas consecutivas en alza o baja?
-- vista19: Delitos emergentes de corto plazo: ${context.insights.emerging_short_term || 'sin datos'}. ¿Qué acción inmediata se requiere?
-- vista20: Delitos en disipación: ${context.insights.success_stories || 'sin datos'}. ¿Qué factor explica la baja?
-- vista21: Momentum de crecimiento. ¿La tendencia de aceleración es preocupante o controlada?
-- vista22: Prioridad táctica N°1: ${context.insights.priority_focus}. Justifica en una frase.
-- vista23: Recomendación de acción inmediata para el mando comunal. Sé específico.
-- vista24: Veredicto ejecutivo final. ¿La situación de ${context.comuna} requiere intervención urgente?
-- vista25: Calidad del dato. ¿Hay semanas sin información que afecten el análisis?
+PREGUNTAS A RESPONDER DETALLADAMENTE (UNA RESPUESTA CERRADA Y COMPLETA POR VISTA):
+- vista1: ¿Qué ha pasado en la última semana? (Veredicto general, magnitud de la variación y tipología principal que tracciona la estadística).
+- vista2: ¿Cómo ha sido la evolución mensual durante este año y la tendencia de los últimos 6 meses respecto a la media histórica del sector?
+- vista3: ¿Cómo se compara el volumen de la última semana con el historial? ¿Alcanzamos un peak o un valle preocupante?
+- vista4: ¿Existe estacionalidad o patrones recurrentes en el año histórico que debamos anticipar para los próximos meses en esta jurisdicción?
+- vista5: ¿Cuáles son las problemáticas que concentran el 80% de los incidentes en la comuna (Ley de Pareto) que requieren foco operativo inmediato?
+- vista6: ¿Qué tipologías han mostrado las variaciones porcentuales más drásticas recientemente y cómo cambian el pulso de la percepción local?
+- vista7: ¿Hay delitos que muestran rachas continuas de aumento durante varias semanas? ¿A qué táctica evasiva criminal podrían atribuirse?
+- vista8: ¿Existen delitos que suelen ocurrir o aumentar en conjunto indicando un modus operandi complejo en el territorio?
+- vista9: ¿Cuál es nuestra tasa delictual relativa a la población y cómo contrasta el volumen delictual frente al total regional (intercomunal)?
+- vista10: ¿Cómo es nuestra carga comparada con el resto de la región? Analiza la posición del ranking regional de la comuna en el contexto amplio.
+- vista11: En perspectiva de una o dos décadas atrás (sistema CEAD), ¿cuál es el diagnóstico estructural histórico de la zona?
+- vista12: Considerando la posición en el Ranking Nacional de Casos de la comuna, ¿qué lectura estratégica se hace sobre nuestro desempeño frente al país?
+- vista13: Según el Ranking de Clúster (grupos demográficos similares), ¿por qué presentamos estas problemáticas particulares respecto a nuestros pares sociodemográficos?
+- vista14: ¿De todo el panorama regional, qué carga asume nuestra comuna y por qué la vuelve un objetivo crítico o secundario?
+- vista15: Tasa de resolución/detención. ¿La efectividad operativa y preventiva está frenando la tasa de ingresos de ilícitos adecuadamente en el momento?
+- vista16: Mapa de Posicionamiento: ¿Qué tan efectivos somos en comparación a otras comunas vecinas en términos de mitigación de daños?
+- vista17: En base a la inercia delictual actual, ¿cuál es la proyección de casos más agresiva esperada para el Cierre Anual?
+- vista18: Analizando el historial crítico de rachas y fluctuaciones o quiebres estructurales en los últimos meses, ¿hay control sobre la serie?
+- vista19: ¿Qué nuevos delitos "Emergentes" de expansión rápida están apareciendo en la zona para romper el molde normal esperado?
+- vista20: ¿Qué delitos específicos estamos logrando reducir con éxito prolongado y por qué se sostiene la disipación sobre el tiempo?
+- vista21: ¿Están los delitos acelerando su ritmo (Momentum alcista) superando la capacidad de respuesta policial e intervención operativa disponible?
+- vista22: Prioridad estratégica urgente. Si el mando logístico forzara intervenir sólo en un factor, ¿en qué fenómeno enfoca y por qué motivo radical?
+- vista23: ¿Cuál debería ser el diseño o recomendación de la siguiente ronda de servicios focalizados para desbaratar esta coyuntura de manera asimétrica?
+- vista24: REPORTE DE INTELIGENCIA (RESUMEN): Veredicto ejecutivo total del Estado Operacional de la comuna para las altas esferas de Autoridad o Jefatura.
+- vista25: Calidad del informe y suficiencia del dato. ¿Los vacíos de información empírica limitan la toma de decisiones definitivas hoy para este polígono?
 
 FORMATO DE RESPUESTA:
-JSON CRUDO con claves "vista1" a "vista25". Sin markdown. Sin explicaciones adicionales.
-            `;
+Crea SOLO Y EXCLUSIVAMENTE un bloque con formato JSON VÁLIDO.
+Las claves deben ir de "vista1" hasta "vista25" estrictamente.
+El valor de cada clave debe ser un STRING directo y simple (sin saltos de línea \n ni comillas no escapadas).
+No escribas la palabra json, no agregues explicaciones afuera. Empieza siempre el mensaje con "{" y termínalo con "}".`;
 
             const API_KEY = this.getKey("gfhrsdfsdfseweretfghtddfdf");
             const fetchController = new AbortController();

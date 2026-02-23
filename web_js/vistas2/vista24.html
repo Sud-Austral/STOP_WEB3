@@ -145,7 +145,8 @@
         const cases = totalRow[C.CASOS_ACTUAL] || 0;
         const prev = totalRow[C.CASOS_ANT] || 0;
         const delta = prev > 0 ? ((cases - prev) / prev * 100) : 0;
-        const rank = totalRow[C.RANK_REG] || null;
+        // Asignar el ranking buscando las columnas correctas disponibles en los datos
+        const rank = totalRow['ranking_regional_proy_anual'] || totalRow['ranking_regional_tasa_sem'] || totalRow[C.RANK_REG_TASA] || null;
 
         // Fetch total communes in the region for ranking display
         let totalComunas = 52; // Fallback

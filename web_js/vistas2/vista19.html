@@ -165,7 +165,7 @@
         const currentData = S.allDataHistory.filter(r => r[C.ID_PERIODO] === S.periodoId);
 
         const emerging = currentData
-            .filter(r => (r[C.Z_SCORE] || 0) > 1.0 && r[C.DELITO] !== 'NO APLICA')
+            .filter(r => (r[C.Z_SCORE] || 0) > 1.0 && r.stop_delito !== 'NO APLICA')
             .sort((a, b) => (b[C.Z_SCORE] || 0) - (a[C.Z_SCORE] || 0))
             .slice(0, 5);
 
@@ -174,7 +174,7 @@
             tbodyCead.innerHTML = emerging.map(r => `
                 <tr style="border-bottom: 1px solid #f8fafc;">
                     <td style="padding: 8px; font-weight: 700; color: #1e293b;">
-                        ${r.Delito_STOP_Ref || r[C.DELITO]}
+                        ${r.stop_delito || r[C.DELITO]}
                     </td>
                     <td style="padding: 8px; text-align: right;">
                         <span style="font-weight: 800; color: #f97316;">${(r[C.Z_SCORE] || 0).toFixed(2)}</span>
