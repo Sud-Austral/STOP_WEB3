@@ -5,7 +5,7 @@
 window.IAModuleV2 = {
     // Configuration
     CACHE_KEY: 'ia_v2_fix_', // Changed key to force refresh
-    CACHE_TTL: 5 * 24 * 60 * 60 * 1000, // 5 days
+    CACHE_TTL: 2 * 24 * 60 * 60 * 1000, // 5 days
     API_URL: "https://open.bigmodel.cn/api/paas/v4/chat/completions",
     MODEL_NAME: "GLM-4.7-Flash",
 
@@ -191,7 +191,7 @@ REGLAS CRÍTICAS DE RESPUESTA:
 - Relaciona los hallazgos directamente con los datos entregados en el CONTEXTO OPERATIVO. Si falta algún dato empírico, realiza inferencias lógicas y razonables según la criminología y el comportamiento habitual en Chile.
 
 PREGUNTAS A RESPONDER DETALLADAMENTE (UNA RESPUESTA CERRADA Y COMPLETA POR VISTA):
-- vista1: ¿Qué ha pasado en la última semana? (Veredicto general, magnitud de la variación y tipologías principales que traccionan la estadística).
+- vista1: ¿Qué ha pasado en la última semana? (Veredicto general, magnitud de la variación).
 - vista2: ¿Cuál es la evolución reciente del delito? (Tendencia del mes vs meses previos y la media móvil).
 - vista3: ¿Estamos en un nivel crítico de delitos esta semana? (Comparación contra máximos y promedios históricos, magnitud del problema).
 - vista4: ¿Existen patrones estacionales en el delito local? (Meses críticos del año que requieran prevención anticipada).
