@@ -191,31 +191,31 @@ REGLAS CRÍTICAS DE RESPUESTA:
 - Relaciona los hallazgos directamente con los datos entregados en el CONTEXTO OPERATIVO. Si falta algún dato empírico, realiza inferencias lógicas y razonables según la criminología y el comportamiento habitual en Chile.
 
 PREGUNTAS A RESPONDER DETALLADAMENTE (UNA RESPUESTA CERRADA Y COMPLETA POR VISTA):
-- vista1: ¿Qué ha pasado en la última semana? (Veredicto general, magnitud de la variación).
-- vista2: ¿Cuál es la evolución reciente del delito? (Tendencia del mes vs meses previos y la media móvil).
-- vista3: ¿Estamos en un nivel crítico de delitos esta semana? (Comparación contra máximos y promedios históricos, magnitud del problema).
-- vista4: ¿Existen patrones estacionales en el delito local? (Meses críticos del año que requieran prevención anticipada).
-- vista5: ¿Cuáles son los delitos críticos que requieren foco inmediato? (Aplicación de Ley de Pareto, qué ilícitos concentran el 80% del daño).
-- vista6: ¿Cuáles son los cambios porcentuales más drásticos que afectan la percepción de seguridad de la población local?
-- vista7: ¿Qué delitos muestran un crecimiento estructural los últimos 20 años? (Tendencias de largo plazo y cambios sistémicos según CEAD).
-- vista8: ¿Existen asociaciones delictuales y patrones concurrentes? (Co-ocurrencia criminal y posibles bandas multicrimen operando).
-- vista9: ¿Qué delitos locales son críticos a nivel nacional y regional comparando la comuna con el estándar global?
-- vista10: ¿Cuál es nuestra carga comparada con el resto de la región? (Tasa versus promedio regional y posición en el ranking).
-- vista11: ¿Nuestra posición relativa ha mejorado o empeorado en la década? (Benchmark histórico regional).
-- vista12: ¿Cuál es nuestra posición en el contexto nacional? (Análisis del ranking país y vulnerabilidad global).
-- vista13: ¿Cómo nos comparamos con comunas similares? (Clúster sociodemográfico, ¿somos los peores o los mejores entre pares?).
-- vista14: ¿Qué peso tiene nuestra comuna en la región? (Proporción de casos aportados al total regional y concentración del riesgo).
-- vista15: ¿Qué tan efectiva es la respuesta policial ante el delito? (Ratio de detenciones versus ingresos de casos en el año).
-- vista16: ¿Qué tan efectivos somos comparados con otras comunas? (Matriz de posicionamiento relativo regional de efectividad).
-- vista17: ¿Nuestra carga delictual es proporcional a nuestra población? (Desproporción entre volumen poblacional y la cantidad de denuncias en el clúster).
-- vista18: ¿Está aumentando la violencia en los delitos? (Balance cualitativo: delitos violentos vs delitos contra la propiedad).
-- vista19: ¿Qué nuevos delitos están "Emergiendo" o acelerándose de forma atípica rompiendo la inercia esperada en la zona?
-- vista20: ¿Qué delitos estamos logrando reducir con éxito sostenido (disipación de la amenaza)?
-- vista21: "Momentum Delictual" y Rachas de Crecimiento: ¿Están los delitos acelerando su ritmo (CAGR alto y rachas de semanas consecutivas)? 
-- vista22: ¿Dónde debemos concentrar los recursos hoy? (Focalización táctica cruzada de alto volumen y alza urgente).
-- vista23: ¿Cómo se comportan las cifras a partir de distintas clasificaciones de delitos? (Severidad, modus operandi y naturaleza jurídica).
-- vista24: REPORTE DE INTELIGENCIA (RESUMEN): Veredicto ejecutivo total del Estado Operacional de la comuna para Autoridades (Directores/Jefes).
-- vista25: Calidad del informe y suficiencia del dato. ¿Qué tan confiable es la información que estamos viendo en base a vacíos u outliers?
+- vista1: ¿Qué ha pasado en la última semana? (Veredicto general STOP: casos actuales, variación semanal y nivel de riesgo compuesto de la comuna).
+- vista2: ¿Hay alertas activas o anomalías esta semana? (Evalúa el estado de alerta según Z-Score: cuántos delitos están en estado crítico, precaución o normal, e identifica el más urgente).
+- vista3: ¿Estamos mejor o peor que en períodos anteriores? (Compara la semana actual contra la semana anterior, mismo período del año anterior y el promedio histórico; determina si la situación mejora o se deteriora).
+- vista4: ¿Cuál es el nivel de riesgo por tipo de delito según su Z-Score? (Clasifica los delitos en Alto, Moderado y Bajo Impacto basándose en la matriz de Z-Score; identifica cuáles están estadísticamente sobre la norma histórica).
+- vista5: ¿La violencia está aumentando o predominan delitos menores en STOP? (Analiza la distribución delictual por naturaleza y tipo: ¿predominan delitos violentos o contra la propiedad? ¿Qué tipos concentran mayor frecuencia?).
+- vista6: ¿Qué delitos se mueven de manera conjunta o correlacionada? (Analiza las correlaciones de Pearson del heatmap: ¿cuáles coocurren? ¿Hay asociaciones delictuales que sugieran bandas o patrones multicriminales?).
+- vista7: ¿Cuáles son las tendencias históricas de la última década en STOP? (Evalúa la evolución anual de los últimos 10 años: ¿hay crecimiento estructural, reducción sostenida o estabilidad en el largo plazo?).
+- vista8: ¿Existe estacionalidad en el comportamiento delictual mensual? (Identifica patrones mensuales: ¿qué meses son críticos históricamente? ¿La semana actual corresponde a un período estacionalmente alto o bajo?).
+- vista9: ¿Existe relación entre el consumo de alcohol/drogas y los delitos de la comuna? (Analiza la correlación entre casos de ley de alcoholes y los delitos violentos o contra las personas observados).
+- vista10: ¿Qué se puede esperar en las próximas semanas según el pronóstico? (Evalúa la proyección basada en series históricas: ¿la tendencia indica alza, baja o estabilidad? ¿Hay intervalos de confianza preocupantes?).
+- vista11: ¿Qué pasaría si ciertos delitos se intensificaran en la simulación de hipótesis? (Interpreta el impacto proyectado en el índice de riesgo si robos +%, hurtos +% o consumo alcohol +% según los parámetros del simulador).
+- vista12: ¿Cuándo es posible el próximo peak delictual según el modelo NVP? (Identifica la semana proyectada para el próximo máximo según análisis de series de tiempo; qué tipo de delito lo podría liderar).
+- vista13: Vista de Metodología y Anexos técnicos del informe. No aplica análisis de IA sobre datos delictuales. Responde únicamente: "Documentación técnica del sistema STOP: metodología validada, fuentes certificadas, algoritmo IR calibrado."
+- vista14: ¿Cuál es la situación delictual con proyección de tendencia lineal? (Evalúa la evolución histórica y la regresión de las últimas 12 semanas: ¿la tendencia proyectada a 4 semanas es al alza, a la baja o estable?).
+- vista15: ¿Qué pasó esta semana según el diagnóstico inmediato? (Evalúa Z-Score global, variación semana a semana, concentración en top 3 delitos, nivel de riesgo compuesto y score numérico).
+- vista16: ¿La tasa delictual de la comuna es alta o baja en relación a su tamaño poblacional? (Analiza la tasa por 100k hab. y la clasificación por grupo poblacional: ¿estamos sobre o bajo la norma para comunas de este segmento de población?).
+- vista17: ¿Cómo se posiciona la comuna en el ranking regional por tipo de delito? (Evalúa ranking promedio regional, cuántos delitos están en el top 3 más crítico de la región y si la posición empeoró o mejoró vs semana anterior).
+- vista18: ¿El problema delictual está acelerando o desacelerando su crecimiento? (Analiza la segunda derivada: tasa de crecimiento 4S vs 8S, el delta de aceleración expresado en puntos porcentuales y el momentum estructural YTD).
+- vista19: ¿Esta semana representa un evento estadísticamente extraordinario o es comportamiento normal? (Evalúa el Z-Score de normalidad estadística: ¿dentro del rango +/-1.96 sigma? ¿Hay delitos específicos con valores extremos fuera de la distribución normal?).
+- vista20: ¿Cuál es el veredicto ejecutivo integral de la comuna según el tablero 360°? (Sintetiza: presión delictual por 10k hab., persistencia máxima en semanas consecutivas, posición regional y número de focos con Z-Score crítico).
+- vista21: ¿Cuál es la situación general mensual según datos CEAD? (Evalúa casos del mes actual, variación vs mes anterior y vs año anterior, acumulado anual y nivel de riesgo según Z-Score promedio CEAD).
+- vista22: ¿Hay alertas o anomalías en los datos mensuales CEAD? (Determina el estado: ALERTA, PRECAUCIÓN o NORMAL según Z-Score promedio CEAD; identifica el delito con mayor Z-Score y la media móvil de 4 meses).
+- vista23: ¿Es un hecho aislado o una tendencia sostenida en los datos CEAD? (Analiza la pendiente de regresión lineal de los últimos 12 meses CEAD: ¿la tendencia mensual es creciente, decreciente o estable? ¿Confirma o contradice los datos STOP?).
+- vista24: ¿El nivel delictual mensual CEAD es grave o moderado? (Evalúa la distribución de delitos en el scatter Z-Score CEAD: cuántos son de alto impacto vs moderados o bajo impacto, e identifica el delito más crítico del mes).
+- vista25: ¿La violencia está aumentando o predominan delitos menores en CEAD? (Analiza el perfil delictual mensual CEAD comparando mes actual vs mes anterior vs promedio histórico por tipo de delito: ¿qué naturaleza delictual lidera?).
 
 FORMATO DE RESPUESTA:
 NUNCA uses JSON. Devuelve tu respuesta como texto simple, separando cada análisis con una etiqueta de corchetes.
