@@ -1,0 +1,2903 @@
+{
+  "vista01": {
+    "casos_totales": 24,
+    "casos_sem_anterior": 18,
+    "var_semanal_pct": 33.3,
+    "var_interanual_pct": 33.3,
+    "casos_year_anterior": 18.0,
+    "tasa_x100k": 126.8,
+    "nivel_riesgo": "ALTO",
+    "z_score_avg": 0.39,
+    "trend_slope": 1.5,
+    "top5_delitos": [
+      {
+        "delito": "Amenazas y Riñas",
+        "casos": 5
+      },
+      {
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "casos": 5
+      },
+      {
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "casos": 3
+      },
+      {
+        "delito": "Incivilidades",
+        "casos": 2
+      },
+      {
+        "delito": "Robos de Vehículos y sus Accesorios",
+        "casos": 2
+      }
+    ],
+    "comuna": "Hijuelas",
+    "semana_detalle": "SEMANA 09/2026 (del 23/02/2026 al 01/03/2026)"
+  },
+  "vista02": {
+    "serie_24s": [
+      {
+        "id_semana": 145,
+        "semana_detalle": "SEMANA 39/2025 (del 22/09/2025 al 28/09/2025)",
+        "año": 2025,
+        "frecuencia": 16
+      },
+      {
+        "id_semana": 146,
+        "semana_detalle": "SEMANA 40/2025 (del 29/09/2025 al 05/10/2025)",
+        "año": 2025,
+        "frecuencia": 21
+      },
+      {
+        "id_semana": 147,
+        "semana_detalle": "SEMANA 41/2025 (del 06/10/2025 al 12/10/2025)",
+        "año": 2025,
+        "frecuencia": 20
+      },
+      {
+        "id_semana": 148,
+        "semana_detalle": "SEMANA 42/2025 (del 13/10/2025 al 19/10/2025)",
+        "año": 2025,
+        "frecuencia": 15
+      },
+      {
+        "id_semana": 149,
+        "semana_detalle": "SEMANA 43/2025 (del 20/10/2025 al 26/10/2025)",
+        "año": 2025,
+        "frecuencia": 15
+      },
+      {
+        "id_semana": 150,
+        "semana_detalle": "SEMANA 44/2025 (del 27/10/2025 al 02/11/2025)",
+        "año": 2025,
+        "frecuencia": 18
+      },
+      {
+        "id_semana": 151,
+        "semana_detalle": "SEMANA 45/2025 (del 03/11/2025 al 09/11/2025)",
+        "año": 2025,
+        "frecuencia": 17
+      },
+      {
+        "id_semana": 152,
+        "semana_detalle": "SEMANA 46/2025 (del 10/11/2025 al 16/11/2025)",
+        "año": 2025,
+        "frecuencia": 0
+      },
+      {
+        "id_semana": 153,
+        "semana_detalle": "SEMANA 47/2025 (del 17/11/2025 al 23/11/2025)",
+        "año": 2025,
+        "frecuencia": 7
+      },
+      {
+        "id_semana": 154,
+        "semana_detalle": "SEMANA 48/2025 (del 24/11/2025 al 30/11/2025)",
+        "año": 2025,
+        "frecuencia": 12
+      },
+      {
+        "id_semana": 155,
+        "semana_detalle": "SEMANA 49/2025 (del 01/12/2025 al 07/12/2025)",
+        "año": 2025,
+        "frecuencia": 13
+      },
+      {
+        "id_semana": 156,
+        "semana_detalle": "SEMANA 50/2025 (del 08/12/2025 al 14/12/2025)",
+        "año": 2025,
+        "frecuencia": 24
+      },
+      {
+        "id_semana": 157,
+        "semana_detalle": "SEMANA 51/2025 (del 15/12/2025 al 21/12/2025)",
+        "año": 2025,
+        "frecuencia": 22
+      },
+      {
+        "id_semana": 158,
+        "semana_detalle": "SEMANA 52/2025 (del 22/12/2025 al 28/12/2025)",
+        "año": 2025,
+        "frecuencia": 18
+      },
+      {
+        "id_semana": 159,
+        "semana_detalle": "SEMANA 53/2025 (del 29/12/2025 al 31/12/2025)",
+        "año": 2025,
+        "frecuencia": 9
+      },
+      {
+        "id_semana": 160,
+        "semana_detalle": "SEMANA 01/2026 (del 01/01/2026 al 04/01/2026)",
+        "año": 2026,
+        "frecuencia": 15
+      },
+      {
+        "id_semana": 161,
+        "semana_detalle": "SEMANA 02/2026 (del 05/01/2026 al 11/01/2026)",
+        "año": 2026,
+        "frecuencia": 9
+      },
+      {
+        "id_semana": 162,
+        "semana_detalle": "SEMANA 03/2026 (del 12/01/2026 al 18/01/2026)",
+        "año": 2026,
+        "frecuencia": 16
+      },
+      {
+        "id_semana": 163,
+        "semana_detalle": "SEMANA 04/2026 (del 19/01/2026 al 25/01/2026)",
+        "año": 2026,
+        "frecuencia": 22
+      },
+      {
+        "id_semana": 164,
+        "semana_detalle": "SEMANA 05/2026 (del 26/01/2026 al 01/02/2026)",
+        "año": 2026,
+        "frecuencia": 10
+      },
+      {
+        "id_semana": 165,
+        "semana_detalle": "SEMANA 06/2026 (del 02/02/2026 al 08/02/2026)",
+        "año": 2026,
+        "frecuencia": 9
+      },
+      {
+        "id_semana": 166,
+        "semana_detalle": "SEMANA 07/2026 (del 09/02/2026 al 15/02/2026)",
+        "año": 2026,
+        "frecuencia": 26
+      },
+      {
+        "id_semana": 167,
+        "semana_detalle": "SEMANA 08/2026 (del 16/02/2026 al 22/02/2026)",
+        "año": 2026,
+        "frecuencia": 18
+      },
+      {
+        "id_semana": 168,
+        "semana_detalle": "SEMANA 09/2026 (del 23/02/2026 al 01/03/2026)",
+        "año": 2026,
+        "frecuencia": 24
+      }
+    ],
+    "total_24s": 376,
+    "avg_24s": 15.7,
+    "global_avg": 16.5,
+    "global_max": 40,
+    "global_max_semana": "SEMANA 48/2024 (del 25/11/2024 al 01/12/2024)",
+    "ma_var": 22.2,
+    "trend_category": "Expansión"
+  },
+  "vista03": {
+    "semana_actual": 24,
+    "casos_sem_anterior": 18,
+    "casos_año_anterior": 18.0,
+    "max_hist_total": 40,
+    "max_hist_semana": "SEMANA 48/2024 (del 25/11/2024 al 01/12/2024)",
+    "min_hist_total": 0,
+    "min_hist_semana": "SEMANA 01/2023 (del 01/01/2023 al 01/01/2023)",
+    "avg_53s": 15.3,
+    "promedio_hist_total": 16.4523809524,
+    "nota_datos": "Semanas 1 y 53 excluidas para el cálculo de mínimos por agrupación de días."
+  },
+  "vista04": {
+    "seasonal_index_cead": [
+      96.0,
+      91.4,
+      105.3,
+      95.3,
+      102.6,
+      103.6,
+      102.8,
+      102.3,
+      105.0,
+      98.6,
+      101.5,
+      95.7
+    ],
+    "seasonal_index_stop": [
+      99.7,
+      117.1,
+      115.0,
+      92.0,
+      89.2,
+      77.0,
+      102.0,
+      89.5,
+      98.5,
+      106.1,
+      103.2,
+      110.7
+    ],
+    "meses_nombres": [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic"
+    ]
+  },
+  "vista05": {
+    "pareto_ytd": [
+      {
+        "delito": "Amenazas y Riñas",
+        "casos": 25,
+        "pct": 16.8
+      },
+      {
+        "delito": "Daños",
+        "casos": 22,
+        "pct": 14.8
+      },
+      {
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "casos": 19,
+        "pct": 12.8
+      },
+      {
+        "delito": "Hurtos",
+        "casos": 17,
+        "pct": 11.4
+      },
+      {
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "casos": 15,
+        "pct": 10.1
+      },
+      {
+        "delito": "Robos de Vehículos y sus Accesorios",
+        "casos": 12,
+        "pct": 8.1
+      },
+      {
+        "delito": "Lesiones leves",
+        "casos": 8,
+        "pct": 5.4
+      },
+      {
+        "delito": "Incivilidades",
+        "casos": 7,
+        "pct": 4.7
+      },
+      {
+        "delito": "Violaciones y Delitos Sexuales",
+        "casos": 6,
+        "pct": 4.0
+      },
+      {
+        "delito": "Ley de Drogas",
+        "casos": 4,
+        "pct": 2.7
+      },
+      {
+        "delito": "Consumo de Alcohol y de Drogas en la Vía Pública",
+        "casos": 3,
+        "pct": 2.0
+      },
+      {
+        "delito": "Ley de Control de Armas",
+        "casos": 3,
+        "pct": 2.0
+      },
+      {
+        "delito": "Amenazas con Armas",
+        "casos": 2,
+        "pct": 1.3
+      },
+      {
+        "delito": "Lesiones graves",
+        "casos": 2,
+        "pct": 1.3
+      },
+      {
+        "delito": "Lesiones menos graves",
+        "casos": 2,
+        "pct": 1.3
+      },
+      {
+        "delito": "Receptación",
+        "casos": 1,
+        "pct": 0.7
+      },
+      {
+        "delito": "Robos con Violencia e Intimidación",
+        "casos": 1,
+        "pct": 0.7
+      },
+      {
+        "delito": "Homicidios y Femicidios",
+        "casos": 0,
+        "pct": 0.0
+      },
+      {
+        "delito": "Otros desórdenes públicos",
+        "casos": 0,
+        "pct": 0.0
+      },
+      {
+        "delito": "Otros Robos con Fuerza en las Cosas",
+        "casos": 0,
+        "pct": 0.0
+      },
+      {
+        "delito": "Robos por Sorpresa",
+        "casos": 0,
+        "pct": 0.0
+      }
+    ],
+    "top3_concentration_ytd": 44.3,
+    "total_ytd_cases": 149
+  },
+  "vista06": {
+    "tasa_comuna": 126.8,
+    "tasa_nacional": 97.5894806386,
+    "desviacion_tasa_pct": 29.9,
+    "variaciones_delito": [
+      {
+        "delito": "Amenazas y Riñas",
+        "casos": 5,
+        "casos_ant": 1.0,
+        "delta": 4.0,
+        "var_pct": 400.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "casos": 5,
+        "casos_ant": 2.0,
+        "delta": 3.0,
+        "var_pct": 150.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "casos": 3,
+        "casos_ant": 2.0,
+        "delta": 1.0,
+        "var_pct": 50.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Hurtos",
+        "casos": 2,
+        "casos_ant": 2.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Incivilidades",
+        "casos": 2,
+        "casos_ant": 2.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Robos de Vehículos y sus Accesorios",
+        "casos": 2,
+        "casos_ant": 2.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Daños",
+        "casos": 1,
+        "casos_ant": 3.0,
+        "delta": -2.0,
+        "var_pct": -66.6666666667,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Lesiones leves",
+        "casos": 1,
+        "casos_ant": 0.0,
+        "delta": 1.0,
+        "var_pct": 0.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Lesiones menos graves",
+        "casos": 1,
+        "casos_ant": 0.0,
+        "delta": 1.0,
+        "var_pct": 0.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Ley de Control de Armas",
+        "casos": 1,
+        "casos_ant": 0.0,
+        "delta": 1.0,
+        "var_pct": 0.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Violaciones y Delitos Sexuales",
+        "casos": 1,
+        "casos_ant": 2.0,
+        "delta": -1.0,
+        "var_pct": -50.0,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Amenazas con Armas",
+        "casos": 0,
+        "casos_ant": 1.0,
+        "delta": -1.0,
+        "var_pct": -100.0,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Consumo de Alcohol y de Drogas en la Vía Pública",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Lesiones graves",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Ley de Drogas",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Otros Robos con Fuerza en las Cosas",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Otros desórdenes públicos",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Receptación",
+        "casos": 0,
+        "casos_ant": 1.0,
+        "delta": -1.0,
+        "var_pct": -100.0,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Robos con Violencia e Intimidación",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      },
+      {
+        "delito": "Robos por Sorpresa",
+        "casos": 0,
+        "casos_ant": 0.0,
+        "delta": 0.0,
+        "var_pct": 0.0,
+        "tendencia": "Estable"
+      }
+    ],
+    "mayores_aumentos": [
+      {
+        "delito": "Amenazas y Riñas",
+        "casos": 5,
+        "casos_ant": 1.0,
+        "delta": 4.0,
+        "var_pct": 400.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "casos": 5,
+        "casos_ant": 2.0,
+        "delta": 3.0,
+        "var_pct": 150.0,
+        "tendencia": "Alza"
+      },
+      {
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "casos": 3,
+        "casos_ant": 2.0,
+        "delta": 1.0,
+        "var_pct": 50.0,
+        "tendencia": "Alza"
+      }
+    ],
+    "mayores_descensos": [
+      {
+        "delito": "Amenazas con Armas",
+        "casos": 0,
+        "casos_ant": 1.0,
+        "delta": -1.0,
+        "var_pct": -100.0,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Receptación",
+        "casos": 0,
+        "casos_ant": 1.0,
+        "delta": -1.0,
+        "var_pct": -100.0,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Daños",
+        "casos": 1,
+        "casos_ant": 3.0,
+        "delta": -2.0,
+        "var_pct": -66.6666666667,
+        "tendencia": "Baja"
+      }
+    ]
+  },
+  "vista07": {
+    "serie_cead": [
+      {
+        "id_periodo": 202010,
+        "periodo_detalle": "Octubre 2020",
+        "año": 2020,
+        "mes": 10,
+        "frecuencia": 131,
+        "z_score": 1.3429474831000001
+      },
+      {
+        "id_periodo": 202010,
+        "periodo_detalle": "Octubre 2020",
+        "año": 2020,
+        "mes": 10,
+        "frecuencia": 57,
+        "z_score": 2.9441735744
+      },
+      {
+        "id_periodo": 202010,
+        "periodo_detalle": "Octubre 2020",
+        "año": 2020,
+        "mes": 10,
+        "frecuencia": 84,
+        "z_score": 3.4924454689
+      },
+      {
+        "id_periodo": 202010,
+        "periodo_detalle": "Octubre 2020",
+        "año": 2020,
+        "mes": 10,
+        "frecuencia": 74,
+        "z_score": 0.2896148562
+      },
+      {
+        "id_periodo": 202011,
+        "periodo_detalle": "Noviembre 2020",
+        "año": 2020,
+        "mes": 11,
+        "frecuencia": 69,
+        "z_score": 2.5989124775
+      },
+      {
+        "id_periodo": 202011,
+        "periodo_detalle": "Noviembre 2020",
+        "año": 2020,
+        "mes": 11,
+        "frecuencia": 130,
+        "z_score": 1.3044521809
+      },
+      {
+        "id_periodo": 202011,
+        "periodo_detalle": "Noviembre 2020",
+        "año": 2020,
+        "mes": 11,
+        "frecuencia": 78,
+        "z_score": 0.4553018212
+      },
+      {
+        "id_periodo": 202011,
+        "periodo_detalle": "Noviembre 2020",
+        "año": 2020,
+        "mes": 11,
+        "frecuencia": 52,
+        "z_score": 2.5179154873
+      },
+      {
+        "id_periodo": 202012,
+        "periodo_detalle": "Diciembre 2020",
+        "año": 2020,
+        "mes": 12,
+        "frecuencia": 48,
+        "z_score": 2.1873986721
+      },
+      {
+        "id_periodo": 202012,
+        "periodo_detalle": "Diciembre 2020",
+        "año": 2020,
+        "mes": 12,
+        "frecuencia": 125,
+        "z_score": 1.1518881321
+      },
+      {
+        "id_periodo": 202012,
+        "periodo_detalle": "Diciembre 2020",
+        "año": 2020,
+        "mes": 12,
+        "frecuencia": 77,
+        "z_score": 0.4121756554
+      },
+      {
+        "id_periodo": 202012,
+        "periodo_detalle": "Diciembre 2020",
+        "año": 2020,
+        "mes": 12,
+        "frecuencia": 84,
+        "z_score": 3.3156759739
+      },
+      {
+        "id_periodo": 202101,
+        "periodo_detalle": "Enero 2021",
+        "año": 2021,
+        "mes": 1,
+        "frecuencia": 56,
+        "z_score": 1.7952247858
+      },
+      {
+        "id_periodo": 202101,
+        "periodo_detalle": "Enero 2021",
+        "año": 2021,
+        "mes": 1,
+        "frecuencia": 82,
+        "z_score": 0.6197496653
+      },
+      {
+        "id_periodo": 202101,
+        "periodo_detalle": "Enero 2021",
+        "año": 2021,
+        "mes": 1,
+        "frecuencia": 125,
+        "z_score": 1.1449661255
+      },
+      {
+        "id_periodo": 202101,
+        "periodo_detalle": "Enero 2021",
+        "año": 2021,
+        "mes": 1,
+        "frecuencia": 43,
+        "z_score": 1.8001189231999999
+      },
+      {
+        "id_periodo": 202102,
+        "periodo_detalle": "Febrero 2021",
+        "año": 2021,
+        "mes": 2,
+        "frecuencia": 44,
+        "z_score": 1.8515439034
+      },
+      {
+        "id_periodo": 202102,
+        "periodo_detalle": "Febrero 2021",
+        "año": 2021,
+        "mes": 2,
+        "frecuencia": 98,
+        "z_score": 0.3594837487
+      },
+      {
+        "id_periodo": 202102,
+        "periodo_detalle": "Febrero 2021",
+        "año": 2021,
+        "mes": 2,
+        "frecuencia": 54,
+        "z_score": -0.5551581383
+      },
+      {
+        "id_periodo": 202102,
+        "periodo_detalle": "Febrero 2021",
+        "año": 2021,
+        "mes": 2,
+        "frecuencia": 61,
+        "z_score": 2.0340156555
+      },
+      {
+        "id_periodo": 202103,
+        "periodo_detalle": "Marzo 2021",
+        "año": 2021,
+        "mes": 3,
+        "frecuencia": 106,
+        "z_score": 4.194794178
+      },
+      {
+        "id_periodo": 202103,
+        "periodo_detalle": "Marzo 2021",
+        "año": 2021,
+        "mes": 3,
+        "frecuencia": 85,
+        "z_score": 0.7470513582
+      },
+      {
+        "id_periodo": 202103,
+        "periodo_detalle": "Marzo 2021",
+        "año": 2021,
+        "mes": 3,
+        "frecuencia": 159,
+        "z_score": 2.1056723595
+      },
+      {
+        "id_periodo": 202103,
+        "periodo_detalle": "Marzo 2021",
+        "año": 2021,
+        "mes": 3,
+        "frecuencia": 74,
+        "z_score": 3.8588409424
+      },
+      {
+        "id_periodo": 202104,
+        "periodo_detalle": "Abril 2021",
+        "año": 2021,
+        "mes": 4,
+        "frecuencia": 57,
+        "z_score": 2.6171722412
+      },
+      {
+        "id_periodo": 202104,
+        "periodo_detalle": "Abril 2021",
+        "año": 2021,
+        "mes": 4,
+        "frecuencia": 88,
+        "z_score": 3.190379858
+      },
+      {
+        "id_periodo": 202104,
+        "periodo_detalle": "Abril 2021",
+        "año": 2021,
+        "mes": 4,
+        "frecuencia": 58,
+        "z_score": -0.38988816740000004
+      },
+      {
+        "id_periodo": 202104,
+        "periodo_detalle": "Abril 2021",
+        "año": 2021,
+        "mes": 4,
+        "frecuencia": 115,
+        "z_score": 0.8323503137
+      },
+      {
+        "id_periodo": 202105,
+        "periodo_detalle": "Mayo 2021",
+        "año": 2021,
+        "mes": 5,
+        "frecuencia": 121,
+        "z_score": 1.0005072355
+      },
+      {
+        "id_periodo": 202105,
+        "periodo_detalle": "Mayo 2021",
+        "año": 2021,
+        "mes": 5,
+        "frecuencia": 35,
+        "z_score": 1.0977995396
+      },
+      {
+        "id_periodo": 202105,
+        "periodo_detalle": "Mayo 2021",
+        "año": 2021,
+        "mes": 5,
+        "frecuencia": 56,
+        "z_score": 1.5987573862
+      },
+      {
+        "id_periodo": 202105,
+        "periodo_detalle": "Mayo 2021",
+        "año": 2021,
+        "mes": 5,
+        "frecuencia": 86,
+        "z_score": 0.789653182
+      },
+      {
+        "id_periodo": 202106,
+        "periodo_detalle": "Junio 2021",
+        "año": 2021,
+        "mes": 6,
+        "frecuencia": 40,
+        "z_score": 0.8100496531
+      },
+      {
+        "id_periodo": 202106,
+        "periodo_detalle": "Junio 2021",
+        "año": 2021,
+        "mes": 6,
+        "frecuencia": 97,
+        "z_score": 0.3065617681
+      },
+      {
+        "id_periodo": 202106,
+        "periodo_detalle": "Junio 2021",
+        "año": 2021,
+        "mes": 6,
+        "frecuencia": 76,
+        "z_score": 0.36576867100000005
+      },
+      {
+        "id_periodo": 202106,
+        "periodo_detalle": "Junio 2021",
+        "año": 2021,
+        "mes": 6,
+        "frecuencia": 21,
+        "z_score": 0.1350460798
+      },
+      {
+        "id_periodo": 202107,
+        "periodo_detalle": "Julio 2021",
+        "año": 2021,
+        "mes": 7,
+        "frecuencia": 65,
+        "z_score": -0.1001239195
+      },
+      {
+        "id_periodo": 202107,
+        "periodo_detalle": "Julio 2021",
+        "año": 2021,
+        "mes": 7,
+        "frecuencia": 28,
+        "z_score": 0.2199826688
+      },
+      {
+        "id_periodo": 202107,
+        "periodo_detalle": "Julio 2021",
+        "año": 2021,
+        "mes": 7,
+        "frecuencia": 21,
+        "z_score": 0.134701848
+      },
+      {
+        "id_periodo": 202107,
+        "periodo_detalle": "Julio 2021",
+        "año": 2021,
+        "mes": 7,
+        "frecuencia": 86,
+        "z_score": -0.0118117984
+      },
+      {
+        "id_periodo": 202108,
+        "periodo_detalle": "Agosto 2021",
+        "año": 2021,
+        "mes": 8,
+        "frecuencia": 21,
+        "z_score": 0.1343602389
+      },
+      {
+        "id_periodo": 202108,
+        "periodo_detalle": "Agosto 2021",
+        "año": 2021,
+        "mes": 8,
+        "frecuencia": 80,
+        "z_score": 0.5353996158000001
+      },
+      {
+        "id_periodo": 202108,
+        "periodo_detalle": "Agosto 2021",
+        "año": 2021,
+        "mes": 8,
+        "frecuencia": 101,
+        "z_score": 0.4222299457
+      },
+      {
+        "id_periodo": 202108,
+        "periodo_detalle": "Agosto 2021",
+        "año": 2021,
+        "mes": 8,
+        "frecuencia": 21,
+        "z_score": -0.12439911070000001
+      },
+      {
+        "id_periodo": 202109,
+        "periodo_detalle": "Septiembre 2021",
+        "año": 2021,
+        "mes": 9,
+        "frecuencia": 33,
+        "z_score": 0.4665625095
+      },
+      {
+        "id_periodo": 202109,
+        "periodo_detalle": "Septiembre 2021",
+        "año": 2021,
+        "mes": 9,
+        "frecuencia": 29,
+        "z_score": 0.6859048605
+      },
+      {
+        "id_periodo": 202109,
+        "periodo_detalle": "Septiembre 2021",
+        "año": 2021,
+        "mes": 9,
+        "frecuencia": 78,
+        "z_score": 0.44893705840000003
+      },
+      {
+        "id_periodo": 202109,
+        "periodo_detalle": "Septiembre 2021",
+        "año": 2021,
+        "mes": 9,
+        "frecuencia": 107,
+        "z_score": 0.594697237
+      },
+      {
+        "id_periodo": 202110,
+        "periodo_detalle": "Octubre 2021",
+        "año": 2021,
+        "mes": 10,
+        "frecuencia": 19,
+        "z_score": -0.0075717773000000006
+      },
+      {
+        "id_periodo": 202110,
+        "periodo_detalle": "Octubre 2021",
+        "año": 2021,
+        "mes": 10,
+        "frecuencia": 23,
+        "z_score": -0.0279835761
+      },
+      {
+        "id_periodo": 202110,
+        "periodo_detalle": "Octubre 2021",
+        "año": 2021,
+        "mes": 10,
+        "frecuencia": 81,
+        "z_score": 0.5749730468
+      },
+      {
+        "id_periodo": 202110,
+        "periodo_detalle": "Octubre 2021",
+        "año": 2021,
+        "mes": 10,
+        "frecuencia": 100,
+        "z_score": 0.3897016943
+      },
+      {
+        "id_periodo": 202111,
+        "periodo_detalle": "Noviembre 2021",
+        "año": 2021,
+        "mes": 11,
+        "frecuencia": 121,
+        "z_score": 0.9977074265
+      },
+      {
+        "id_periodo": 202111,
+        "periodo_detalle": "Noviembre 2021",
+        "año": 2021,
+        "mes": 11,
+        "frecuencia": 38,
+        "z_score": 1.3045780659
+      },
+      {
+        "id_periodo": 202111,
+        "periodo_detalle": "Noviembre 2021",
+        "año": 2021,
+        "mes": 11,
+        "frecuencia": 83,
+        "z_score": 0.6580742598
+      },
+      {
+        "id_periodo": 202111,
+        "periodo_detalle": "Noviembre 2021",
+        "año": 2021,
+        "mes": 11,
+        "frecuencia": 47,
+        "z_score": 1.1553478241
+      },
+      {
+        "id_periodo": 202112,
+        "periodo_detalle": "Diciembre 2021",
+        "año": 2021,
+        "mes": 12,
+        "frecuencia": 65,
+        "z_score": -0.11161492020000001
+      },
+      {
+        "id_periodo": 202112,
+        "periodo_detalle": "Diciembre 2021",
+        "año": 2021,
+        "mes": 12,
+        "frecuencia": 34,
+        "z_score": 0.5097148418
+      },
+      {
+        "id_periodo": 202112,
+        "periodo_detalle": "Diciembre 2021",
+        "año": 2021,
+        "mes": 12,
+        "frecuencia": 98,
+        "z_score": 0.3255040944
+      },
+      {
+        "id_periodo": 202112,
+        "periodo_detalle": "Diciembre 2021",
+        "año": 2021,
+        "mes": 12,
+        "frecuencia": 33,
+        "z_score": 0.9530909657000001
+      },
+      {
+        "id_periodo": 202201,
+        "periodo_detalle": "Enero 2022",
+        "año": 2022,
+        "mes": 1,
+        "frecuencia": 24,
+        "z_score": 0.0133490115
+      },
+      {
+        "id_periodo": 202201,
+        "periodo_detalle": "Enero 2022",
+        "año": 2022,
+        "mes": 1,
+        "frecuencia": 70,
+        "z_score": 0.10253418980000001
+      },
+      {
+        "id_periodo": 202201,
+        "periodo_detalle": "Enero 2022",
+        "año": 2022,
+        "mes": 1,
+        "frecuencia": 21,
+        "z_score": 0.11981852350000001
+      },
+      {
+        "id_periodo": 202201,
+        "periodo_detalle": "Enero 2022",
+        "año": 2022,
+        "mes": 1,
+        "frecuencia": 91,
+        "z_score": 0.1204399392
+      },
+      {
+        "id_periodo": 202202,
+        "periodo_detalle": "Febrero 2022",
+        "año": 2022,
+        "mes": 2,
+        "frecuencia": 85,
+        "z_score": -0.0553650111
+      },
+      {
+        "id_periodo": 202202,
+        "periodo_detalle": "Febrero 2022",
+        "año": 2022,
+        "mes": 2,
+        "frecuencia": 17,
+        "z_score": -0.3340374827
+      },
+      {
+        "id_periodo": 202202,
+        "periodo_detalle": "Febrero 2022",
+        "año": 2022,
+        "mes": 2,
+        "frecuencia": 69,
+        "z_score": 0.059404991600000005
+      },
+      {
+        "id_periodo": 202202,
+        "periodo_detalle": "Febrero 2022",
+        "año": 2022,
+        "mes": 2,
+        "frecuencia": 16,
+        "z_score": -0.2275159806
+      },
+      {
+        "id_periodo": 202203,
+        "periodo_detalle": "Marzo 2022",
+        "año": 2022,
+        "mes": 3,
+        "frecuencia": 42,
+        "z_score": 0.9085209966000001
+      },
+      {
+        "id_periodo": 202203,
+        "periodo_detalle": "Marzo 2022",
+        "año": 2022,
+        "mes": 3,
+        "frecuencia": 111,
+        "z_score": 1.8490525484
+      },
+      {
+        "id_periodo": 202203,
+        "periodo_detalle": "Marzo 2022",
+        "año": 2022,
+        "mes": 3,
+        "frecuencia": 36,
+        "z_score": 1.1607311964
+      },
+      {
+        "id_periodo": 202203,
+        "periodo_detalle": "Marzo 2022",
+        "año": 2022,
+        "mes": 3,
+        "frecuencia": 147,
+        "z_score": 1.7496497630999999
+      },
+      {
+        "id_periodo": 202204,
+        "periodo_detalle": "Abril 2022",
+        "año": 2022,
+        "mes": 4,
+        "frecuencia": 96,
+        "z_score": 1.199460268
+      },
+      {
+        "id_periodo": 202204,
+        "periodo_detalle": "Abril 2022",
+        "año": 2022,
+        "mes": 4,
+        "frecuencia": 33,
+        "z_score": 0.9473287463000001
+      },
+      {
+        "id_periodo": 202204,
+        "periodo_detalle": "Abril 2022",
+        "año": 2022,
+        "mes": 4,
+        "frecuencia": 129,
+        "z_score": 1.2159124613
+      },
+      {
+        "id_periodo": 202204,
+        "periodo_detalle": "Abril 2022",
+        "año": 2022,
+        "mes": 4,
+        "frecuencia": 33,
+        "z_score": 0.4582278132
+      },
+      {
+        "id_periodo": 202205,
+        "periodo_detalle": "Mayo 2022",
+        "año": 2022,
+        "mes": 5,
+        "frecuencia": 28,
+        "z_score": 0.5968826413
+      },
+      {
+        "id_periodo": 202205,
+        "periodo_detalle": "Mayo 2022",
+        "año": 2022,
+        "mes": 5,
+        "frecuencia": 130,
+        "z_score": 1.2375519276
+      },
+      {
+        "id_periodo": 202205,
+        "periodo_detalle": "Mayo 2022",
+        "año": 2022,
+        "mes": 5,
+        "frecuencia": 102,
+        "z_score": 1.4453589916
+      },
+      {
+        "id_periodo": 202205,
+        "periodo_detalle": "Mayo 2022",
+        "año": 2022,
+        "mes": 5,
+        "frecuencia": 33,
+        "z_score": 0.45690497760000004
+      },
+      {
+        "id_periodo": 202206,
+        "periodo_detalle": "Junio 2022",
+        "año": 2022,
+        "mes": 6,
+        "frecuencia": 131,
+        "z_score": 1.2588964701
+      },
+      {
+        "id_periodo": 202206,
+        "periodo_detalle": "Junio 2022",
+        "año": 2022,
+        "mes": 6,
+        "frecuencia": 40,
+        "z_score": 0.8042613864
+      },
+      {
+        "id_periodo": 202206,
+        "periodo_detalle": "Junio 2022",
+        "año": 2022,
+        "mes": 6,
+        "frecuencia": 33,
+        "z_score": 0.9416693449
+      },
+      {
+        "id_periodo": 202206,
+        "periodo_detalle": "Junio 2022",
+        "año": 2022,
+        "mes": 6,
+        "frecuencia": 98,
+        "z_score": 1.2667298317
+      },
+      {
+        "id_periodo": 202207,
+        "periodo_detalle": "Julio 2022",
+        "año": 2022,
+        "mes": 7,
+        "frecuencia": 94,
+        "z_score": 1.0905855894
+      },
+      {
+        "id_periodo": 202207,
+        "periodo_detalle": "Julio 2022",
+        "año": 2022,
+        "mes": 7,
+        "frecuencia": 33,
+        "z_score": 0.4521492124
+      },
+      {
+        "id_periodo": 202207,
+        "periodo_detalle": "Julio 2022",
+        "año": 2022,
+        "mes": 7,
+        "frecuencia": 33,
+        "z_score": 0.9374686480000001
+      },
+      {
+        "id_periodo": 202207,
+        "periodo_detalle": "Julio 2022",
+        "año": 2022,
+        "mes": 7,
+        "frecuencia": 127,
+        "z_score": 1.1361483335
+      },
+      {
+        "id_periodo": 202208,
+        "periodo_detalle": "Agosto 2022",
+        "año": 2022,
+        "mes": 8,
+        "frecuencia": 106,
+        "z_score": 1.5882748365000001
+      },
+      {
+        "id_periodo": 202208,
+        "periodo_detalle": "Agosto 2022",
+        "año": 2022,
+        "mes": 8,
+        "frecuencia": 135,
+        "z_score": 1.3597911596
+      },
+      {
+        "id_periodo": 202208,
+        "periodo_detalle": "Agosto 2022",
+        "año": 2022,
+        "mes": 8,
+        "frecuencia": 29,
+        "z_score": 0.6558625698
+      },
+      {
+        "id_periodo": 202208,
+        "periodo_detalle": "Agosto 2022",
+        "año": 2022,
+        "mes": 8,
+        "frecuencia": 36,
+        "z_score": 0.6008525491000001
+      },
+      {
+        "id_periodo": 202209,
+        "periodo_detalle": "Septiembre 2022",
+        "año": 2022,
+        "mes": 9,
+        "frecuencia": 30,
+        "z_score": 0.723207891
+      },
+      {
+        "id_periodo": 202209,
+        "periodo_detalle": "Septiembre 2022",
+        "año": 2022,
+        "mes": 9,
+        "frecuencia": 102,
+        "z_score": 1.4085513353
+      },
+      {
+        "id_periodo": 202209,
+        "periodo_detalle": "Septiembre 2022",
+        "año": 2022,
+        "mes": 9,
+        "frecuencia": 35,
+        "z_score": 0.5488839746
+      },
+      {
+        "id_periodo": 202209,
+        "periodo_detalle": "Septiembre 2022",
+        "año": 2022,
+        "mes": 9,
+        "frecuencia": 132,
+        "z_score": 1.2648382187
+      },
+      {
+        "id_periodo": 202210,
+        "periodo_detalle": "Octubre 2022",
+        "año": 2022,
+        "mes": 10,
+        "frecuencia": 87,
+        "z_score": 0.7706578970000001
+      },
+      {
+        "id_periodo": 202210,
+        "periodo_detalle": "Octubre 2022",
+        "año": 2022,
+        "mes": 10,
+        "frecuencia": 38,
+        "z_score": 1.2754555941
+      },
+      {
+        "id_periodo": 202210,
+        "periodo_detalle": "Octubre 2022",
+        "año": 2022,
+        "mes": 10,
+        "frecuencia": 125,
+        "z_score": 1.0565079451
+      },
+      {
+        "id_periodo": 202210,
+        "periodo_detalle": "Octubre 2022",
+        "año": 2022,
+        "mes": 10,
+        "frecuencia": 44,
+        "z_score": 0.9975448251000001
+      },
+      {
+        "id_periodo": 202211,
+        "periodo_detalle": "Noviembre 2022",
+        "año": 2022,
+        "mes": 11,
+        "frecuencia": 33,
+        "z_score": 0.9218910933000001
+      },
+      {
+        "id_periodo": 202211,
+        "periodo_detalle": "Noviembre 2022",
+        "año": 2022,
+        "mes": 11,
+        "frecuencia": 37,
+        "z_score": 0.6428250074
+      },
+      {
+        "id_periodo": 202211,
+        "periodo_detalle": "Noviembre 2022",
+        "año": 2022,
+        "mes": 11,
+        "frecuencia": 111,
+        "z_score": 1.7703289986000001
+      },
+      {
+        "id_periodo": 202211,
+        "periodo_detalle": "Noviembre 2022",
+        "año": 2022,
+        "mes": 11,
+        "frecuencia": 144,
+        "z_score": 1.5942070484
+      },
+      {
+        "id_periodo": 202212,
+        "periodo_detalle": "Diciembre 2022",
+        "año": 2022,
+        "mes": 12,
+        "frecuencia": 27,
+        "z_score": 0.1380930841
+      },
+      {
+        "id_periodo": 202212,
+        "periodo_detalle": "Diciembre 2022",
+        "año": 2022,
+        "mes": 12,
+        "frecuencia": 111,
+        "z_score": 0.638579309
+      },
+      {
+        "id_periodo": 202212,
+        "periodo_detalle": "Diciembre 2022",
+        "año": 2022,
+        "mes": 12,
+        "frecuencia": 23,
+        "z_score": 0.2219641954
+      },
+      {
+        "id_periodo": 202212,
+        "periodo_detalle": "Diciembre 2022",
+        "año": 2022,
+        "mes": 12,
+        "frecuencia": 88,
+        "z_score": 0.7976132631
+      },
+      {
+        "id_periodo": 202301,
+        "periodo_detalle": "Enero 2023",
+        "año": 2023,
+        "mes": 1,
+        "frecuencia": 31,
+        "z_score": 0.7798135281
+      },
+      {
+        "id_periodo": 202301,
+        "periodo_detalle": "Enero 2023",
+        "año": 2023,
+        "mes": 1,
+        "frecuencia": 112,
+        "z_score": 1.7926019430000002
+      },
+      {
+        "id_periodo": 202301,
+        "periodo_detalle": "Enero 2023",
+        "año": 2023,
+        "mes": 1,
+        "frecuencia": 34,
+        "z_score": 0.4905813932
+      },
+      {
+        "id_periodo": 202301,
+        "periodo_detalle": "Enero 2023",
+        "año": 2023,
+        "mes": 1,
+        "frecuencia": 143,
+        "z_score": 1.5521373749
+      },
+      {
+        "id_periodo": 202302,
+        "periodo_detalle": "Febrero 2023",
+        "año": 2023,
+        "mes": 2,
+        "frecuencia": 31,
+        "z_score": 0.3377825916
+      },
+      {
+        "id_periodo": 202302,
+        "periodo_detalle": "Febrero 2023",
+        "año": 2023,
+        "mes": 2,
+        "frecuencia": 129,
+        "z_score": 1.1422969103
+      },
+      {
+        "id_periodo": 202302,
+        "periodo_detalle": "Febrero 2023",
+        "año": 2023,
+        "mes": 2,
+        "frecuencia": 26,
+        "z_score": 0.4278647304
+      },
+      {
+        "id_periodo": 202302,
+        "periodo_detalle": "Febrero 2023",
+        "año": 2023,
+        "mes": 2,
+        "frecuencia": 103,
+        "z_score": 1.405115366
+      },
+      {
+        "id_periodo": 202303,
+        "periodo_detalle": "Marzo 2023",
+        "año": 2023,
+        "mes": 3,
+        "frecuencia": 25,
+        "z_score": 0.3566568196
+      },
+      {
+        "id_periodo": 202303,
+        "periodo_detalle": "Marzo 2023",
+        "año": 2023,
+        "mes": 3,
+        "frecuencia": 29,
+        "z_score": 0.23571708800000002
+      },
+      {
+        "id_periodo": 202303,
+        "periodo_detalle": "Marzo 2023",
+        "año": 2023,
+        "mes": 3,
+        "frecuencia": 111,
+        "z_score": 1.7242668867000002
+      },
+      {
+        "id_periodo": 202303,
+        "periodo_detalle": "Marzo 2023",
+        "año": 2023,
+        "mes": 3,
+        "frecuencia": 136,
+        "z_score": 1.3354468346
+      },
+      {
+        "id_periodo": 202304,
+        "periodo_detalle": "Abril 2023",
+        "año": 2023,
+        "mes": 4,
+        "frecuencia": 68,
+        "z_score": -0.0681831762
+      },
+      {
+        "id_periodo": 202304,
+        "periodo_detalle": "Abril 2023",
+        "año": 2023,
+        "mes": 4,
+        "frecuencia": 31,
+        "z_score": 0.7764015794
+      },
+      {
+        "id_periodo": 202304,
+        "periodo_detalle": "Abril 2023",
+        "año": 2023,
+        "mes": 4,
+        "frecuencia": 99,
+        "z_score": 0.2704493105
+      },
+      {
+        "id_periodo": 202304,
+        "periodo_detalle": "Abril 2023",
+        "año": 2023,
+        "mes": 4,
+        "frecuencia": 37,
+        "z_score": 0.6405313015
+      },
+      {
+        "id_periodo": 202305,
+        "periodo_detalle": "Mayo 2023",
+        "año": 2023,
+        "mes": 5,
+        "frecuencia": 124,
+        "z_score": 0.9866881967000001
+      },
+      {
+        "id_periodo": 202305,
+        "periodo_detalle": "Mayo 2023",
+        "año": 2023,
+        "mes": 5,
+        "frecuencia": 90,
+        "z_score": 0.8477419615
+      },
+      {
+        "id_periodo": 202305,
+        "periodo_detalle": "Mayo 2023",
+        "año": 2023,
+        "mes": 5,
+        "frecuencia": 38,
+        "z_score": 0.6891515255
+      },
+      {
+        "id_periodo": 202305,
+        "periodo_detalle": "Mayo 2023",
+        "año": 2023,
+        "mes": 5,
+        "frecuencia": 34,
+        "z_score": 0.9834789038
+      },
+      {
+        "id_periodo": 202306,
+        "periodo_detalle": "Junio 2023",
+        "año": 2023,
+        "mes": 6,
+        "frecuencia": 36,
+        "z_score": 0.5854002237
+      },
+      {
+        "id_periodo": 202306,
+        "periodo_detalle": "Junio 2023",
+        "año": 2023,
+        "mes": 6,
+        "frecuencia": 91,
+        "z_score": 0.0352712274
+      },
+      {
+        "id_periodo": 202306,
+        "periodo_detalle": "Junio 2023",
+        "año": 2023,
+        "mes": 6,
+        "frecuencia": 25,
+        "z_score": 0.3481074274
+      },
+      {
+        "id_periodo": 202306,
+        "periodo_detalle": "Junio 2023",
+        "año": 2023,
+        "mes": 6,
+        "frecuencia": 66,
+        "z_score": -0.1553419828
+      },
+      {
+        "id_periodo": 202307,
+        "periodo_detalle": "Julio 2023",
+        "año": 2023,
+        "mes": 7,
+        "frecuencia": 117,
+        "z_score": 0.7836607099
+      },
+      {
+        "id_periodo": 202307,
+        "periodo_detalle": "Julio 2023",
+        "año": 2023,
+        "mes": 7,
+        "frecuencia": 84,
+        "z_score": 0.5970861316
+      },
+      {
+        "id_periodo": 202307,
+        "periodo_detalle": "Julio 2023",
+        "año": 2023,
+        "mes": 7,
+        "frecuencia": 38,
+        "z_score": 0.6852634549000001
+      },
+      {
+        "id_periodo": 202307,
+        "periodo_detalle": "Julio 2023",
+        "año": 2023,
+        "mes": 7,
+        "frecuencia": 33,
+        "z_score": 0.9094777703
+      },
+      {
+        "id_periodo": 202308,
+        "periodo_detalle": "Agosto 2023",
+        "año": 2023,
+        "mes": 8,
+        "frecuencia": 77,
+        "z_score": 0.3026043177
+      },
+      {
+        "id_periodo": 202308,
+        "periodo_detalle": "Agosto 2023",
+        "año": 2023,
+        "mes": 8,
+        "frecuencia": 113,
+        "z_score": 0.6658337116
+      },
+      {
+        "id_periodo": 202308,
+        "periodo_detalle": "Agosto 2023",
+        "año": 2023,
+        "mes": 8,
+        "frecuencia": 36,
+        "z_score": 1.1158409119
+      },
+      {
+        "id_periodo": 202308,
+        "periodo_detalle": "Agosto 2023",
+        "año": 2023,
+        "mes": 8,
+        "frecuencia": 40,
+        "z_score": 0.7846719027
+      },
+      {
+        "id_periodo": 202309,
+        "periodo_detalle": "Septiembre 2023",
+        "año": 2023,
+        "mes": 9,
+        "frecuencia": 101,
+        "z_score": 1.3038820028
+      },
+      {
+        "id_periodo": 202309,
+        "periodo_detalle": "Septiembre 2023",
+        "año": 2023,
+        "mes": 9,
+        "frecuencia": 45,
+        "z_score": 1.0357137918
+      },
+      {
+        "id_periodo": 202309,
+        "periodo_detalle": "Septiembre 2023",
+        "año": 2023,
+        "mes": 9,
+        "frecuencia": 42,
+        "z_score": 1.5281277895
+      },
+      {
+        "id_periodo": 202309,
+        "periodo_detalle": "Septiembre 2023",
+        "año": 2023,
+        "mes": 9,
+        "frecuencia": 143,
+        "z_score": 1.5230981112
+      },
+      {
+        "id_periodo": 202310,
+        "periodo_detalle": "Octubre 2023",
+        "año": 2023,
+        "mes": 10,
+        "frecuencia": 98,
+        "z_score": 1.1717298031
+      },
+      {
+        "id_periodo": 202310,
+        "periodo_detalle": "Octubre 2023",
+        "año": 2023,
+        "mes": 10,
+        "frecuencia": 51,
+        "z_score": 1.3343805075000001
+      },
+      {
+        "id_periodo": 202310,
+        "periodo_detalle": "Octubre 2023",
+        "año": 2023,
+        "mes": 10,
+        "frecuencia": 45,
+        "z_score": 1.7239807844000001
+      },
+      {
+        "id_periodo": 202310,
+        "periodo_detalle": "Octubre 2023",
+        "año": 2023,
+        "mes": 10,
+        "frecuencia": 143,
+        "z_score": 1.5119650364
+      },
+      {
+        "id_periodo": 202311,
+        "periodo_detalle": "Noviembre 2023",
+        "año": 2023,
+        "mes": 11,
+        "frecuencia": 92,
+        "z_score": 0.9163140059
+      },
+      {
+        "id_periodo": 202311,
+        "periodo_detalle": "Noviembre 2023",
+        "año": 2023,
+        "mes": 11,
+        "frecuencia": 128,
+        "z_score": 1.075050354
+      },
+      {
+        "id_periodo": 202311,
+        "periodo_detalle": "Noviembre 2023",
+        "año": 2023,
+        "mes": 11,
+        "frecuencia": 36,
+        "z_score": 1.0878031254
+      },
+      {
+        "id_periodo": 202311,
+        "periodo_detalle": "Noviembre 2023",
+        "año": 2023,
+        "mes": 11,
+        "frecuencia": 46,
+        "z_score": 1.073897481
+      },
+      {
+        "id_periodo": 202312,
+        "periodo_detalle": "Diciembre 2023",
+        "año": 2023,
+        "mes": 12,
+        "frecuencia": 60,
+        "z_score": 2.7179231644
+      },
+      {
+        "id_periodo": 202312,
+        "periodo_detalle": "Diciembre 2023",
+        "año": 2023,
+        "mes": 12,
+        "frecuencia": 115,
+        "z_score": 1.8628482819
+      },
+      {
+        "id_periodo": 202312,
+        "periodo_detalle": "Diciembre 2023",
+        "año": 2023,
+        "mes": 12,
+        "frecuencia": 62,
+        "z_score": 1.8719192743000002
+      },
+      {
+        "id_periodo": 202312,
+        "periodo_detalle": "Diciembre 2023",
+        "año": 2023,
+        "mes": 12,
+        "frecuencia": 175,
+        "z_score": 2.3913066387
+      },
+      {
+        "id_periodo": 202401,
+        "periodo_detalle": "Enero 2024",
+        "año": 2024,
+        "mes": 1,
+        "frecuencia": 113,
+        "z_score": 1.7633142471
+      },
+      {
+        "id_periodo": 202401,
+        "periodo_detalle": "Enero 2024",
+        "año": 2024,
+        "mes": 1,
+        "frecuencia": 59,
+        "z_score": 1.7048559188999999
+      },
+      {
+        "id_periodo": 202401,
+        "periodo_detalle": "Enero 2024",
+        "año": 2024,
+        "mes": 1,
+        "frecuencia": 55,
+        "z_score": 2.3387203217
+      },
+      {
+        "id_periodo": 202401,
+        "periodo_detalle": "Enero 2024",
+        "año": 2024,
+        "mes": 1,
+        "frecuencia": 168,
+        "z_score": 2.1645505428
+      },
+      {
+        "id_periodo": 202402,
+        "periodo_detalle": "Febrero 2024",
+        "año": 2024,
+        "mes": 2,
+        "frecuencia": 39,
+        "z_score": 1.2377340794
+      },
+      {
+        "id_periodo": 202402,
+        "periodo_detalle": "Febrero 2024",
+        "año": 2024,
+        "mes": 2,
+        "frecuencia": 90,
+        "z_score": 0.8051217198
+      },
+      {
+        "id_periodo": 202402,
+        "periodo_detalle": "Febrero 2024",
+        "año": 2024,
+        "mes": 2,
+        "frecuencia": 44,
+        "z_score": 0.9426845312000001
+      },
+      {
+        "id_periodo": 202402,
+        "periodo_detalle": "Febrero 2024",
+        "año": 2024,
+        "mes": 2,
+        "frecuencia": 129,
+        "z_score": 1.0583724976
+      },
+      {
+        "id_periodo": 202403,
+        "periodo_detalle": "Marzo 2024",
+        "año": 2024,
+        "mes": 3,
+        "frecuencia": 99,
+        "z_score": 1.1731334925
+      },
+      {
+        "id_periodo": 202403,
+        "periodo_detalle": "Marzo 2024",
+        "año": 2024,
+        "mes": 3,
+        "frecuencia": 137,
+        "z_score": 1.2768706082999999
+      },
+      {
+        "id_periodo": 202403,
+        "periodo_detalle": "Marzo 2024",
+        "año": 2024,
+        "mes": 3,
+        "frecuencia": 38,
+        "z_score": 1.1634560823
+      },
+      {
+        "id_periodo": 202403,
+        "periodo_detalle": "Marzo 2024",
+        "año": 2024,
+        "mes": 3,
+        "frecuencia": 47,
+        "z_score": 1.0891826153
+      },
+      {
+        "id_periodo": 202404,
+        "periodo_detalle": "Abril 2024",
+        "año": 2024,
+        "mes": 4,
+        "frecuencia": 112,
+        "z_score": 0.5704753399
+      },
+      {
+        "id_periodo": 202404,
+        "periodo_detalle": "Abril 2024",
+        "año": 2024,
+        "mes": 4,
+        "frecuencia": 85,
+        "z_score": 0.5899728537
+      },
+      {
+        "id_periodo": 202404,
+        "periodo_detalle": "Abril 2024",
+        "año": 2024,
+        "mes": 4,
+        "frecuencia": 28,
+        "z_score": 0.1285912991
+      },
+      {
+        "id_periodo": 202404,
+        "periodo_detalle": "Abril 2024",
+        "año": 2024,
+        "mes": 4,
+        "frecuencia": 27,
+        "z_score": 0.41169604660000003
+      },
+      {
+        "id_periodo": 202405,
+        "periodo_detalle": "Mayo 2024",
+        "año": 2024,
+        "mes": 5,
+        "frecuencia": 125,
+        "z_score": 0.9337154627
+      },
+      {
+        "id_periodo": 202405,
+        "periodo_detalle": "Mayo 2024",
+        "año": 2024,
+        "mes": 5,
+        "frecuencia": 84,
+        "z_score": 0.5468552709
+      },
+      {
+        "id_periodo": 202405,
+        "periodo_detalle": "Mayo 2024",
+        "año": 2024,
+        "mes": 5,
+        "frecuencia": 41,
+        "z_score": 1.3604707718
+      },
+      {
+        "id_periodo": 202405,
+        "periodo_detalle": "Mayo 2024",
+        "año": 2024,
+        "mes": 5,
+        "frecuencia": 45,
+        "z_score": 0.9854560494000001
+      },
+      {
+        "id_periodo": 202406,
+        "periodo_detalle": "Junio 2024",
+        "año": 2024,
+        "mes": 6,
+        "frecuencia": 107,
+        "z_score": 0.42433691020000003
+      },
+      {
+        "id_periodo": 202406,
+        "periodo_detalle": "Junio 2024",
+        "año": 2024,
+        "mes": 6,
+        "frecuencia": 23,
+        "z_score": 0.13180679080000002
+      },
+      {
+        "id_periodo": 202406,
+        "periodo_detalle": "Junio 2024",
+        "año": 2024,
+        "mes": 6,
+        "frecuencia": 26,
+        "z_score": 0.0229948703
+      },
+      {
+        "id_periodo": 202406,
+        "periodo_detalle": "Junio 2024",
+        "año": 2024,
+        "mes": 6,
+        "frecuencia": 84,
+        "z_score": 0.5453406572
+      },
+      {
+        "id_periodo": 202407,
+        "periodo_detalle": "Julio 2024",
+        "año": 2024,
+        "mes": 7,
+        "frecuencia": 132,
+        "z_score": 1.1260885
+      },
+      {
+        "id_periodo": 202407,
+        "periodo_detalle": "Julio 2024",
+        "año": 2024,
+        "mes": 7,
+        "frecuencia": 99,
+        "z_score": 1.165189743
+      },
+      {
+        "id_periodo": 202407,
+        "periodo_detalle": "Julio 2024",
+        "año": 2024,
+        "mes": 7,
+        "frecuencia": 35,
+        "z_score": 0.4786021113
+      },
+      {
+        "id_periodo": 202407,
+        "periodo_detalle": "Julio 2024",
+        "año": 2024,
+        "mes": 7,
+        "frecuencia": 33,
+        "z_score": 0.8127977848
+      },
+      {
+        "id_periodo": 202408,
+        "periodo_detalle": "Agosto 2024",
+        "año": 2024,
+        "mes": 8,
+        "frecuencia": 48,
+        "z_score": 1.1340649128
+      },
+      {
+        "id_periodo": 202408,
+        "periodo_detalle": "Agosto 2024",
+        "año": 2024,
+        "mes": 8,
+        "frecuencia": 103,
+        "z_score": 1.3241227865
+      },
+      {
+        "id_periodo": 202408,
+        "periodo_detalle": "Agosto 2024",
+        "año": 2024,
+        "mes": 8,
+        "frecuencia": 46,
+        "z_score": 1.6885014772
+      },
+      {
+        "id_periodo": 202408,
+        "periodo_detalle": "Agosto 2024",
+        "año": 2024,
+        "mes": 8,
+        "frecuencia": 149,
+        "z_score": 1.5945934057
+      },
+      {
+        "id_periodo": 202409,
+        "periodo_detalle": "Septiembre 2024",
+        "año": 2024,
+        "mes": 9,
+        "frecuencia": 122,
+        "z_score": 0.8307973742
+      },
+      {
+        "id_periodo": 202409,
+        "periodo_detalle": "Septiembre 2024",
+        "año": 2024,
+        "mes": 9,
+        "frecuencia": 26,
+        "z_score": 0.3244661987
+      },
+      {
+        "id_periodo": 202409,
+        "periodo_detalle": "Septiembre 2024",
+        "año": 2024,
+        "mes": 9,
+        "frecuencia": 96,
+        "z_score": 1.028318882
+      },
+      {
+        "id_periodo": 202409,
+        "periodo_detalle": "Septiembre 2024",
+        "año": 2024,
+        "mes": 9,
+        "frecuencia": 28,
+        "z_score": 0.11752624810000001
+      },
+      {
+        "id_periodo": 202410,
+        "periodo_detalle": "Octubre 2024",
+        "año": 2024,
+        "mes": 10,
+        "frecuencia": 123,
+        "z_score": 0.8558641076
+      },
+      {
+        "id_periodo": 202410,
+        "periodo_detalle": "Octubre 2024",
+        "año": 2024,
+        "mes": 10,
+        "frecuencia": 87,
+        "z_score": 0.6518692374
+      },
+      {
+        "id_periodo": 202410,
+        "periodo_detalle": "Octubre 2024",
+        "año": 2024,
+        "mes": 10,
+        "frecuencia": 38,
+        "z_score": 0.6249049306000001
+      },
+      {
+        "id_periodo": 202410,
+        "periodo_detalle": "Octubre 2024",
+        "año": 2024,
+        "mes": 10,
+        "frecuencia": 36,
+        "z_score": 1.0031460524
+      },
+      {
+        "id_periodo": 202411,
+        "periodo_detalle": "Noviembre 2024",
+        "año": 2024,
+        "mes": 11,
+        "frecuencia": 26,
+        "z_score": 0.0130406898
+      },
+      {
+        "id_periodo": 202411,
+        "periodo_detalle": "Noviembre 2024",
+        "año": 2024,
+        "mes": 11,
+        "frecuencia": 137,
+        "z_score": 2.6873047352
+      },
+      {
+        "id_periodo": 202411,
+        "periodo_detalle": "Noviembre 2024",
+        "año": 2024,
+        "mes": 11,
+        "frecuencia": 23,
+        "z_score": 0.11510654540000001
+      },
+      {
+        "id_periodo": 202411,
+        "periodo_detalle": "Noviembre 2024",
+        "año": 2024,
+        "mes": 11,
+        "frecuencia": 160,
+        "z_score": 1.8815596104
+      },
+      {
+        "id_periodo": 202412,
+        "periodo_detalle": "Diciembre 2024",
+        "año": 2024,
+        "mes": 12,
+        "frecuencia": 158,
+        "z_score": 1.8090802431
+      },
+      {
+        "id_periodo": 202412,
+        "periodo_detalle": "Diciembre 2024",
+        "año": 2024,
+        "mes": 12,
+        "frecuencia": 21,
+        "z_score": -0.021716220300000002
+      },
+      {
+        "id_periodo": 202412,
+        "periodo_detalle": "Diciembre 2024",
+        "año": 2024,
+        "mes": 12,
+        "frecuencia": 137,
+        "z_score": 2.6421034336
+      },
+      {
+        "id_periodo": 202412,
+        "periodo_detalle": "Diciembre 2024",
+        "año": 2024,
+        "mes": 12,
+        "frecuencia": 26,
+        "z_score": 0.0130136022
+      },
+      {
+        "id_periodo": 202501,
+        "periodo_detalle": "Enero 2025",
+        "año": 2025,
+        "mes": 1,
+        "frecuencia": 142,
+        "z_score": 1.3542355299
+      },
+      {
+        "id_periodo": 202501,
+        "periodo_detalle": "Enero 2025",
+        "año": 2025,
+        "mes": 1,
+        "frecuencia": 123,
+        "z_score": 2.051320076
+      },
+      {
+        "id_periodo": 202501,
+        "periodo_detalle": "Enero 2025",
+        "año": 2025,
+        "mes": 1,
+        "frecuencia": 22,
+        "z_score": -0.1913793087
+      },
+      {
+        "id_periodo": 202501,
+        "periodo_detalle": "Enero 2025",
+        "año": 2025,
+        "mes": 1,
+        "frecuencia": 19,
+        "z_score": -0.1585343927
+      },
+      {
+        "id_periodo": 202502,
+        "periodo_detalle": "Febrero 2025",
+        "año": 2025,
+        "mes": 2,
+        "frecuencia": 19,
+        "z_score": -0.3444952965
+      },
+      {
+        "id_periodo": 202502,
+        "periodo_detalle": "Febrero 2025",
+        "año": 2025,
+        "mes": 2,
+        "frecuencia": 99,
+        "z_score": 1.0790086985
+      },
+      {
+        "id_periodo": 202502,
+        "periodo_detalle": "Febrero 2025",
+        "año": 2025,
+        "mes": 2,
+        "frecuencia": 14,
+        "z_score": -0.5008245111
+      },
+      {
+        "id_periodo": 202502,
+        "periodo_detalle": "Febrero 2025",
+        "año": 2025,
+        "mes": 2,
+        "frecuencia": 113,
+        "z_score": 0.5443744659
+      },
+      {
+        "id_periodo": 202503,
+        "periodo_detalle": "Marzo 2025",
+        "año": 2025,
+        "mes": 3,
+        "frecuencia": 164,
+        "z_score": 1.9485532045
+      },
+      {
+        "id_periodo": 202503,
+        "periodo_detalle": "Marzo 2025",
+        "año": 2025,
+        "mes": 3,
+        "frecuencia": 30,
+        "z_score": 0.5986865759000001
+      },
+      {
+        "id_periodo": 202503,
+        "periodo_detalle": "Marzo 2025",
+        "año": 2025,
+        "mes": 3,
+        "frecuencia": 134,
+        "z_score": 2.4530630112000003
+      },
+      {
+        "id_periodo": 202503,
+        "periodo_detalle": "Marzo 2025",
+        "año": 2025,
+        "mes": 3,
+        "frecuencia": 36,
+        "z_score": 0.5278828144000001
+      },
+      {
+        "id_periodo": 202504,
+        "periodo_detalle": "Abril 2025",
+        "año": 2025,
+        "mes": 4,
+        "frecuencia": 108,
+        "z_score": 0.3934389353
+      },
+      {
+        "id_periodo": 202504,
+        "periodo_detalle": "Abril 2025",
+        "año": 2025,
+        "mes": 4,
+        "frecuencia": 79,
+        "z_score": 0.2595064938
+      },
+      {
+        "id_periodo": 202504,
+        "periodo_detalle": "Abril 2025",
+        "año": 2025,
+        "mes": 4,
+        "frecuencia": 39,
+        "z_score": 0.6802624464
+      },
+      {
+        "id_periodo": 202504,
+        "periodo_detalle": "Abril 2025",
+        "año": 2025,
+        "mes": 4,
+        "frecuencia": 29,
+        "z_score": 0.5283836722
+      },
+      {
+        "id_periodo": 202505,
+        "periodo_detalle": "Mayo 2025",
+        "año": 2025,
+        "mes": 5,
+        "frecuencia": 26,
+        "z_score": 0.0103275497
+      },
+      {
+        "id_periodo": 202505,
+        "periodo_detalle": "Mayo 2025",
+        "año": 2025,
+        "mes": 5,
+        "frecuencia": 95,
+        "z_score": 0.8953856826000001
+      },
+      {
+        "id_periodo": 202505,
+        "periodo_detalle": "Mayo 2025",
+        "año": 2025,
+        "mes": 5,
+        "frecuencia": 21,
+        "z_score": -0.0237119254
+      },
+      {
+        "id_periodo": 202505,
+        "periodo_detalle": "Mayo 2025",
+        "año": 2025,
+        "mes": 5,
+        "frecuencia": 116,
+        "z_score": 0.6141220331
+      },
+      {
+        "id_periodo": 202506,
+        "periodo_detalle": "Junio 2025",
+        "año": 2025,
+        "mes": 6,
+        "frecuencia": 128,
+        "z_score": 0.9445154667000001
+      },
+      {
+        "id_periodo": 202506,
+        "periodo_detalle": "Junio 2025",
+        "año": 2025,
+        "mes": 6,
+        "frecuencia": 44,
+        "z_score": 1.5560102463
+      },
+      {
+        "id_periodo": 202506,
+        "periodo_detalle": "Junio 2025",
+        "año": 2025,
+        "mes": 6,
+        "frecuencia": 84,
+        "z_score": 0.4546512365
+      },
+      {
+        "id_periodo": 202506,
+        "periodo_detalle": "Junio 2025",
+        "año": 2025,
+        "mes": 6,
+        "frecuencia": 45,
+        "z_score": 0.9874568582000001
+      },
+      {
+        "id_periodo": 202507,
+        "periodo_detalle": "Julio 2025",
+        "año": 2025,
+        "mes": 7,
+        "frecuencia": 157,
+        "z_score": 1.7376233339
+      },
+      {
+        "id_periodo": 202507,
+        "periodo_detalle": "Julio 2025",
+        "año": 2025,
+        "mes": 7,
+        "frecuencia": 100,
+        "z_score": 1.0902688503
+      },
+      {
+        "id_periodo": 202507,
+        "periodo_detalle": "Julio 2025",
+        "año": 2025,
+        "mes": 7,
+        "frecuencia": 57,
+        "z_score": 1.5955386162
+      },
+      {
+        "id_periodo": 202507,
+        "periodo_detalle": "Julio 2025",
+        "año": 2025,
+        "mes": 7,
+        "frecuencia": 57,
+        "z_score": 2.4181153774
+      },
+      {
+        "id_periodo": 202508,
+        "periodo_detalle": "Agosto 2025",
+        "año": 2025,
+        "mes": 8,
+        "frecuencia": 53,
+        "z_score": 1.3814527988
+      },
+      {
+        "id_periodo": 202508,
+        "periodo_detalle": "Agosto 2025",
+        "año": 2025,
+        "mes": 8,
+        "frecuencia": 104,
+        "z_score": 1.2438827753
+      },
+      {
+        "id_periodo": 202508,
+        "periodo_detalle": "Agosto 2025",
+        "año": 2025,
+        "mes": 8,
+        "frecuencia": 49,
+        "z_score": 1.8550972939
+      },
+      {
+        "id_periodo": 202508,
+        "periodo_detalle": "Agosto 2025",
+        "año": 2025,
+        "mes": 8,
+        "frecuencia": 153,
+        "z_score": 1.6148167849
+      },
+      {
+        "id_periodo": 202509,
+        "periodo_detalle": "Septiembre 2025",
+        "año": 2025,
+        "mes": 9,
+        "frecuencia": 82,
+        "z_score": 0.36373126510000003
+      },
+      {
+        "id_periodo": 202509,
+        "periodo_detalle": "Septiembre 2025",
+        "año": 2025,
+        "mes": 9,
+        "frecuencia": 63,
+        "z_score": 1.8779053688
+      },
+      {
+        "id_periodo": 202509,
+        "periodo_detalle": "Septiembre 2025",
+        "año": 2025,
+        "mes": 9,
+        "frecuencia": 139,
+        "z_score": 1.221744895
+      },
+      {
+        "id_periodo": 202509,
+        "periodo_detalle": "Septiembre 2025",
+        "año": 2025,
+        "mes": 9,
+        "frecuencia": 57,
+        "z_score": 2.3664155006
+      }
+    ],
+    "tasa_cead_actual": 301.9067687988,
+    "z_score_cead_med": 2.3664155006
+  },
+  "vista08": {
+    "matriz_coocurrencia": [
+      {
+        "delito_a": "Homicidios y Femicidios",
+        "delito_b": "Incivilidades",
+        "correlacion": 0.318620371
+      }
+    ],
+    "cluster_delictual": "Relación detectable entre delitos de oportunidad y desorden público"
+  },
+  "vista09": {
+    "tasa_comuna": 126.8,
+    "tasa_regional": 105.598310427,
+    "tasa_nacional": 97.5894806386,
+    "rank_reg_tasa": 13,
+    "top5_delitos": [
+      {
+        "delito": "Amenazas y Riñas",
+        "casos": 5
+      },
+      {
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "casos": 5
+      },
+      {
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "casos": 3
+      },
+      {
+        "delito": "Incivilidades",
+        "casos": 2
+      },
+      {
+        "delito": "Robos de Vehículos y sus Accesorios",
+        "casos": 2
+      }
+    ]
+  },
+  "vista10": {
+    "casos_comuna": 24,
+    "casos_region": 2046,
+    "rank_regional": 19,
+    "aporte_regional_pct": 1.1730205278999999,
+    "comunas_competencia": [
+      {
+        "codcom": 5101,
+        "comuna": "Valparaíso",
+        "frecuencia_total": 359,
+        "tasa_semanal": 117.0715799772,
+        "ranking_reg_sem": 1.0,
+        "aporte_pct_region": 17.5464320626
+      },
+      {
+        "codcom": 5109,
+        "comuna": "Viña del Mar",
+        "frecuencia_total": 349,
+        "tasa_semanal": 99.670715373,
+        "ranking_reg_sem": 2.0,
+        "aporte_pct_region": 17.0576735093
+      },
+      {
+        "codcom": 5801,
+        "comuna": "Quilpué",
+        "frecuencia_total": 139,
+        "tasa_semanal": 86.6778079868,
+        "ranking_reg_sem": 3.0,
+        "aporte_pct_region": 6.7937438905
+      },
+      {
+        "codcom": 5601,
+        "comuna": "San Antonio",
+        "frecuencia_total": 104,
+        "tasa_semanal": 108.778645915,
+        "ranking_reg_sem": 4.0,
+        "aporte_pct_region": 5.0830889541
+      },
+      {
+        "codcom": 5603,
+        "comuna": "Cartagena",
+        "frecuencia_total": 94,
+        "tasa_semanal": 354.7303671837,
+        "ranking_reg_sem": 5.0,
+        "aporte_pct_region": 4.5943304008
+      }
+    ]
+  },
+  "vista11": {
+    "rank_actual": 19,
+    "rank_historico_anual": [
+      {
+        "año": 2023,
+        "ranking_comunal_regional": 19
+      },
+      {
+        "año": 2024,
+        "ranking_comunal_regional": 14
+      },
+      {
+        "año": 2025,
+        "ranking_comunal_regional": 23
+      },
+      {
+        "año": 2026,
+        "ranking_comunal_regional": 19
+      }
+    ]
+  },
+  "vista12": {
+    "n_comunas_nac": 345,
+    "rank_nac_sem": 99,
+    "casos_nacionales": 18631,
+    "casos_comuna": 24,
+    "tasa_comuna": 126.8,
+    "tasa_nacional": 97.5894806386
+  },
+  "vista13": {
+    "comunas_similares": [
+      {
+        "codcom": 5604,
+        "comuna": "El Quisco",
+        "region": "Valparaíso",
+        "frecuencia_total": 52,
+        "tasa_semanal": 282.3938307809,
+        "ranking_cluster_sem": 1.0,
+        "z_score": null
+      },
+      {
+        "codcom": 3102,
+        "comuna": "Caldera",
+        "region": "Atacama",
+        "frecuencia_total": 49,
+        "tasa_semanal": 262.0601133811,
+        "ranking_cluster_sem": 2.0,
+        "z_score": null
+      },
+      {
+        "codcom": 6201,
+        "comuna": "Pichilemu",
+        "region": "O'Higgins",
+        "frecuencia_total": 43,
+        "tasa_semanal": 234.1792833025,
+        "ranking_cluster_sem": 3.0,
+        "z_score": null
+      },
+      {
+        "codcom": 5605,
+        "comuna": "El Tabo",
+        "region": "Valparaíso",
+        "frecuencia_total": 41,
+        "tasa_semanal": 270.0210748156,
+        "ranking_cluster_sem": 4.0,
+        "z_score": null
+      },
+      {
+        "codcom": 14202,
+        "comuna": "Futrono",
+        "region": "Los Ríos",
+        "frecuencia_total": 37,
+        "tasa_semanal": 256.2326869806,
+        "ranking_cluster_sem": 5.0,
+        "z_score": null
+      }
+    ]
+  },
+  "vista14": {
+    "porcentaje_aporte_regional": 1.1730205278999999,
+    "frecuencia_comuna": 24,
+    "frecuencia_regional": 2046
+  },
+  "vista15": {
+    "casos_ingresados": 24,
+    "detenciones": null,
+    "ratio_resolucion": "0.0%"
+  },
+  "vista16": {
+    "nivel_alerta": "ALTO",
+    "z_score_actual": 1.2666447023,
+    "desviacion_estandar_operativa": 5.9587499431,
+    "threshold_critico": 28.4
+  },
+  "vista17": {
+    "tasa_x100k": 126.8,
+    "poblacion_total": 18925,
+    "densidad_delictual": "M"
+  },
+  "vista18": {
+    "pct_violento": 29.2,
+    "pct_propiedad": 37.5,
+    "pct_incivilidades": 133.3
+  },
+  "vista19": {
+    "delitos_emergentes": [
+      {
+        "delito": "Hurtos",
+        "cagr_4s": 22.4744871392,
+        "racha_crecimiento": 2
+      }
+    ]
+  },
+  "vista20": {
+    "rachas_positivas": [
+      {
+        "delito": "Daños",
+        "racha": 2,
+        "racha_alza": 0,
+        "racha_baja": 2,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Amenazas con Armas",
+        "racha": 1,
+        "racha_alza": 0,
+        "racha_baja": 1,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Receptación",
+        "racha": 1,
+        "racha_alza": 0,
+        "racha_baja": 1,
+        "tendencia": "Baja"
+      },
+      {
+        "delito": "Violaciones y Delitos Sexuales",
+        "racha": 1,
+        "racha_alza": 0,
+        "racha_baja": 1,
+        "tendencia": "Baja"
+      }
+    ]
+  },
+  "vista21": {
+    "cagr_global_4s": 7.808739271,
+    "factor_aceleracion": 3.33
+  },
+  "vista22": {
+    "matriz_prioridad": [
+      {
+        "delito": "Amenazas y Riñas",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 25.0,
+        "variacion_semanal": 400.0
+      },
+      {
+        "delito": "Robos en Lugares Habitados y No Habitados",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 12.5,
+        "variacion_semanal": 150.0
+      },
+      {
+        "delito": "Delitos en Contexto de Violencia Intrafamiliar",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 4.5,
+        "variacion_semanal": 50.0
+      },
+      {
+        "delito": "Hurtos",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 2.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Incivilidades",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 2.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Robos de Vehículos y sus Accesorios",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 2.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Daños",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.3,
+        "variacion_semanal": -66.6666666667
+      },
+      {
+        "delito": "Lesiones leves",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 1.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Lesiones menos graves",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 1.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Ley de Control de Armas",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 1.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Violaciones y Delitos Sexuales",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.5,
+        "variacion_semanal": -50.0
+      },
+      {
+        "delito": "Amenazas con Armas",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": -100.0
+      },
+      {
+        "delito": "Consumo de Alcohol y de Drogas en la Vía Pública",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Lesiones graves",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Ley de Drogas",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Otros Robos con Fuerza en las Cosas",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Otros desórdenes públicos",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Receptación",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": -100.0
+      },
+      {
+        "delito": "Robos con Violencia e Intimidación",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      },
+      {
+        "delito": "Robos por Sorpresa",
+        "cuadrante": "Monitoreo",
+        "prioridad_score": 0.0,
+        "variacion_semanal": 0.0
+      }
+    ],
+    "prioridad_score": 99
+  },
+  "vista23": {
+    "distribucion_severidad": [
+      {
+        "severidad": "Extrema",
+        "porcentaje": 4.2
+      },
+      {
+        "severidad": "Grave",
+        "porcentaje": 37.5
+      },
+      {
+        "severidad": "Moderada",
+        "porcentaje": 8.3
+      },
+      {
+        "severidad": "Leve",
+        "porcentaje": 41.7
+      },
+      {
+        "severidad": "Muy Leve",
+        "porcentaje": 8.3
+      }
+    ]
+  },
+  "vista24": {
+    "desviacion_estandar": 5.9587499431,
+    "rango_min": 0,
+    "rango_max": 40
+  },
+  "vista25": {
+    "health_score": 77.2,
+    "status_integridad": "Total",
+    "veredicto_final": "ALTO",
+    "stop_completion": 91.9,
+    "cead_completion": 100.0
+  },
+  "comuna": "Hijuelas",
+  "week": "SEMANA 09/2026 (del 23/02/2026 al 01/03/2026)",
+  "codcom": 5503
+}

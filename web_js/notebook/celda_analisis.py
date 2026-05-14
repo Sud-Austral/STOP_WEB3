@@ -9,6 +9,7 @@ import json
 import datetime
 import warnings
 import pandas as pd
+import glob
 
 warnings.filterwarnings("ignore")
 
@@ -16,18 +17,15 @@ ruta_script = r"D:\GitHub\STOP_WEB3\web_js\notebook"
 if ruta_script not in sys.path:
     sys.path.insert(0, ruta_script)
 
-# Los módulos ya están cargados en el notebook principal
-# (proceso, proceso_cead, comunas). Sólo importamos build_context.
 from contexto import build_context
 
 # ── Config ────────────────────────────────────────────────────────────────────
 OUTPUT_DIR = r"D:\GitHub\STOP_WEB3\web_js\data\analisis"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+STOP_DIR = r"D:\GitHub\STOP_WEB3\web_js\data\stop"
+CEAD_DIR = r"D:\GitHub\STOP_WEB3\web_js\data\cead_split"
+COMUNAS_FILE = r"D:\GitHub\STOP_WEB3\web_js\data\comunas\data_comuna.json"
 
-# ── DataFrames heredados del notebook ─────────────────────────────────────────
-df_stop    = proceso.df3
-df_cead    = proceso_cead.df3
-df_comunas = comunas.df3
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # ── Encoder JSON robusto ──────────────────────────────────────────────────────
 import numpy as np
@@ -50,8 +48,18 @@ try:
 except ImportError:
     iterador = lambda it: it
 
-codcoms = sorted(df_stop['codcom'].dropna().unique().tolist())
+# Get all available codcoms from the STOP_DIR
+stop_files = glob.glob(os.path.join(STOP_DIR, '*'))
+codcoms = sorted([os.path.basename(f) for f in stop_files])
 print(f"▶ {len(codcoms)} comunas · salida: {OUTPUT_DIR}\n")
+
+# Load comunas dataset once
+df_comunas = pd.DataFrame()
+if os.path.exists(COMUNAS_FILE):
+    try:
+        df_comunas = pd.read_json(COMUNAS_FILE, compression='gzip')
+    except Exception as e:
+         print(f"Error loading comunas: {e}")
 
 ok, err = 0, 0
 t0 = datetime.datetime.now()
@@ -60,17 +68,19 @@ for codcom in iterador(codcoms):
     try:
         codcom_int = int(codcom)
 
-        # Filtro STOP
-        df_s = df_stop[df_stop['codcom'] == codcom].copy()
-        # Filtro CEAD — str→int es el cast más robusto (soporta category, float, object)
-        if not df_cead.empty:
-            try:
-                _cead_ids = df_cead['codcom'].astype(str).str.split('.').str[0].astype(int)
-                df_c = df_cead[_cead_ids == codcom_int].copy()
-            except Exception:
-                df_c = pd.DataFrame()
+        # Filtro STOP: Read directly from parquet file
+        stop_file_path = os.path.join(STOP_DIR, codcom)
+        if os.path.exists(stop_file_path):
+            df_s = pd.read_json(stop_file_path, compression='gzip')
         else:
-            df_c = pd.DataFrame()
+             df_s = pd.DataFrame()
+
+        # Filtro CEAD: Read directly from parquet file
+        cead_file_path = os.path.join(CEAD_DIR, codcom)
+        if os.path.exists(cead_file_path):
+             df_c = pd.read_json(cead_file_path, compression='gzip')
+        else:
+             df_c = pd.DataFrame()
 
         if df_s.empty:
             continue
@@ -86,7 +96,11 @@ for codcom in iterador(codcoms):
             else ''
         )
         # 'week': id_semana máximo con datos
-        week = int(df_s['id_semana'].max()) if not df_s['id_semana'].isna().all() else None
+        if not df_s['id_semana'].isna().all():
+            idx_max = df_s['id_semana'].idxmax()
+            week = df_s.loc[idx_max, 'semana_detalle'] if 'semana_detalle' in df_s.columns else None
+        else:
+            week = None
 
         ctx['comuna'] = str(nombre)
         ctx['week']   = week

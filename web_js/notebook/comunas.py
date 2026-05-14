@@ -145,7 +145,7 @@ def build(df_stop: pd.DataFrame) -> pd.DataFrame:
     )
     df_ultima.loc[mask_t, 'tasa_semanal'] = (
         df_ultima.loc[mask_t, 'frecuencia_total'] /
-        df_ultima.loc[mask_t, 'factor_poblacion'] * 100_000
+        df_ultima.loc[mask_t, 'factor_poblacion']
     )
 
     # Tasa proyectada si falta
@@ -156,7 +156,7 @@ def build(df_stop: pd.DataFrame) -> pd.DataFrame:
     )
     df_ultima.loc[mask_tp, 'tasa_proyectada_anual'] = (
         df_ultima.loc[mask_tp, 'proyeccion_anual'] /
-        df_ultima.loc[mask_tp, 'factor_poblacion'] * 100_000
+        df_ultima.loc[mask_tp, 'factor_poblacion']
     )
 
     # ── NUEVO: Rankings por Tasa (Mayor tasa = Rank 1) ──

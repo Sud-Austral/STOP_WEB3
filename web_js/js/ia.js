@@ -352,6 +352,11 @@ const IAModule = {
      */
 
     buildPrompt(context) {
+        // Incorporar datos de las vistas si están disponibles
+        const V = window.STATE_DATA || {};
+        const v6 = V.vista06 || {};
+        const v22 = V.vista22 || {};
+
         return `
 Analiza los siguientes datos delictuales de ${context.comunaName} y genera interpretaciones estratégicas para las vistas del dashboard.
 
@@ -362,36 +367,37 @@ DATOS DE REFERENCIA:
 - Z-Score Promedio: ${context.avgZScore}
 - Alertas STOP: ${context.alertas} (${context.alertasCriticas} críticas)
 - Top Delitos: ${context.topDelitos.join(', ')}
-- Resumen CEAD: ${context.ceadSummary}
+- Contexto Vista 06 (Nacional): Tasa ${v6.tasa_comuna} vs Nac ${v6.tasa_nacional} (Dev: ${v6.desviacion_tasa_pct}%)
+- Contexto Vista 22 (Prioridad): Foco prioritario en ${v22.matriz_prioridad ? v22.matriz_prioridad[0]?.delito : 'N/A'} (Score: ${v22.prioridad_score})
 
 Genera un JSON con la siguiente estructura exacta. Cada interpretación debe ser profesional, de 1-2 oraciones y orientada a la toma de decisiones:
 
 {
-  "vista1": "Interpretación general...", 
-  "vista2": "Análisis de alertas...",
-  "vista3": "Análisis comparativo (${context.totalCasos} casos, Δ${context.varSemanal}% semanal)...",
-  "vista4": "Perfil de gravedad y riesgo...",
-  "vista5": "Distribución de violencia vs delitos menores...",
-  "vista6": "Análisis de correlaciones entre delitos...",
-  "vista7": "Tendencia histórica ( STOP )...",
-  "vista8": "Patrones estacionales detectados...",
-  "vista9": "Correlaciones delictuales...",
-  "vista10": "Pronóstico de tendencia ( STOP )...",
-  "vista11": "Impacto y simulación...",
-  "vista12": "Predicción de peaks...",
-  "vista13": "Notas metodológicas...",
-  "vista14": "Proyección y regresión lineal...",
-  "vista15": "Diagnóstico inmediato de riesgo: ${context.v15_risk}...",
-  "vista16": "Análisis demográfico y tasas...",
-  "vista17": "Contexto regional y ranking...",
-  "vista18": "Aceleración delictual (${context.aceleracion}%)...",
-  "vista19": "Normalidad estadística (Z=${context.zScoreTotal})...",
-  "vista20": "Resumen ejecutivo integral...",
-  "vista21": "Evolución mensual (CEAD)...",
-  "vista22": "Comparativa anual (CEAD)...",
-  "vista23": "Tendencia sostenida vs hechos aislados...",
-  "vista24": "Matriz de variaciones...",
-  "vista25": "Distribución territorial..."
+  "vista1": "Interpretación general del dashboard principal STOP (casos, variaciones y riesgo).", 
+  "vista2": "Análisis de evolución reciente (24 semanas) y media móvil.",
+  "vista3": "Análisis de nivel crítico comparado (Triple Comparativa).",
+  "vista4": "Detección de patrones estacionales cíclicos.",
+  "vista5": "Evaluación de concentración delictual (Pareto YTD).",
+  "vista6": "Benchmarking Nacional: Desviación de tasa x100k hab. vs promedio país.",
+  "vista7": "Crecimiento estructural largo plazo (Perfil CEAD 20 años).",
+  "vista8": "Co-ocurrencia criminal y asociaciones entre tipologías.",
+  "vista9": "Posicionamiento en termómetro Regional/Nacional.",
+  "vista10": "Evaluación de Share Regional (Aporte al volumen regional).",
+  "vista11": "Fluctuación histórica del ranking de la comuna en la región.",
+  "vista12": "Diagnóstico de posición en el Ranking Nacional de 345 comunas.",
+  "vista13": "Contraste con clúster socio-demográfico similar.",
+  "vista14": "Responsabilidad regional relativa (Comuna vs Resto Región).",
+  "vista15": "Ratio de efectividad policial (Casos vs Detenciones).",
+  "vista16": "Estado del semáforo operativo basado en Z-Score.",
+  "vista17": "Densidad delictual (Carga vs Población).",
+  "vista18": "Equilibrio entre Violencia vs Delitos a la Propiedad.",
+  "vista19": "Identificación de delitos emergentes con crecimiento peak.",
+  "vista20": "Monitoreo de rachas positivas y éxito en reducción.",
+  "vista21": "Velocidad de cambio y momentum (Aceleración delictual).",
+  "vista22": "Priorización táctica de recursos (Matriz 4 Cuadrantes).",
+  "vista23": "Distribución por severidad y daño social.",
+  "vista24": "Análisis de volatilidad y rangos operativos históricos.",
+  "vista25": "Resultado de auditoría de integridad y veredicto 360°."
 }
 
 Responde ÚNICAMENTE con el objeto JSON.`;

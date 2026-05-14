@@ -38,6 +38,35 @@ import pandas as pd
 import numpy as np
 from typing import Optional
 
+# Taxonomía unificada (Basada en delito_class.json - Verdad Absoluta)
+CLASIFICACION_DELITO = {
+    "AMENAZAS CON ARMAS": {"violencia": "Violentos", "severidad": "Grave"},
+    "AMENAZAS Y RIÑAS": {"violencia": "Otros", "severidad": "Leve"},
+    "CONSUMO DE ALCOHOL Y DE DROGAS EN LA VÍA PÚBLICA": {"violencia": "Otros", "severidad": "Muy Leve"},
+    "DAÑOS": {"violencia": "Otros", "severidad": "Leve"},
+    "DELITOS EN CONTEXTO DE VIOLENCIA INTRAFAMILIAR": {"violencia": "Violentos", "severidad": "Grave"},
+    "HOMICIDIOS Y FEMICIDIOS": {"violencia": "Violentos", "severidad": "Extrema"},
+    "HURTOS": {"violencia": "A la Propiedad", "severidad": "Leve"},
+    "INCIVILIDADES": {"violencia": "Otros", "severidad": "Muy Leve"},
+    "LESIONES GRAVES": {"violencia": "Violentos", "severidad": "Grave"},
+    "LESIONES LEVES": {"violencia": "Violentos", "severidad": "Leve"},
+    "LESIONES MENOS GRAVES": {"violencia": "Violentos", "severidad": "Leve"},
+    "LEY DE CONTROL DE ARMAS": {"violencia": "Violentos", "severidad": "Grave"},
+    "LEY DE DROGAS": {"violencia": "Otros", "severidad": "Grave"},
+    "OTROS DESÓRDENES PÚBLICOS": {"violencia": "Otros", "severidad": "Leve"},
+    "OTROS ROBOS CON FUERZA EN LAS COSAS": {"violencia": "A la Propiedad", "severidad": "Moderada"},
+    "RECEPTACIÓN": {"violencia": "A la Propiedad", "severidad": "Leve"},
+    "ROBOS CON VIOLENCIA E INTIMIDACIÓN": {"violencia": "Violentos", "severidad": "Extrema"},
+    "ROBOS DE VEHÍCULOS Y SUS ACCESORIOS": {"violencia": "A la Propiedad", "severidad": "Moderada"},
+    "ROBOS EN LUGARES HABITADOS Y NO HABITADOS": {"violencia": "A la Propiedad", "severidad": "Grave"},
+    "ROBOS POR SORPRESA": {"violencia": "A la Propiedad", "severidad": "Grave"},
+    "VIOLACIONES Y DELITOS SEXUALES": {"violencia": "Violentos", "severidad": "Extrema"}
+}
+
+def _get_clf(delito, key, default='Otros'):
+    d = str(delito).upper().strip()
+    return CLASIFICACION_DELITO.get(d, {}).get(key, default)
+
 
 # ── Utilidades internas ────────────────────────────────────────────────────────
 
@@ -87,8 +116,29 @@ def _score_nivel(z: Optional[float]) -> str:
 
 def _variacion_pct(actual, anterior) -> Optional[float]:
     if actual is None or anterior is None or anterior == 0:
-        return None
-    return round((actual - anterior) / abs(anterior) * 100, 1)
+        return 0.0
+    return round((float(actual) - float(anterior)) / abs(float(anterior)) * 100, 1)
+
+def _get_slope(data: list) -> float:
+    """Calcula la pendiente de una regresión lineal simple."""
+    n = len(data)
+    if n < 2: return 0.0
+    x = np.arange(n)
+    y = np.array(data)
+    slope = (n * np.sum(x*y) - np.sum(x)*np.sum(y)) / (n * np.sum(x**2) - np.sum(x)**2)
+    return float(slope)
+
+def _get_seasonal_index(df: pd.DataFrame, col_mes: str, col_casos: str) -> list[float]:
+    """Calcula el índice estacional mensual (100% = promedio anual)."""
+    if df.empty: return [0.0]*12
+    # Agrupar por mes y promediar
+    m_avg = df.groupby(col_mes)[col_casos].mean()
+    # Asegurar que existan los 12 meses
+    full_m = pd.Series(0.0, index=range(1,13))
+    m_avg = m_avg.combine_first(full_m)
+    total_avg = m_avg.mean()
+    if total_avg == 0: return [0.0]*12
+    return [round(float(m/total_avg*100), 1) for m in m_avg.tolist()]
 
 
 def _top_delitos(df_stop: pd.DataFrame, n: int = 5) -> list[dict]:
@@ -203,8 +253,9 @@ def build_context(
     -------
     dict  { 'vista01': {...}, 'vista02': {...}, ... 'vista25': {...} }
     """
-
-    ctx: dict = {}
+    
+    # 1. Pre-Cálculo de DataFrames Filtrados (Avoid Repetition)
+    df_totales_stop = df_stop[df_stop['delito'].isin(['Total', 'TOTAL'])].copy()
 
     # ── Fila de referencia (última semana, Total) ──────────────────────────────
     last   = _last_total(df_stop)
@@ -233,8 +284,8 @@ def build_context(
     var_year  = _variacion_pct(casos_actual, casos_year_ant)
 
     # Tasa x100k hab
-    tasa_100k = round(tasa_actual * 100_000, 1) if tasa_actual else (
-        round(casos_actual / factor_pob * 100_000, 1)
+    tasa_100k = round(tasa_actual, 1) if tasa_actual else (
+        round(casos_actual / factor_pob, 1)
         if casos_actual and factor_pob and factor_pob > 0
         else None
     )
@@ -611,7 +662,7 @@ def build_context(
                 'semana_max_hist':     _safe(r.get('id_semana_max_hist')),
                 'sem_detalle_max':     r.get('semana_detalle_max_hist', ''),
                 'pct_del_max':         round(r['frecuencia'] / r['max_hist'] * 100, 1)
-                                       if r.get('max_hist') and r['max_hist'] > 0 else None,
+                                       if r.get('max_hist') and r['max_hist'] > 0 and r.get('frecuencia') is not None else None,
                 'alerta_critica':      bool(r.get('alerta_aumento_critico', False)),
                 'alerta_year_ant':     bool(r.get('alerta_vs_año_anterior', False)),
             })
@@ -772,7 +823,9 @@ def build_context(
         'año':             anio,
         'n_comunas_nac':   len(nac_list),
         'rank_nac_sem':    _safe(last.get('ranking_nacional_semanal')) if last is not None else None,
-        'casos_totales':   casos_actual,
+        # -- CORRECCIÓN: Usar total nacional real
+        'casos_totales_nacional': _safe(last.get('casos_semanales_nacionales')) if last is not None else None,
+        'casos_comuna':    casos_actual,
         'comuna_actual':   comuna_nombre,
         'comunas_nac':     sorted(nac_list, key=lambda x: (x['frecuencia_total'] or 0), reverse=True),
     }
@@ -887,10 +940,10 @@ def build_context(
         else:
             cead_last = None
 
-        # Serie CEAD (últimos 24 meses, Total)
+        # Serie CEAD (últimos 20 años, Total)
         cead_serie = []
         if cead_last is not None:
-            cead_24m = cead_tot.sort_values('id_periodo').tail(24)
+            cead_24m = cead_tot.sort_values('id_periodo').tail(240)
             cead_serie = [
                 {
                     'id_periodo':      _safe(r['id_periodo']),
@@ -946,4 +999,196 @@ def build_context(
         'poblacion':          pob,
     }
 
-    return ctx
+    # Cálculos adicionales para efectividad
+    detenidos_actual = _safe(last.get('detenidos')) if last is not None else 0
+    ratio_efectividad = round(((detenidos_actual or 0) / casos_actual * 100), 1) if casos_actual and casos_actual > 0 else 0
+
+    # Cálculos de completitud para Auditoría (Vista 25)
+    idx_cols_stop = len(df_stop.columns) if not df_stop.empty else 1
+    nulls_stop = df_stop.iloc[-1].isnull().sum() if not df_stop.empty else idx_cols_stop
+    completion_stop = round(max(0.0, 100.0 - (nulls_stop / idx_cols_stop * 100)), 1)
+
+    idx_cols_cead = len(df_cead.columns) if not df_cead.empty else 1
+    nulls_cead = df_cead.iloc[-1].isnull().sum() if not df_cead.empty else idx_cols_cead
+    completion_cead = round(max(0.0, 100.0 - (nulls_cead / idx_cols_cead * 100)), 1)
+
+    ctx_nuevo = {
+        "vista01": { # Dashboard Principal STOP (Basado en vista1.html)
+            'casos_totales': casos_actual,
+            'casos_sem_anterior': casos_ant,
+            'var_semanal_pct': var_sem,
+            'var_interanual_pct': var_year,
+            'casos_year_anterior': casos_year_ant,
+            'tasa_x100k': tasa_100k,
+            'nivel_riesgo': nivel_riesgo,
+            'z_score_avg': round(float(df_stop[df_stop['id_semana'] == id_semana]['z_score'].mean()), 2) if id_semana else 0.0,
+            'trend_slope': _get_slope([d['frecuencia'] for d in tendencia_8s]),
+            'top5_delitos': top5_delitos,
+            'comuna': comuna_nombre,
+            'semana_detalle': semana_detalle
+        },
+        "vista02": { # Evolución reciente 24s (Basado en vista2.html)
+            'serie_24s': _serie_semanal_delito(df_stop, None, n_semanas=24),
+            'total_24s': _safe(df_totales_stop.sort_values('id_semana').tail(24)['frecuencia'].sum()),
+            'avg_24s': round(float(df_totales_stop.sort_values('id_semana').tail(24)['frecuencia'].mean()), 1),
+            'global_avg': round(float(df_totales_stop['frecuencia'].mean()), 1) if not df_totales_stop.empty else 0.0,
+            'global_max': _safe(df_totales_stop['frecuencia'].max()),
+            'global_max_semana': df_totales_stop[df_totales_stop['frecuencia'] == df_totales_stop['frecuencia'].max()].iloc[0].get('semana_detalle', '') if not df_totales_stop.empty else '',
+            'ma_var': _variacion_pct(_safe(last.get('media_movil_4s')), _safe(prev.get('media_movil_4s'))),
+            'trend_category': 'Expansión' if (var_sem or 0) > 3 else 'Contracción' if (var_sem or 0) < -3 else 'Estabilidad'
+        },
+        "vista03": { # Comparativo Temporal - Triple comparación (Basado en vista3.html)
+            'semana_actual': casos_actual,
+            'casos_sem_anterior': casos_ant,
+            'casos_año_anterior': casos_year_ant,
+            'max_hist_total': _safe(df_totales_stop['frecuencia'].max()),
+            'max_hist_semana': df_totales_stop[df_totales_stop['frecuencia'] == df_totales_stop['frecuencia'].max()].iloc[0].get('semana_detalle', '') if not df_totales_stop.empty else '',
+            # Mínimo excluyendo semanas 1 y 53 (Verdad absoluta de vista3.html)
+            'min_hist_total': _safe(df_totales_stop[(~df_totales_stop['semana_numero'].isin([1, 53]))]['frecuencia'].min()) if 'semana_numero' in df_totales_stop.columns else 0,
+            'min_hist_semana': df_totales_stop[df_totales_stop['frecuencia'] == df_totales_stop[(~df_totales_stop['semana_numero'].isin([1, 53]))]['frecuencia'].min()].iloc[0].get('semana_detalle', '') if 'semana_numero' in df_totales_stop.columns and not df_totales_stop[(~df_totales_stop['semana_numero'].isin([1, 53]))].empty else '',
+            'avg_53s': round(float(df_totales_stop.sort_values('id_semana').tail(53)['frecuencia'].mean()), 1) if not df_totales_stop.empty else 0.0,
+            'promedio_hist_total': _safe(last.get('promedio_hist')) if last is not None else None,
+            'nota_datos': "Semanas 1 y 53 excluidas para el cálculo de mínimos por agrupación de días."
+        },
+        "vista04": { # Estacionalidad Mensual (Basado en vista4.html)
+            'seasonal_index_cead': _get_seasonal_index(df_cead[df_cead['delito'].isin(['Total', 'TOTAL'])], 'mes', 'frecuencia'),
+            'seasonal_index_stop': _get_seasonal_index(df_stop[df_stop['delito'].isin(['Total', 'TOTAL'])], 'mes', 'frecuencia'),
+            'meses_nombres': ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+        },
+        "vista05": { # Análisis de Pareto YTD (Basado en vista5.html)
+            'pareto_ytd': [
+                {'delito': d, 'casos': int(v), 'pct': round(v / df_stop[(df_stop['año'] == anio) & (~df_stop['delito'].isin(['Total', 'TOTAL']))]['frecuencia'].sum() * 100, 1)}
+                for d, v in df_stop[(df_stop['año'] == anio) & (~df_stop['delito'].isin(['Total', 'TOTAL']))].groupby('delito')['frecuencia'].sum().sort_values(ascending=False).items()
+            ],
+            'top3_concentration_ytd': round(df_stop[(df_stop['año'] == anio) & (~df_stop['delito'].isin(['Total', 'TOTAL']))].groupby('delito')['frecuencia'].sum().sort_values(ascending=False).head(3).sum() / df_stop[(df_stop['año'] == anio) & (~df_stop['delito'].isin(['Total', 'TOTAL']))]['frecuencia'].sum() * 100, 1) if anio else 0.0,
+            'total_ytd_cases': _safe(df_stop[(df_stop['año'] == anio) & (df_stop['delito'].isin(['Total', 'TOTAL']))]['frecuencia'].sum())
+        },
+        "vista06": { # Benchmarking Nacional - Cambios drásticos %
+            'tasa_comuna': tasa_100k,
+            'tasa_nacional': _safe(last.get('tasa_nacional_semanal')) if last is not None else None,
+            'desviacion_tasa_pct': _variacion_pct(tasa_100k, _safe(last.get('tasa_nacional_semanal')) if last is not None else None),
+            'variaciones_delito': sorted(delitos_variacion, key=lambda x: (x['casos'] or 0), reverse=True),
+            'mayores_aumentos': sorted([d for d in delitos_variacion if (d.get('var_pct') or 0) > 0], key=lambda x: x.get('var_pct') or 0, reverse=True)[:3],
+            'mayores_descensos': sorted([d for d in delitos_variacion if (d.get('var_pct') or 0) < 0], key=lambda x: x.get('var_pct') or 0)[:3]
+        },
+        "vista07": { # Crecimiento estructural 20 años CEAD
+            'serie_cead': cead_serie,
+            'tasa_cead_actual': cead_tasa,
+            'z_score_cead_med': _safe(cead_last.get('z_score')) if cead_last is not None else None
+        },
+        "vista08": { # Co-ocurrencia criminal
+            'matriz_coocurrencia': [
+                {'delito_a': last.get('t23_d1'), 'delito_b': last.get('t23_d2'), 'correlacion': round(float(_safe(last.get('t23_val'))), 2) if last.get('t23_val') is not None else None}
+            ],
+            'cluster_delictual': "Relación detectable entre delitos de oportunidad y desorden público"
+        },
+        "vista09": { # Tasas comuna contra estándar nacional/regional
+            'tasa_comuna':   tasa_100k,
+            'tasa_regional': _safe(last.get('tasa_regional_semanal')) if last is not None else None,
+            'tasa_nacional': _safe(last.get('tasa_nacional_semanal')) if last is not None else None,
+            'rank_reg_tasa': _safe(last.get('ranking_regional_tasa_sem')) if last is not None else None,
+            'top5_delitos':  top5_delitos
+        },
+        "vista10": { # Carga regional comparada
+            'casos_comuna':  casos_actual,
+            'casos_region':  _safe(last.get('casos_semanales_regionales')) if last is not None else None,
+            'rank_regional': _safe(last.get('ranking_comunal_regional')) if last is not None else None,
+            'aporte_regional_pct': _safe(last.get('aporte_pct_region')) if last is not None else None,
+            'comunas_competencia': sorted(region_list, key=lambda x: (x['frecuencia_total'] or 0), reverse=True)[:5]
+        },
+        "vista11": { # Benchmark histórico regional
+            'rank_actual': _safe(last.get('ranking_comunal_regional')) if last is not None else None,
+            'rank_historico_anual': (
+                df_totales_stop.groupby('año').last().reset_index()[['año', 'ranking_comunal_regional']].fillna(0).to_dict('records')
+                if not df_totales_stop.empty and 'año' in df_totales_stop.columns and 'ranking_comunal_regional' in df_totales_stop.columns else []
+            )
+        },
+        "vista12": { # Contexto nacional ranking
+            'n_comunas_nac': len(nac_list),
+            'rank_nac_sem':  _safe(last.get('ranking_nacional_semanal')) if last is not None else None,
+            'casos_nacionales': _safe(last.get('casos_semanales_nacionales')) if last is not None else None,
+            'casos_comuna':  casos_actual,
+            'tasa_comuna':   tasa_100k,
+            'tasa_nacional': _safe(last.get('tasa_nacional_semanal')) if last is not None else None
+        },
+        "vista13": { # Clúster similares sociodemográfico
+            'comunas_similares': sorted(cluster_list, key=lambda x: (x['frecuencia_total'] or 0), reverse=True)[:5]
+        },
+        "vista14": { # Peso en la región (porcentaje)
+            'porcentaje_aporte_regional': _safe(last.get('aporte_pct_region')),
+            'frecuencia_comuna': casos_actual,
+            'frecuencia_regional': _safe(last.get('casos_semanales_regionales'))
+        },
+        "vista15": { # Efectividad Policial frente al delito
+            'casos_ingresados': casos_actual,
+            'detenciones': detenidos_actual,
+            'ratio_resolucion': f"{ratio_efectividad}%"
+        },
+        "vista16": { # Semáforo de Alertas Operativas
+            'nivel_alerta': _score_nivel(z_score_actual),
+            'z_score_actual': z_score_actual,
+            'desviacion_estandar_operativa': _safe(last.get('std_hist')),
+            'threshold_critico': round((_safe(last.get('promedio_hist')) or 0) + (2 * (_safe(last.get('std_hist')) or 0)), 1)
+        },
+        "vista17": { # Carga vs población (Densidad)
+            'tasa_x100k': tasa_100k,
+            'poblacion_total': pob,
+            'densidad_delictual': "L" if (tasa_100k or 0) < 50 else "M" if (tasa_100k or 0) < 150 else "H"
+        },
+        "vista18": { # Violencia vs Propiedad
+            'pct_violento': round(df_stop[(df_stop['id_semana'] == id_semana) & (~df_stop['delito'].isin(['Total', 'TOTAL'])) & (df_stop['delito'].apply(lambda x: _get_clf(x, 'violencia')) == 'Violentos')]['frecuencia'].sum() / (casos_actual or 1) * 100, 1) if casos_actual else 0,
+            'pct_propiedad': round(df_stop[(df_stop['id_semana'] == id_semana) & (~df_stop['delito'].isin(['Total', 'TOTAL'])) & (df_stop['delito'].apply(lambda x: _get_clf(x, 'violencia')) == 'A la Propiedad')]['frecuencia'].sum() / (casos_actual or 1) * 100, 1) if casos_actual else 0,
+            'pct_incivilidades': round(df_stop[(df_stop['id_semana'] == id_semana) & (~df_stop['delito'].isin(['Total', 'TOTAL'])) & (df_stop['delito'].apply(lambda x: _get_clf(x, 'violencia')) == 'Otros')]['frecuencia'].sum() / (casos_actual or 1) * 100, 1) if casos_actual else 0
+        },
+        "vista19": { # Delitos emergiendo (Atípicos/Máximos)
+            'delitos_emergentes': [
+                {"delito": d['delito'], "cagr_4s": d['cagr_4s'], "racha_crecimiento": d.get('frecuencia', 0)}
+                for d in (cagr_por_delito or [])
+                if d.get('cagr_4s') is not None and float(d.get('cagr_4s', 0)) > 20
+            ]
+        },
+        "vista20": { # Reducir con éxito sostenido (Rachas bajas)
+            'rachas_positivas': sorted(rachas_baja, key=lambda x: (x['racha_baja'] or 0), reverse=True)
+        },
+        "vista21": { # Velocidad de cambio (Aceleración)
+            'cagr_global_4s': round(float(_safe(last.get('t31_cagr_4s'))), 2) if last.get('t31_cagr_4s') is not None else None,
+            'factor_aceleracion': round(var_sem / 10, 2) if var_sem else 0
+        },
+        "vista22": { # Matriz de Prioridad de Recursos
+            'matriz_prioridad': [
+                {
+                    'delito': d['delito'],
+                    'cuadrante': 'Foco Crítico' if (d.get('casos', 0) or 0) > 5 and (d.get('var_pct', 0) or 0) > 10 else 'Monitoreo',
+                    'prioridad_score': round((d.get('casos', 0) or 0) * (1 + (d.get('var_pct', 0) or 0)/100), 1),
+                    'variacion_semanal': d.get('var_pct', 0)
+                }
+                for d in (delitos_variacion or [])
+            ],
+            'prioridad_score': _safe(last.get('ranking_nacional_semanal'))
+        },
+        "vista23": { # Comportamiento según clasificación severidad
+            'distribucion_severidad': [
+                {"severidad": s, "porcentaje": round(df_stop[(df_stop['id_semana'] == id_semana) & (~df_stop['delito'].isin(['Total', 'TOTAL'])) & (df_stop['delito'].apply(lambda x: _get_clf(x, 'severidad')) == s)]['frecuencia'].sum() / (casos_actual or 1) * 100, 1)}
+                for s in ["Extrema", "Grave", "Moderada", "Leve", "Muy Leve"]
+            ] if casos_actual else []
+        },
+        "vista24": { # Rango y Volatilidad Operativa
+            'desviacion_estandar': round(float(_safe(last.get('std_hist'))), 1) if last is not None and last.get('std_hist') is not None else round(float(df_totales_stop['frecuencia'].std() or 0), 1) if not df_totales_stop.empty else 0,
+            'rango_min': _safe(last.get('min_hist')) if last is not None and last.get('min_hist') is not None else 0,
+            'rango_max': _safe(last.get('max_hist')) if last is not None and last.get('max_hist') is not None else _safe(df_totales_stop['frecuencia'].max())
+        },
+        "vista25": { # Auditoría de Integridad (Basado en vista25.html)
+            'health_score': round(
+                (completion_stop * 0.35) + 
+                (completion_cead * 0.30) + 
+                (max(0, 100 - (df_stop[df_stop['z_score'].abs() > 5].shape[0]) * 10) * 0.20) + 
+                (max(0, 100 - (0) * 3) * 0.15) # Simplificado gaps
+            , 1),
+            'status_integridad': "Total" if completion_stop > 90 else "Parcial",
+            'veredicto_final': nivel_riesgo,
+            'stop_completion': round(completion_stop, 1),
+            'cead_completion': round(completion_cead, 1)
+        }
+    }
+
+    return ctx_nuevo
