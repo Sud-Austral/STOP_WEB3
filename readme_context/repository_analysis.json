@@ -1,0 +1,854 @@
+{
+  "repository": "target",
+  "generated_at": "2026-08-31T01:35:52.624356",
+  "analysis": {
+    "web_js/temp_titles.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "os",
+            "line": 1
+          },
+          {
+            "value": "re",
+            "line": 1
+          }
+        ],
+        "functions": [],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/temp_cleanup_placeholders.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "os",
+            "line": 1
+          },
+          {
+            "value": "re",
+            "line": 2
+          }
+        ],
+        "functions": [],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/app.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "App",
+            "line": 31
+          },
+          {
+            "value": "S",
+            "line": 228
+          }
+        ],
+        "api_calls": [
+          {
+            "method": "FETCH",
+            "target": "sidebar.html",
+            "line": 97,
+            "file": "web_js/js/app.js"
+          },
+          {
+            "method": "FETCH",
+            "target": "${this.config.viewsPath}/${viewName}.html?t=${Date.now()}",
+            "line": 166,
+            "file": "web_js/js/app.js"
+          }
+        ],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/data_manager.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/pdf.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "PDFModule",
+            "line": 12
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/rid-core.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/data.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/ia2.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "OFUSCADO",
+            "line": 14
+          },
+          {
+            "value": "C",
+            "line": 85
+          },
+          {
+            "value": "C_CEAD",
+            "line": 86
+          },
+          {
+            "value": "S_CEAD",
+            "line": 87
+          },
+          {
+            "value": "S",
+            "line": 170
+          },
+          {
+            "value": "API_KEY",
+            "line": 236
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/pdf_vistas2.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/data_cead.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/ia.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "IAModule",
+            "line": 6
+          },
+          {
+            "value": "OFUSCADO",
+            "line": 17
+          },
+          {
+            "value": "COLS",
+            "line": 167
+          },
+          {
+            "value": "V",
+            "line": 356
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/chart-enhancer.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "ChartEnhancer",
+            "line": 21
+          },
+          {
+            "value": "OriginalChart",
+            "line": 29
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/calidadPrompt.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "PromptQuality",
+            "line": 4
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/logger.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "IS_DEV",
+            "line": 16
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/PrintWizard.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [
+          {
+            "value": "PrintWizard",
+            "line": 4
+          }
+        ],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/view-controller.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "MAX_ATTEMPTS",
+            "line": 28
+          },
+          {
+            "value": "S",
+            "line": 53
+          },
+          {
+            "value": "C",
+            "line": 54
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/chart-helper.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "ChartHelper",
+            "line": 14
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/ui-helper.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [
+          {
+            "value": "UI",
+            "line": 11
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/utils/waiter.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/js/config/columns.js": {
+      "javascript": {
+        "imports": [],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/tools/inject_ia.js": {
+      "javascript": {
+        "imports": [
+          {
+            "value": "fs",
+            "line": 1
+          },
+          {
+            "value": "path",
+            "line": 2
+          }
+        ],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/tools/inject_ia.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "os",
+            "line": 1
+          },
+          {
+            "value": "re",
+            "line": 2
+          }
+        ],
+        "functions": [],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/scripts/update_vista2.js": {
+      "javascript": {
+        "imports": [
+          {
+            "value": "fs",
+            "line": 1
+          },
+          {
+            "value": "path",
+            "line": 2
+          }
+        ],
+        "exports": [],
+        "components": [],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/scripts/update_footers.js": {
+      "javascript": {
+        "imports": [
+          {
+            "value": "fs",
+            "line": 1
+          },
+          {
+            "value": "path",
+            "line": 2
+          }
+        ],
+        "exports": [],
+        "components": [
+          {
+            "value": "VIEW_MAP",
+            "line": 4
+          },
+          {
+            "value": "BASE_DIR",
+            "line": 32
+          }
+        ],
+        "api_calls": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/scripts/update_footers.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "os",
+            "line": 1
+          },
+          {
+            "value": "re",
+            "line": 2
+          }
+        ],
+        "functions": [],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/proceso.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "pandas",
+            "line": 2
+          },
+          {
+            "value": "json",
+            "line": 3
+          },
+          {
+            "value": "warnings",
+            "line": 4
+          },
+          {
+            "value": "numpy",
+            "line": 5
+          },
+          {
+            "value": "os",
+            "line": 6
+          },
+          {
+            "value": "sys",
+            "line": 7
+          },
+          {
+            "value": "datetime",
+            "line": 8
+          },
+          {
+            "value": "tqdm",
+            "line": 17
+          }
+        ],
+        "functions": [
+          {
+            "name": "progress_wrapper",
+            "line": 23
+          },
+          {
+            "name": "verificar_integridad",
+            "line": 112
+          },
+          {
+            "name": "calc_agg_metrics",
+            "line": 586
+          },
+          {
+            "name": "calculate_top_correlation",
+            "line": 622
+          },
+          {
+            "name": "get_top_rachas",
+            "line": 650
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/proceso_cead.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "pandas",
+            "line": 1
+          },
+          {
+            "value": "numpy",
+            "line": 2
+          },
+          {
+            "value": "os",
+            "line": 3
+          },
+          {
+            "value": "sys",
+            "line": 4
+          },
+          {
+            "value": "gc",
+            "line": 5
+          },
+          {
+            "value": "json",
+            "line": 6
+          },
+          {
+            "value": "datetime",
+            "line": 7
+          },
+          {
+            "value": "tqdm",
+            "line": 23
+          }
+        ],
+        "functions": [
+          {
+            "name": "ejecutar_proceso",
+            "line": 14
+          },
+          {
+            "name": "progress_wrapper",
+            "line": 28
+          },
+          {
+            "name": "optimize_dtypes",
+            "line": 33
+          },
+          {
+            "name": "date_to_id",
+            "line": 66
+          },
+          {
+            "name": "calc_estacionalidad",
+            "line": 71
+          },
+          {
+            "name": "calc_correlacion_lp",
+            "line": 95
+          },
+          {
+            "name": "calculate_top_correlation",
+            "line": 123
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/comunas.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "pandas",
+            "line": 26
+          },
+          {
+            "value": "numpy",
+            "line": 27
+          },
+          {
+            "value": "warnings",
+            "line": 28
+          },
+          {
+            "value": "os",
+            "line": 29
+          },
+          {
+            "value": "sys",
+            "line": 30
+          },
+          {
+            "value": "proceso",
+            "line": 246
+          },
+          {
+            "value": "proceso",
+            "line": 221
+          }
+        ],
+        "functions": [
+          {
+            "name": "build",
+            "line": 85
+          },
+          {
+            "name": "save",
+            "line": 200
+          },
+          {
+            "name": "_init_module",
+            "line": 211
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/contexto.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "pandas",
+            "line": 37
+          },
+          {
+            "value": "numpy",
+            "line": 38
+          },
+          {
+            "value": "typing",
+            "line": 39
+          }
+        ],
+        "functions": [
+          {
+            "name": "_get_clf",
+            "line": 66
+          },
+          {
+            "name": "_safe",
+            "line": 73
+          },
+          {
+            "name": "_last_total",
+            "line": 88
+          },
+          {
+            "name": "_prev_total",
+            "line": 96
+          },
+          {
+            "name": "_score_nivel",
+            "line": 104
+          },
+          {
+            "name": "_variacion_pct",
+            "line": 117
+          },
+          {
+            "name": "_get_slope",
+            "line": 122
+          },
+          {
+            "name": "_get_seasonal_index",
+            "line": 131
+          },
+          {
+            "name": "_top_delitos",
+            "line": 144
+          },
+          {
+            "name": "_tendencia_8s",
+            "line": 164
+          },
+          {
+            "name": "_serie_anual",
+            "line": 181
+          },
+          {
+            "name": "_serie_semanal_delito",
+            "line": 193
+          },
+          {
+            "name": "_top_delitos_completo",
+            "line": 213
+          },
+          {
+            "name": "build_context",
+            "line": 238
+          }
+        ],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/generar_analisis.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "sys",
+            "line": 21
+          },
+          {
+            "value": "os",
+            "line": 22
+          },
+          {
+            "value": "json",
+            "line": 23
+          },
+          {
+            "value": "warnings",
+            "line": 24
+          },
+          {
+            "value": "datetime",
+            "line": 25
+          },
+          {
+            "value": "proceso",
+            "line": 40
+          },
+          {
+            "value": "proceso_cead",
+            "line": 41
+          },
+          {
+            "value": "comunas",
+            "line": 42
+          },
+          {
+            "value": "contexto",
+            "line": 43
+          },
+          {
+            "value": "tqdm",
+            "line": 46
+          },
+          {
+            "value": "numpy",
+            "line": 74
+          },
+          {
+            "value": "gzip",
+            "line": 127
+          }
+        ],
+        "functions": [
+          {
+            "name": "_prog",
+            "line": 47
+          },
+          {
+            "name": "default",
+            "line": 73
+          },
+          {
+            "name": "_prog",
+            "line": 49
+          }
+        ],
+        "classes": [
+          {
+            "name": "_SafeEncoder",
+            "line": 71
+          }
+        ],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/celda_analisis.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "os",
+            "line": 6
+          },
+          {
+            "value": "sys",
+            "line": 7
+          },
+          {
+            "value": "json",
+            "line": 8
+          },
+          {
+            "value": "datetime",
+            "line": 9
+          },
+          {
+            "value": "warnings",
+            "line": 10
+          },
+          {
+            "value": "pandas",
+            "line": 11
+          },
+          {
+            "value": "glob",
+            "line": 12
+          },
+          {
+            "value": "contexto",
+            "line": 20
+          },
+          {
+            "value": "numpy",
+            "line": 31
+          },
+          {
+            "value": "tqdm",
+            "line": 46
+          }
+        ],
+        "functions": [
+          {
+            "name": "default",
+            "line": 34
+          }
+        ],
+        "classes": [
+          {
+            "name": "_SafeEncoder",
+            "line": 33
+          }
+        ],
+        "routes": [],
+        "env_vars": []
+      }
+    },
+    "web_js/notebook/union.py": {
+      "python": {
+        "imports": [
+          {
+            "value": "pandas",
+            "line": 2
+          }
+        ],
+        "functions": [],
+        "classes": [],
+        "routes": [],
+        "env_vars": []
+      }
+    }
+  }
+}
